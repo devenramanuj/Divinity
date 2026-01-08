@@ -1,147 +1,246 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="gu">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Lens - Groq/Gemini Tabs</title>
+<title>Devinity - Gujarati Voice Bot with Avatar</title>
 <style>
-    body { font-family: sans-serif; margin: 20px; background: #f7f7f7; }
-    textarea, button, select { width: 100%; margin: 5px 0; padding: 10px; font-size: 16px; }
-    .tabs { display: flex; gap: 10px; margin: 10px 0; }
-    .tab { padding: 10px 15px; border-radius: 5px; background: #ddd; cursor: pointer; }
-    .tab.active { background: #4CAF50; color: #fff; }
-    .category-section { 
-        display: none; 
-        background: #fff; padding: 15px; margin: 10px 0; 
-        border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
-    }
-    .category-section h3 { margin: 0 0 10px 0; color: #333; }
-    .category-section p { margin: 0; white-space: pre-wrap; }
+body{font-family:Arial;background:#f3f3f3;margin:0}
+header{background:#2d3e8b;color:#fff;text-align:center;padding:12px;font-size:18px}
+nav{display:flex;background:#fff;border-bottom:1px solid #ccc}
+nav button{flex:1;padding:12px;background:#fff;border:none;font-size:20px;cursor:pointer}
+nav button.active{background:#e9ecff;font-weight:bold}
+.container{padding:15px}
+#chatBox{background:#fff;border:1px solid #ddd;height:250px;overflow-y:auto;padding:10px}
+.message{margin-bottom:10px}
+.user{text-align:right;color:#0a58ca}
+.bot{text-align:left}
+button{width:100%;padding:10px;margin-top:10px;border:none;font-size:16px;color:#fff;cursor:pointer}
+#voiceBtn{background:#1b7c5c}
+#stopBtn{background:#d9534f}
+#saveKeyBtn{background:#2d3e8b}
+#smartLensCameraBtn,#smartLensGalleryBtn{background:#ff9800}
+#saveReportBtn{background:#009688}
+#saveContactBtn{background:#2d3e8b}
+#diaryBtn{background:#9c27b0}
+#settingsScreen input,#settingsScreen select{width:100%;padding:10px;margin-top:10px;font-size:16px}
+#avatarContainer{display:flex;justify-content:center;margin-bottom:10px;}
 </style>
 </head>
 <body>
 
-<h2>Smart Lens - Groq / Gemini 2.5 Flash (Tabbed)</h2>
+<header>Devinity - Gujarati Voice Bot</header>
 
-<select id="modelSelect">
-  <option value="groq-70b">Groq 70B</option>
-  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-</select>
+<nav>
+  <button id="chatTab" class="active">💬</button>
+  <button id="settingsTab">⚙️</button>
+</nav>
 
-<textarea id="userInput" placeholder="Enter multiple lines, one per question..." rows="6"></textarea>
-<button onclick="processInputs()">Submit</button>
+<div class="container">
 
-<div class="tabs" id="tabsContainer"></div>
-<div id="output"></div>
+  <!-- AVATAR -->
+  <div id="avatarContainer">
+    <video id="devinityAvatar" autoplay loop muted playsinline width="200"></video>
+  </div>
+
+  <!-- CHAT SCREEN -->
+  <div id="chatScreen">
+    <div id="chatBox"></div>
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <button id="voiceBtn" onclick="startListening()">🎤 બોલો</button>
+      <button id="stopBtn" onclick="stopListening()">⏹ રોકો</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS SCREEN -->
+  <div id="settingsScreen" style="display:none">
+    <h3>API Key & Model Selection</h3>
+    <input type="password" id="apiKeyInput" placeholder="API Key નાખો">
+    <select id="modelSelect">
+      <option value="gpt-4o-mini">OpenAI GPT (Default)</option>
+      <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+      <option value="gemini-flash-latest">Gemini Flash Latest</option>
+      <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+      <option value="groq-70b">Groq 70B</option>
+    </select>
+    <button id="saveKeyBtn" onclick="saveSettings()">💾 સાચવવો</button>
+
+    <h3 style="margin-top:20px">📷 Smart Lens</h3>
+    <button id="smartLensCameraBtn" onclick="openCamera()">Camera</button>
+    <button id="smartLensGalleryBtn" onclick="openGallery()">Gallery</button>
+    <button id="saveReportBtn" style="display:none" onclick="saveReport()">💾 Save Report</button>
+
+    <h3 style="margin-top:20px">📇 સંપર્ક (Contacts)</h3>
+    <input type="text" id="contactName" placeholder="Name">
+    <input type="text" id="contactNumber" placeholder="Number">
+    <button id="saveContactBtn" onclick="addContact()">💾 Add Contact</button>
+    <div id="contactList"></div>
+
+    <h3 style="margin-top:20px">📝 ડાયરી (Diary)</h3>
+    <button id="diaryBtn" onclick="viewDiary()">View Diary</button>
+  </div>
+
+</div>
+
+<input type="file" id="imageInput" accept="image/*" capture="environment" style="display:none">
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 
 <script>
-const API_KEY = "YOUR_API_KEY"; // Replace with your Grow API Key
-const API_URL = "https://api.grow.com/v1/responses";
-
-// Detect category
-function detectCategory(inputText) {
-    if (/[\u0A80-\u0AFF]/.test(inputText)) return "શિલાલેખ ભાષાંતર";
-    if (/\d/.test(inputText)) return "Maths";
-    if (/physics|chemistry|biology/i.test(inputText)) return "Science";
-    if (/history|ancient|medieval/i.test(inputText)) return "History";
-    if (/grammar|language/i.test(inputText)) return "Language / Grammar";
-    return "General";
-}
-
-// Prompts per category
-const promptMap = {
-    "શિલાલેખ ભાષાંતર": "Translate this inscription text to modern Gujarati: ",
-    "Maths": "Solve the following math problem step by step: ",
-    "Science": "Explain scientifically: ",
-    "History": "Provide historical context for: ",
-    "Language / Grammar": "Check grammar, explain, and correct: ",
-    "General": "Answer this: "
+// ---------------- AVATAR ----------------
+const avatarVideos = {
+  smiling: "https://raw.githubusercontent.com/yourusername/yourrepo/main/smiling.mp4",
+  thinking: "https://raw.githubusercontent.com/yourusername/yourrepo/main/thinking.mp4",
+  talking: "https://raw.githubusercontent.com/yourusername/yourrepo/main/talking.mp4",
+  silent: "https://raw.githubusercontent.com/yourusername/yourrepo/main/silent.mp4"
 };
 
-// Call selected model API
-async function callSelectedModel(userInput) {
-    const selectedModel = document.getElementById("modelSelect").value;
-    const category = detectCategory(userInput);
-    const prompt = promptMap[category] + userInput;
+function setAvatarState(state){
+  const video = document.getElementById("devinityAvatar");
+  if(!avatarVideos[state]) return;
+  video.src = avatarVideos[state];
+  video.play();
+}
 
-    try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${API_KEY}`
-            },
-            body: JSON.stringify({
-                model: selectedModel,
-                prompt: prompt,
-                max_output_tokens: 512,
-                temperature: 0.7
-            })
-        });
+// ---------------- TAB SWITCH ----------------
+document.getElementById("chatTab").onclick = ()=>show("chat");
+document.getElementById("settingsTab").onclick = ()=>show("settings");
 
-        if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(`API Error: ${errText}`);
-        }
+function show(tab){
+  document.getElementById("chatScreen").style.display = tab==="chat"?"block":"none";
+  document.getElementById("settingsScreen").style.display = tab==="settings"?"block":"none";
+  document.getElementById("chatTab").classList.toggle("active",tab==="chat");
+  document.getElementById("settingsTab").classList.toggle("active",tab==="settings");
+}
 
-        const data = await response.json();
-        return { category, response: data.output?.[0]?.content || "No response from model" };
+// ---------------- SETTINGS ----------------
+function saveSettings(){
+  const key = document.getElementById("apiKeyInput").value.trim();
+  const model = document.getElementById("modelSelect").value;
+  if(!key){ alert("API Key નાખો"); return; }
+  localStorage.setItem("API_KEY", key);
+  localStorage.setItem("API_MODEL", model);
+  alert("Settings સાચવવામાં આવી ગઈ");
+}
 
-    } catch (err) {
-        console.error("API Error:", err);
-        return { category, response: "Error: Unable to get response" };
+// ---------------- CHAT ----------------
+let conversation = [{role:"system",content:"You are Devinity, intelligent female Gujarati assistant. Answer in Gujarati, natural text without *,;:, maintain context, analyze images/math/object info, handle diary and contacts."}];
+let recognition; let listening=false; let autoListen=true; let lastSmartLensReport="";
+
+// Voice recognition
+if('webkitSpeechRecognition' in window){
+  recognition = new webkitSpeechRecognition();
+  recognition.lang = "gu-IN"; recognition.continuous=false; recognition.interimResults=false;
+
+  recognition.onresult = function(e){
+    const text = e.results[0][0].transcript;
+    addMessage(text,"user");
+
+    // Contacts commands
+    let contacts = JSON.parse(localStorage.getItem("contacts")||"[]");
+    if(/Devinity\s*ને\s*call\s*(.+)/i.test(text)){
+      const name=text.match(/Devinity\s*ને\s*call\s*(.+)/i)[1].trim();
+      const c=contacts.find(c=>c.name.toLowerCase()===name.toLowerCase());
+      if(c){ speakGujarati(`હું ${c.name} ને call કરવા તૈયાર છું`); alert(`Call to ${c.name}: ${c.number}`); return; }
+      else { speakGujarati(`${name} સંપર્કમાં નથી`); return; }
     }
+    if(/Devinity\s*ને\s*મેસેજ\s*(.+)/i.test(text)){
+      const name=text.match(/Devinity\s*ને\s*મેસેજ\s*(.+)/i)[1].trim();
+      const c=contacts.find(c=>c.name.toLowerCase()===name.toLowerCase());
+      if(c){ speakGujarati(`હું ${c.name} ને મેસેજ મોકલવા તૈયાર છું`); alert(`Message to ${c.name}: ${c.number}`); return; }
+      else { speakGujarati(`${name} સંપર્કમાં નથી`); return; }
+    }
+
+    // Diary
+    if(/નોંધ કર\s*(.+)/i.test(text)){
+      const note=text.match(/નોંધ કર\s*(.+)/i)[1].trim();
+      let diary = JSON.parse(localStorage.getItem("diary")||"[]");
+      diary.push({date:new Date().toLocaleString(),note});
+      localStorage.setItem("diary",JSON.stringify(diary));
+      speakGujarati("નોંધ કરી લીધી");
+      return;
+    }
+
+    conversation.push({role:"user",content:text});
+    sendToAPI(text);
+  };
+
+  recognition.onend = ()=>{ listening=false; if(autoListen) setTimeout(()=>startListening(),200); }
+  recognition.onerror = (e)=>{ console.log(e.error); listening=false; }
 }
 
-// Process multiple lines in parallel
-async function processInputs() {
-    const rawInput = document.getElementById("userInput").value.trim();
-    if (!rawInput) return alert("Please enter at least one input.");
+function startListening(){ if(!recognition){ alert("Browser support નથી"); return; } if(listening) return; recognition.start(); listening=true; }
+function stopListening(){ autoListen=false; if(recognition && listening){ recognition.stop(); listening=false; } }
 
-    const lines = rawInput.split("\n").filter(l => l.trim() !== "");
-    const outputDiv = document.getElementById("output");
-    const tabsContainer = document.getElementById("tabsContainer");
-    outputDiv.innerHTML = "";
-    tabsContainer.innerHTML = "";
+function addMessage(text,type){ const box=document.getElementById("chatBox"); const div=document.createElement("div"); div.className="message "+type; div.innerText=text; box.appendChild(div); box.scrollTop=box.scrollHeight; }
 
-    // Parallel API calls
-    const promises = lines.map(line => callSelectedModel(line));
-    const results = await Promise.all(promises);
-
-    // Group results by category
-    const categoryMap = {};
-    results.forEach(res => {
-        if (!categoryMap[res.category]) categoryMap[res.category] = [];
-        categoryMap[res.category].push(res.response);
-    });
-
-    // Create tabs
-    Object.keys(categoryMap).forEach((category, index) => {
-        // Tab button
-        const tab = document.createElement("div");
-        tab.className = "tab" + (index === 0 ? " active" : "");
-        tab.textContent = category;
-        tab.onclick = () => showCategory(category);
-        tabsContainer.appendChild(tab);
-
-        // Category section
-        const section = document.createElement("div");
-        section.className = "category-section";
-        section.id = "section-" + category;
-        if (index === 0) section.style.display = "block"; // show first by default
-        section.innerHTML = `<h3>${category}</h3>` + categoryMap[category].map(r => `<p>${r}</p>`).join("");
-        outputDiv.appendChild(section);
-    });
+// ---------------- VOICE ----------------
+function speakGujarati(text){
+  text=text.replace(/[*;:]/g,'');
+  const msg=new SpeechSynthesisUtterance(text);
+  msg.lang="gu-IN"; msg.rate=1; msg.pitch=1;
+  const voices=speechSynthesis.getVoices();
+  const guFemale=voices.find(v=>v.lang.startsWith("gu") && v.name.toLowerCase().includes("female"));
+  if(guFemale) msg.voice=guFemale;
+  msg.onstart=()=>{ setAvatarState("talking"); }
+  msg.onend=()=>{ setAvatarState("smiling"); if(autoListen) startListening(); }
+  speechSynthesis.speak(msg);
 }
 
-// Show selected category section
-function showCategory(category) {
-    document.querySelectorAll(".category-section").forEach(sec => sec.style.display = "none");
-    document.getElementById("section-" + category).style.display = "block";
-
-    document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
-    Array.from(document.querySelectorAll(".tab")).find(t => t.textContent === category)?.classList.add("active");
+// -------------------- SEND TO API ----------------
+async function sendToAPI(userText,isSmartLens=false){
+  setAvatarState("thinking");
+  const key=localStorage.getItem("API_KEY");
+  const model=localStorage.getItem("API_MODEL")||"gpt-4o-mini";
+  if(!key){ alert("પહેલા Settings માં API Key સેટ કરો"); return; }
+  try{
+    const res = await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({model,temperature:0.6,messages:conversation})});
+    const data=await res.json();
+    const reply=data?.choices?.[0]?.message?.content || "જવાબ મળ્યો નથી.";
+    conversation.push({role:"assistant",content:reply});
+    addMessage(reply,"bot");
+    if(isSmartLens) lastSmartLensReport+=reply;
+    setAvatarState("smiling");
+    speakGujarati(reply);
+  }catch(e){ addMessage("Error: "+e.message,"bot"); setAvatarState("smiling"); }
 }
+
+// -------------------- SMART LENS ----------------
+function openCamera(){ openFileInput(true); }
+function openGallery(){ openFileInput(false); }
+function openFileInput(camera){
+  const input=document.createElement('input'); input.type='file'; input.accept='image/*'; if(camera) input.capture='environment';
+  input.onchange=processImage; input.click();
+}
+async function processImage(e){
+  const file=e.target.files[0]; if(!file) return;
+  addMessage("📷 Image selected, processing...","user");
+  const {data:{text}}=await Tesseract.recognize(file,'eng+guj');
+  const prompt=`Analyze the following content in Gujarati and provide detailed explanation, math solution, translation, or object info:\n${text}`;
+  conversation.push({role:"user",content:prompt});
+  lastSmartLensReport=`Image OCR Text:\n${text}\n\nAnalysis:\n`;
+  document.getElementById("saveReportBtn").style.display="block";
+  sendToAPI(prompt,true);
+}
+function saveReport(){ if(!lastSmartLensReport){ alert("No Smart Lens report"); return; } const blob=new Blob([lastSmartLensReport],{type:'text/plain'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='SmartLensReport.txt'; a.click(); }
+
+// -------------------- CONTACTS ----------------
+function addContact(){
+  const name=document.getElementById("contactName").value.trim();
+  const number=document.getElementById("contactNumber").value.trim();
+  if(!name||!number){ alert("Enter Name and Number"); return; }
+  let contacts=JSON.parse(localStorage.getItem("contacts")||"[]"); contacts.push({name,number});
+  localStorage.setItem("contacts",JSON.stringify(contacts));
+  document.getElementById("contactName").value=""; document.getElementById("contactNumber").value="";
+  updateContactList();
+}
+function updateContactList(){ const contacts=JSON.parse(localStorage.getItem("contacts")||"[]"); const listDiv=document.getElementById("contactList"); listDiv.innerHTML=""; contacts.forEach(c=>{ const div=document.createElement("div"); div.innerText=`${c.name} : ${c.number}`; listDiv.appendChild(div); }); }
+updateContactList();
+
+// -------------------- DIARY ----------------
+function viewDiary(){ const diary=JSON.parse(localStorage.getItem("diary")||"[]"); if(diary.length===0){ alert("ડાયરી ખાલી છે"); return; } let text=diary.map(d=>`${d.date}: ${d.note}`).join("\n\n"); alert(text); }
 </script>
 
 </body>
