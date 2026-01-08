@@ -3,26 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Lens - Groq 70B</title>
+<title>Smart Lens - Groq/Gemini Tabs</title>
 <style>
     body { font-family: sans-serif; margin: 20px; background: #f7f7f7; }
-    input, textarea, button { width: 100%; margin: 5px 0; padding: 10px; font-size: 16px; }
-    .category-section { background: #fff; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    textarea, button, select { width: 100%; margin: 5px 0; padding: 10px; font-size: 16px; }
+    .tabs { display: flex; gap: 10px; margin: 10px 0; }
+    .tab { padding: 10px 15px; border-radius: 5px; background: #ddd; cursor: pointer; }
+    .tab.active { background: #4CAF50; color: #fff; }
+    .category-section { 
+        display: none; 
+        background: #fff; padding: 15px; margin: 10px 0; 
+        border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+    }
     .category-section h3 { margin: 0 0 10px 0; color: #333; }
     .category-section p { margin: 0; white-space: pre-wrap; }
 </style>
 </head>
 <body>
 
-<h2>Smart Lens - Groq 70B</h2>
+<h2>Smart Lens - Groq / Gemini 2.5 Flash (Tabbed)</h2>
+
+<select id="modelSelect">
+  <option value="groq-70b">Groq 70B</option>
+  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+</select>
 
 <textarea id="userInput" placeholder="Enter multiple lines, one per question..." rows="6"></textarea>
 <button onclick="processInputs()">Submit</button>
 
+<div class="tabs" id="tabsContainer"></div>
 <div id="output"></div>
 
 <script>
-const API_KEY = "YOUR_API_KEY"; // Change to your Grow API Key
+const API_KEY = "YOUR_API_KEY"; // Replace with your Grow API Key
 const API_URL = "https://api.grow.com/v1/responses";
 
 // Detect category
@@ -45,8 +58,9 @@ const promptMap = {
     "General": "Answer this: "
 };
 
-// Call Groq 70B API
-async function callGroq70B(userInput) {
+// Call selected model API
+async function callSelectedModel(userInput) {
+    const selectedModel = document.getElementById("modelSelect").value;
     const category = detectCategory(userInput);
     const prompt = promptMap[category] + userInput;
 
@@ -58,7 +72,7 @@ async function callGroq70B(userInput) {
                 "Authorization": `Bearer ${API_KEY}`
             },
             body: JSON.stringify({
-                model: "groq-70b",
+                model: selectedModel,
                 prompt: prompt,
                 max_output_tokens: 512,
                 temperature: 0.7
@@ -71,33 +85,62 @@ async function callGroq70B(userInput) {
         }
 
         const data = await response.json();
-        return { category, response: data.output?.[0]?.content || "No response from Groq 70B" };
+        return { category, response: data.output?.[0]?.content || "No response from model" };
 
     } catch (err) {
-        console.error("Groq 70B API Error:", err);
+        console.error("API Error:", err);
         return { category, response: "Error: Unable to get response" };
     }
 }
 
-// Process multiple inputs
+// Process multiple lines in parallel
 async function processInputs() {
     const rawInput = document.getElementById("userInput").value.trim();
     if (!rawInput) return alert("Please enter at least one input.");
 
     const lines = rawInput.split("\n").filter(l => l.trim() !== "");
     const outputDiv = document.getElementById("output");
+    const tabsContainer = document.getElementById("tabsContainer");
     outputDiv.innerHTML = "";
+    tabsContainer.innerHTML = "";
 
-    // Loop through inputs
-    for (const line of lines) {
-        const result = await callGroq70B(line);
+    // Parallel API calls
+    const promises = lines.map(line => callSelectedModel(line));
+    const results = await Promise.all(promises);
 
-        // Create category section
+    // Group results by category
+    const categoryMap = {};
+    results.forEach(res => {
+        if (!categoryMap[res.category]) categoryMap[res.category] = [];
+        categoryMap[res.category].push(res.response);
+    });
+
+    // Create tabs
+    Object.keys(categoryMap).forEach((category, index) => {
+        // Tab button
+        const tab = document.createElement("div");
+        tab.className = "tab" + (index === 0 ? " active" : "");
+        tab.textContent = category;
+        tab.onclick = () => showCategory(category);
+        tabsContainer.appendChild(tab);
+
+        // Category section
         const section = document.createElement("div");
         section.className = "category-section";
-        section.innerHTML = `<h3>${result.category}</h3><p>${result.response}</p>`;
+        section.id = "section-" + category;
+        if (index === 0) section.style.display = "block"; // show first by default
+        section.innerHTML = `<h3>${category}</h3>` + categoryMap[category].map(r => `<p>${r}</p>`).join("");
         outputDiv.appendChild(section);
-    }
+    });
+}
+
+// Show selected category section
+function showCategory(category) {
+    document.querySelectorAll(".category-section").forEach(sec => sec.style.display = "none");
+    document.getElementById("section-" + category).style.display = "block";
+
+    document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+    Array.from(document.querySelectorAll(".tab")).find(t => t.textContent === category)?.classList.add("active");
 }
 </script>
 
