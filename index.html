@@ -3,99 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Devinity</title>
+<title>Divinity</title>
 
 <style>
-body{
-  margin:0;
-  font-family:system-ui;
-  background:#f4f6fb;
-}
-header{
-  background:#2c3e90;
-  color:#fff;
-  padding:12px;
-  text-align:center;
-  font-size:18px;
-}
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  padding:8px;
-  background:#e9ecff;
-}
-.icon{
-  font-size:22px;
-  background:none;
-  border:none;
-}
-#avatarWrap{
-  width:260px;
-  margin:16px auto;
-}
-#avatarVideo{
-  width:100%;
-  border-radius:16px;
-  background:#000;
-}
-#chatBox{
-  height:28vh;
-  overflow-y:auto;
-  background:#fff;
-  margin:12px;
-  padding:12px;
-  border-radius:12px;
-}
+body{margin:0;font-family:system-ui;background:#f4f6fb}
+header{background:#2c3e90;color:#fff;padding:12px;text-align:center;font-size:18px}
+.topbar{display:flex;justify-content:flex-end;padding:8px;background:#e9ecff}
+.icon{font-size:22px;background:none;border:none}
+#avatarWrap{width:260px;margin:16px auto}
+#avatarVideo{width:100%;border-radius:16px;background:#000}
+#chatBox{height:30vh;overflow-y:auto;background:#fff;margin:12px;padding:12px;border-radius:12px}
 .msg{margin-bottom:8px}
 .user{text-align:right;color:#2c3e90}
 .bot{text-align:left}
-.controls{
-  display:flex;
-  gap:10px;
-  padding:12px;
-}
-.btn{
-  flex:1;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  font-size:15px;
-  color:#fff;
-}
+.controls{display:flex;gap:10px;padding:12px}
+.btn{flex:1;padding:12px;border:none;border-radius:10px;font-size:15px;color:#fff}
 .green{background:#1e8449}
 .red{background:#c0392b}
-#settings{
-  display:none;
-  padding:14px;
-}
-.section{
-  background:#fff;
-  padding:12px;
-  border-radius:12px;
-  margin-bottom:12px;
-}
-input,select{
-  width:100%;
-  padding:10px;
-  margin-bottom:10px;
-}
+#settings{display:none;padding:14px}
+.section{background:#fff;padding:12px;border-radius:12px;margin-bottom:12px}
+input{width:100%;padding:10px;margin-bottom:10px}
 </style>
 </head>
 
 <body>
 
-<header>Devinity</header>
+<header>Divinity</header>
 
 <div class="topbar">
-  <button class="icon" onclick="showChat()">💬</button>
-  <button class="icon" onclick="showSettings()">⚙️</button>
+  <button class="icon" onclick="toggleSettings()">⚙️</button>
 </div>
 
 <div id="avatarWrap">
-  <video id="avatarVideo"
-         autoplay
-         playsinline
-         muted></video>
+  <video id="avatarVideo" playsinline muted preload="auto"></video>
 </div>
 
 <div id="chat">
@@ -108,37 +48,42 @@ input,select{
 
 <div id="settings">
   <div class="section">
-    <h4>AI Settings</h4>
-    <input id="apiKey" placeholder="Gemini / Groq API Key">
-    <select id="model">
-      <option value="gemini">Gemini 2.5 Flash</option>
-      <option value="groq">Groq 70B</option>
-    </select>
-  </div>
-
-  <div class="section">
-    <h4>DeepSeek Avatar</h4>
-    <input id="deepseekKey" placeholder="DeepSeek API Key">
-  </div>
-
-  <div class="section">
     <h4>Contacts</h4>
     <input id="cName" placeholder="Name">
     <input id="cNum" placeholder="Number">
     <button class="btn green" onclick="saveContact()">Save</button>
   </div>
+
+  <div class="section">
+    <h4>Diary</h4>
+    <input id="dText" placeholder="નોંધ લખો">
+    <button class="btn green" onclick="saveDiaryManual()">Save</button>
+  </div>
 </div>
 
 <script>
+/* ---------- Avatar ---------- */
+const avatar=document.getElementById("avatarVideo");
+const videos={
+  silent:"videos/silent.mp4",
+  thinking:"videos/thinking.mp4",
+  talking:"videos/talking.mp4",
+  smiling:"videos/smiling.mp4"
+};
+function setAvatar(state){
+  avatar.pause();
+  avatar.src=videos[state];
+  avatar.load();
+  avatar.play().catch(()=>{});
+}
+setAvatar("silent");
+
 /* ---------- UI ---------- */
-const chatBox = document.getElementById("chatBox");
-const chat = document.getElementById("chat");
-const settings = document.getElementById("settings");
-const avatarVideo = document.getElementById("avatarVideo");
-
-function showChat(){settings.style.display="none";chat.style.display="block";}
-function showSettings(){chat.style.display="none";settings.style.display="block";}
-
+const chatBox=document.getElementById("chatBox");
+const settings=document.getElementById("settings");
+function toggleSettings(){
+  settings.style.display=settings.style.display==="block"?"none":"block";
+}
 function msg(t,c){
   const d=document.createElement("div");
   d.className="msg "+c;
@@ -149,11 +94,13 @@ function msg(t,c){
 
 /* ---------- Storage ---------- */
 let db;
-const open=indexedDB.open("DevinityDB",1);
+const open=indexedDB.open("DivinityDB",1);
 open.onupgradeneeded=e=>{
   db=e.target.result;
-  db.createObjectStore("contacts",{keyPath:"name"});
-  db.createObjectStore("diary",{keyPath:"time"});
+  if(!db.objectStoreNames.contains("contacts"))
+    db.createObjectStore("contacts",{keyPath:"name"});
+  if(!db.objectStoreNames.contains("diary"))
+    db.createObjectStore("diary",{keyPath:"time"});
 };
 open.onsuccess=e=>db=e.target.result;
 
@@ -162,17 +109,18 @@ let recog;
 if("webkitSpeechRecognition"in window){
   recog=new webkitSpeechRecognition();
   recog.lang="gu-IN";
+  recog.onstart=()=>setAvatar("thinking");
   recog.onresult=e=>{
     const text=e.results[0][0].transcript;
     msg(text,"user");
     handleCommand(text);
-  }
+  };
+  recog.onend=()=>setAvatar("silent");
 }
+function startListening(){recog&&recog.start();}
+function stopListening(){recog&&recog.stop();}
 
-function startListening(){recog && recog.start();}
-function stopListening(){recog && recog.stop();}
-
-/* ---------- Command Router ---------- */
+/* ---------- Commands ---------- */
 function handleCommand(text){
   if(text.includes("નોંધ")){
     saveDiary(text.replace("નોંધ","").trim());
@@ -182,61 +130,24 @@ function handleCommand(text){
     makeCall(text);
     return;
   }
-  askAI(text);
+  reply(text);
 }
 
-/* ---------- AI ---------- */
-async function askAI(text){
-  const key=apiKey.value.trim();
-  if(!key){msg("API key સેટ કરો","bot");return;}
-
-  let reply="";
-
-  if(model.value==="gemini"){
-    const r=await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
-      {method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        contents:[{parts:[{text:
-          "You are Devinity, female Gujarati assistant. Gujarati only. No symbols. "+text
-        }]}]
-      })}
-    );
-    const j=await r.json();
-    reply=j.candidates?.[0]?.content?.parts?.[0]?.text;
-  }
-
-  msg(reply,"bot");
-  speak(reply);
-  playDeepSeek(reply);
+/* ---------- Bot Reply ---------- */
+function reply(text){
+  const response="હું સાંભળી રહી છું. હાલ આ demo mode છે.";
+  msg(response,"bot");
+  setAvatar("talking");
+  speak(response);
 }
 
 /* ---------- Speech ---------- */
 function speak(t){
+  speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(t);
   u.lang="gu-IN";
+  u.onend=()=>setAvatar("smiling");
   speechSynthesis.speak(u);
-}
-
-/* ---------- DeepSeek Avatar ---------- */
-async function playDeepSeek(text){
-  const key=deepseekKey.value.trim();
-  if(!key)return;
-
-  const r=await fetch("https://api.deepseek.com/avatar",{
-    method:"POST",
-    headers:{
-      "Authorization":"Bearer "+key,
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-      text,
-      language:"gu",
-      gender:"female"
-    })
-  });
-  const j=await r.json();
-  avatarVideo.src=j.video_url;
 }
 
 /* ---------- Diary ---------- */
@@ -245,9 +156,15 @@ function saveDiary(t){
   tx.objectStore("diary").put({time:new Date().toISOString(),text:t});
   msg("નોંધ સાચવી લીધી છે","bot");
 }
+function saveDiaryManual(){
+  if(!dText.value)return;
+  saveDiary(dText.value);
+  dText.value="";
+}
 
 /* ---------- Contacts ---------- */
 function saveContact(){
+  if(!cName.value||!cNum.value)return;
   const tx=db.transaction("contacts","readwrite");
   tx.objectStore("contacts").put({
     name:cName.value.trim(),
@@ -255,18 +172,17 @@ function saveContact(){
   });
   alert("Contact saved");
 }
-
 function makeCall(text){
   const name=text.split("call")[1]?.trim();
+  if(!name)return;
   const tx=db.transaction("contacts","readonly");
   const req=tx.objectStore("contacts").get(name);
   req.onsuccess=e=>{
-    if(e.target.result){
-      const a=document.createElement("a");
-      a.href="tel:"+e.target.result.number;
-      a.click();
-    }else msg("સંપર્ક મળ્યો નથી","bot");
-  }
+    if(e.target.result)
+      location.href="tel:"+e.target.result.number;
+    else
+      msg("સંપર્ક મળ્યો નથી","bot");
+  };
 }
 </script>
 </body>
