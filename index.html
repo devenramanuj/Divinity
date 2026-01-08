@@ -1,221 +1,146 @@
 <!DOCTYPE html>
-<html lang="gu">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Divinity App</title>
-
+<title>Smart Lens - Groq/Gemini Tabs</title>
 <style>
-body{
-  margin:0;
-  font-family:system-ui,sans-serif;
-  background:#0f0f0f;
-  color:#fff;
-}
-header{
-  background:#1c1c1c;
-  padding:12px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-}
-nav{
-  display:flex;
-  background:#222;
-}
-nav button{
-  flex:1;
-  padding:12px;
-  background:none;
-  border:none;
-  color:#aaa;
-  font-size:15px;
-}
-nav button.active{
-  color:#4CAF50;
-  border-bottom:2px solid #4CAF50;
-}
-section{
-  display:none;
-  padding:12px;
-}
-section.active{display:block;}
-
-textarea,input{
-  width:100%;
-  margin:6px 0;
-  padding:10px;
-  font-size:16px;
-  border-radius:6px;
-  border:none;
-}
-button.action{
-  width:100%;
-  padding:10px;
-  margin-top:6px;
-  background:#4CAF50;
-  color:#fff;
-  border:none;
-  border-radius:6px;
-  font-size:16px;
-}
-
-.card{
-  background:#1e1e1e;
-  padding:10px;
-  margin:6px 0;
-  border-radius:8px;
-}
-
-video{
-  width:100%;
-  border-radius:12px;
-  background:#000;
-}
-.badge{
-  display:inline-block;
-  padding:4px 8px;
-  background:#4CAF50;
-  color:#000;
-  border-radius:6px;
-  font-size:12px;
-  margin-bottom:6px;
-}
+    body { font-family: sans-serif; margin: 20px; background: #f7f7f7; }
+    textarea, button, select { width: 100%; margin: 5px 0; padding: 10px; font-size: 16px; }
+    .tabs { display: flex; gap: 10px; margin: 10px 0; }
+    .tab { padding: 10px 15px; border-radius: 5px; background: #ddd; cursor: pointer; }
+    .tab.active { background: #4CAF50; color: #fff; }
+    .category-section { 
+        display: none; 
+        background: #fff; padding: 15px; margin: 10px 0; 
+        border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+    }
+    .category-section h3 { margin: 0 0 10px 0; color: #333; }
+    .category-section p { margin: 0; white-space: pre-wrap; }
 </style>
 </head>
-
 <body>
 
-<header>Divinity</header>
+<h2>Smart Lens - Groq / Gemini 2.5 Flash (Tabbed)</h2>
 
-<nav>
-  <button class="active" onclick="showTab('avatar',this)">Avatar</button>
-  <button onclick="showTab('diary',this)">Diary</button>
-  <button onclick="showTab('contacts',this)">Phone Book</button>
-  <button onclick="showTab('lens',this)">Smart Lens</button>
-</nav>
+<select id="modelSelect">
+  <option value="groq-70b">Groq 70B</option>
+  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+</select>
 
-<!-- AVATAR -->
-<section id="avatar" class="active">
-  <h3>Divinity Avatar</h3>
-  <video controls loop>
-    <source src="smiling.mp4" type="video/mp4">
-  </video>
-  <p style="color:#888;font-size:13px">
-    MP4 file local / assets / GitHub raw link
-  </p>
-</section>
+<textarea id="userInput" placeholder="Enter multiple lines, one per question..." rows="6"></textarea>
+<button onclick="processInputs()">Submit</button>
 
-<!-- DIARY -->
-<section id="diary">
-  <h3>Diary</h3>
-  <textarea id="diaryInput" placeholder="આજનું લખો..."></textarea>
-  <button class="action" onclick="saveDiary()">Save</button>
-  <div id="diaryList"></div>
-</section>
-
-<!-- CONTACTS -->
-<section id="contacts">
-  <h3>Phone Book</h3>
-  <input id="cName" placeholder="Name">
-  <input id="cNum" placeholder="Number">
-  <button class="action" onclick="addContact()">Add Contact</button>
-  <div id="contactList"></div>
-</section>
-
-<!-- SMART LENS -->
-<section id="lens">
-  <h3>Smart Lens</h3>
-  <textarea id="lensInput" placeholder="Text / Maths / Inscription અહીં paste કરો..."></textarea>
-  <button class="action" onclick="analyzeLens()">Analyze</button>
-  <div id="lensResult"></div>
-</section>
+<div class="tabs" id="tabsContainer"></div>
+<div id="output"></div>
 
 <script>
-/* ---------- TAB ---------- */
-function showTab(id,btn){
-  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  btn.classList.add("active");
+const API_KEY = "YOUR_API_KEY"; // Replace with your Grow API Key
+const API_URL = "https://api.grow.com/v1/responses";
+
+// Detect category
+function detectCategory(inputText) {
+    if (/[\u0A80-\u0AFF]/.test(inputText)) return "શિલાલેખ ભાષાંતર";
+    if (/\d/.test(inputText)) return "Maths";
+    if (/physics|chemistry|biology/i.test(inputText)) return "Science";
+    if (/history|ancient|medieval/i.test(inputText)) return "History";
+    if (/grammar|language/i.test(inputText)) return "Language / Grammar";
+    return "General";
 }
 
-/* ---------- DIARY ---------- */
-let diary = JSON.parse(localStorage.getItem("divinity_diary")||"[]");
+// Prompts per category
+const promptMap = {
+    "શિલાલેખ ભાષાંતર": "Translate this inscription text to modern Gujarati: ",
+    "Maths": "Solve the following math problem step by step: ",
+    "Science": "Explain scientifically: ",
+    "History": "Provide historical context for: ",
+    "Language / Grammar": "Check grammar, explain, and correct: ",
+    "General": "Answer this: "
+};
 
-function saveDiary(){
-  const t=diaryInput.value.trim();
-  if(!t) return;
-  diary.unshift({t,time:new Date().toLocaleString()});
-  localStorage.setItem("divinity_diary",JSON.stringify(diary));
-  diaryInput.value="";
-  renderDiary();
+// Call selected model API
+async function callSelectedModel(userInput) {
+    const selectedModel = document.getElementById("modelSelect").value;
+    const category = detectCategory(userInput);
+    const prompt = promptMap[category] + userInput;
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+                model: selectedModel,
+                prompt: prompt,
+                max_output_tokens: 512,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`API Error: ${errText}`);
+        }
+
+        const data = await response.json();
+        return { category, response: data.output?.[0]?.content || "No response from model" };
+
+    } catch (err) {
+        console.error("API Error:", err);
+        return { category, response: "Error: Unable to get response" };
+    }
 }
-function renderDiary(){
-  diaryList.innerHTML="";
-  diary.forEach(d=>{
-    diaryList.innerHTML+=`
-    <div class="card">
-      <div style="font-size:12px;color:#888">${d.time}</div>
-      ${d.t}
-    </div>`;
-  });
+
+// Process multiple lines in parallel
+async function processInputs() {
+    const rawInput = document.getElementById("userInput").value.trim();
+    if (!rawInput) return alert("Please enter at least one input.");
+
+    const lines = rawInput.split("\n").filter(l => l.trim() !== "");
+    const outputDiv = document.getElementById("output");
+    const tabsContainer = document.getElementById("tabsContainer");
+    outputDiv.innerHTML = "";
+    tabsContainer.innerHTML = "";
+
+    // Parallel API calls
+    const promises = lines.map(line => callSelectedModel(line));
+    const results = await Promise.all(promises);
+
+    // Group results by category
+    const categoryMap = {};
+    results.forEach(res => {
+        if (!categoryMap[res.category]) categoryMap[res.category] = [];
+        categoryMap[res.category].push(res.response);
+    });
+
+    // Create tabs
+    Object.keys(categoryMap).forEach((category, index) => {
+        // Tab button
+        const tab = document.createElement("div");
+        tab.className = "tab" + (index === 0 ? " active" : "");
+        tab.textContent = category;
+        tab.onclick = () => showCategory(category);
+        tabsContainer.appendChild(tab);
+
+        // Category section
+        const section = document.createElement("div");
+        section.className = "category-section";
+        section.id = "section-" + category;
+        if (index === 0) section.style.display = "block"; // show first by default
+        section.innerHTML = `<h3>${category}</h3>` + categoryMap[category].map(r => `<p>${r}</p>`).join("");
+        outputDiv.appendChild(section);
+    });
 }
-renderDiary();
 
-/* ---------- CONTACTS ---------- */
-let contacts = JSON.parse(localStorage.getItem("divinity_contacts")||"[]");
+// Show selected category section
+function showCategory(category) {
+    document.querySelectorAll(".category-section").forEach(sec => sec.style.display = "none");
+    document.getElementById("section-" + category).style.display = "block";
 
-function addContact(){
-  const n=cName.value.trim();
-  const p=cNum.value.trim();
-  if(!n||!p) return;
-  contacts.push({n,p});
-  localStorage.setItem("divinity_contacts",JSON.stringify(contacts));
-  cName.value="";cNum.value="";
-  renderContacts();
-}
-function renderContacts(){
-  contactList.innerHTML="";
-  contacts.forEach(c=>{
-    contactList.innerHTML+=`
-    <div class="card"><b>${c.n}</b><br>${c.p}</div>`;
-  });
-}
-renderContacts();
-
-/* ---------- SMART LENS ---------- */
-function analyzeLens(){
-  const text = lensInput.value.trim();
-  if(!text) return;
-
-  let type="General";
-  let note="";
-
-  if(/[\u0A80-\u0AFF]/.test(text)){
-    type="શિલાલેખ / પ્રાચીન ભાષા";
-    note="Gujarati / ancient script detected";
-  }
-  else if(/\d+[\+\-\*\/]\d+/.test(text)){
-    type="Maths";
-    note="Mathematical expression detected";
-  }
-  else if(/area|perimeter|speed|time|distance/i.test(text)){
-    type="Maths (Word Problem)";
-    note="Math keywords detected";
-  }
-  else if(/history|ancient|king|year/i.test(text)){
-    type="History";
-    note="Historical context detected";
-  }
-
-  lensResult.innerHTML=`
-    <div class="card">
-      <div class="badge">${type}</div>
-      <div style="color:#aaa;font-size:14px">${note}</div>
-      <hr style="border-color:#333">
-      <div>${text}</div>
-    </div>`;
+    document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+    Array.from(document.querySelectorAll(".tab")).find(t => t.textContent === category)?.classList.add("active");
 }
 </script>
 
