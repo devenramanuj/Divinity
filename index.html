@@ -4,91 +4,218 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Divinity App</title>
+
 <style>
-body{margin:0;font-family:system-ui;background:#0f0f0f;color:#fff}
-header{padding:12px;text-align:center;background:#1c1c1c;font-size:20px}
-select,textarea,button{width:100%;margin:6px 0;padding:10px;font-size:16px;border-radius:6px;border:none}
-button{background:#4CAF50;color:#000;font-weight:bold}
-.card{background:#1e1e1e;padding:10px;border-radius:8px;margin-top:10px}
-.badge{background:#4CAF50;color:#000;padding:4px 8px;border-radius:6px;font-size:12px}
+body{
+  margin:0;
+  font-family:system-ui,sans-serif;
+  background:#0f0f0f;
+  color:#fff;
+}
+header{
+  background:#1c1c1c;
+  padding:12px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
+nav{
+  display:flex;
+  background:#222;
+}
+nav button{
+  flex:1;
+  padding:12px;
+  background:none;
+  border:none;
+  color:#aaa;
+  font-size:15px;
+}
+nav button.active{
+  color:#4CAF50;
+  border-bottom:2px solid #4CAF50;
+}
+section{
+  display:none;
+  padding:12px;
+}
+section.active{display:block;}
+
+textarea,input{
+  width:100%;
+  margin:6px 0;
+  padding:10px;
+  font-size:16px;
+  border-radius:6px;
+  border:none;
+}
+button.action{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  background:#4CAF50;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  font-size:16px;
+}
+
+.card{
+  background:#1e1e1e;
+  padding:10px;
+  margin:6px 0;
+  border-radius:8px;
+}
+
+video{
+  width:100%;
+  border-radius:12px;
+  background:#000;
+}
+.badge{
+  display:inline-block;
+  padding:4px 8px;
+  background:#4CAF50;
+  color:#000;
+  border-radius:6px;
+  font-size:12px;
+  margin-bottom:6px;
+}
 </style>
 </head>
 
 <body>
 
-<header>Divinity – Smart Lens + AI</header>
+<header>Divinity</header>
 
-<select id="model">
-  <option value="groq">Groq 70B</option>
-  <option value="gemini">Gemini 2.5 Flash</option>
-</select>
+<nav>
+  <button class="active" onclick="showTab('avatar',this)">Avatar</button>
+  <button onclick="showTab('diary',this)">Diary</button>
+  <button onclick="showTab('contacts',this)">Phone Book</button>
+  <button onclick="showTab('lens',this)">Smart Lens</button>
+</nav>
 
-<textarea id="input" placeholder="Smart Lens text / question..."></textarea>
-<button onclick="askAI()">Analyze</button>
+<!-- AVATAR -->
+<section id="avatar" class="active">
+  <h3>Divinity Avatar</h3>
+  <video controls loop>
+    <source src="smiling.mp4" type="video/mp4">
+  </video>
+  <p style="color:#888;font-size:13px">
+    MP4 file local / assets / GitHub raw link
+  </p>
+</section>
 
-<div id="output"></div>
+<!-- DIARY -->
+<section id="diary">
+  <h3>Diary</h3>
+  <textarea id="diaryInput" placeholder="આજનું લખો..."></textarea>
+  <button class="action" onclick="saveDiary()">Save</button>
+  <div id="diaryList"></div>
+</section>
+
+<!-- CONTACTS -->
+<section id="contacts">
+  <h3>Phone Book</h3>
+  <input id="cName" placeholder="Name">
+  <input id="cNum" placeholder="Number">
+  <button class="action" onclick="addContact()">Add Contact</button>
+  <div id="contactList"></div>
+</section>
+
+<!-- SMART LENS -->
+<section id="lens">
+  <h3>Smart Lens</h3>
+  <textarea id="lensInput" placeholder="Text / Maths / Inscription અહીં paste કરો..."></textarea>
+  <button class="action" onclick="analyzeLens()">Analyze</button>
+  <div id="lensResult"></div>
+</section>
 
 <script>
-/* ================== API SETTINGS ================== */
-const CONFIG = {
-  GROW_API_KEY: "PASTE_YOUR_GROW_API_KEY_HERE",
-  ENDPOINT: "https://api.grow.com/v1/responses",
-  MODELS: {
-    groq: "groq-70b",
-    gemini: "gemini-2.5-flash"
-  }
-};
-/* ================================================== */
-
-/* ---------- SMART LENS ---------- */
-function detectCategory(text){
-  if(/[\u0A80-\u0AFF]/.test(text)) return "શિલાલેખ / Gujarati";
-  if(/\d+[\+\-\*\/]\d+/.test(text)) return "Maths";
-  if(/history|ancient|king/i.test(text)) return "History";
-  return "General";
+/* ---------- TAB ---------- */
+function showTab(id,btn){
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  btn.classList.add("active");
 }
 
-/* ---------- AI CALL ---------- */
-async function askAI(){
-  const q = input.value.trim();
-  if(!q) return;
+/* ---------- DIARY ---------- */
+let diary = JSON.parse(localStorage.getItem("divinity_diary")||"[]");
 
-  const cat = detectCategory(q);
-  const modelKey = model.value;
-  const modelName = CONFIG.MODELS[modelKey];
+function saveDiary(){
+  const t=diaryInput.value.trim();
+  if(!t) return;
+  diary.unshift({t,time:new Date().toLocaleString()});
+  localStorage.setItem("divinity_diary",JSON.stringify(diary));
+  diaryInput.value="";
+  renderDiary();
+}
+function renderDiary(){
+  diaryList.innerHTML="";
+  diary.forEach(d=>{
+    diaryList.innerHTML+=`
+    <div class="card">
+      <div style="font-size:12px;color:#888">${d.time}</div>
+      ${d.t}
+    </div>`;
+  });
+}
+renderDiary();
 
-  output.innerHTML = "Thinking…";
+/* ---------- CONTACTS ---------- */
+let contacts = JSON.parse(localStorage.getItem("divinity_contacts")||"[]");
 
-  try{
-    const res = await fetch(CONFIG.ENDPOINT,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "Authorization":"Bearer "+CONFIG.GROW_API_KEY
-      },
-      body:JSON.stringify({
-        model: modelName,
-        prompt: q,
-        max_output_tokens: 512,
-        temperature: 0.6
-      })
-    });
+function addContact(){
+  const n=cName.value.trim();
+  const p=cNum.value.trim();
+  if(!n||!p) return;
+  contacts.push({n,p});
+  localStorage.setItem("divinity_contacts",JSON.stringify(contacts));
+  cName.value="";cNum.value="";
+  renderContacts();
+}
+function renderContacts(){
+  contactList.innerHTML="";
+  contacts.forEach(c=>{
+    contactList.innerHTML+=`
+    <div class="card"><b>${c.n}</b><br>${c.p}</div>`;
+  });
+}
+renderContacts();
 
-    if(!res.ok) throw new Error("API error");
+/* ---------- SMART LENS ---------- */
+function analyzeLens(){
+  const text = lensInput.value.trim();
+  if(!text) return;
 
-    const data = await res.json();
-    const reply = data.output?.[0]?.content || "No response";
+  let type="General";
+  let note="";
 
-    output.innerHTML = `
-      <div class="card">
-        <div class="badge">${cat}</div>
-        <p>${reply}</p>
-      </div>
-    `;
-
-  }catch(e){
-    output.innerHTML = `<div class="card">Response મળ્યો નથી</div>`;
+  if(/[\u0A80-\u0AFF]/.test(text)){
+    type="શિલાલેખ / પ્રાચીન ભાષા";
+    note="Gujarati / ancient script detected";
   }
+  else if(/\d+[\+\-\*\/]\d+/.test(text)){
+    type="Maths";
+    note="Mathematical expression detected";
+  }
+  else if(/area|perimeter|speed|time|distance/i.test(text)){
+    type="Maths (Word Problem)";
+    note="Math keywords detected";
+  }
+  else if(/history|ancient|king|year/i.test(text)){
+    type="History";
+    note="Historical context detected";
+  }
+
+  lensResult.innerHTML=`
+    <div class="card">
+      <div class="badge">${type}</div>
+      <div style="color:#aaa;font-size:14px">${note}</div>
+      <hr style="border-color:#333">
+      <div>${text}</div>
+    </div>`;
 }
 </script>
 
