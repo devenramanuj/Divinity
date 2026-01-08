@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Devinity Pro Fixed</title>
+<title>Devinity Pro Persistent</title>
 <style>
 body{margin:0;font-family:system-ui;background:#f4f6f8;}
 header{background:#2c3e90;color:#fff;padding:12px;text-align:center;font-size:18px;}
@@ -31,7 +31,7 @@ input,select,textarea{width:100%;padding:8px;margin-bottom:10px;border:1px solid
 </head>
 <body>
 
-<header>Devinity Pro Fixed</header>
+<header>Devinity Pro Persistent</header>
 
 <div class="topbar">
   <button class="icon-btn" onclick="showChat()">💬</button>
@@ -96,14 +96,26 @@ const cameraStream=document.getElementById("cameraStream");
 const lensResult=document.getElementById("lensResult");
 let cameraStreamObj=null;
 
+// ---------- IndexedDB Setup ----------
+let db;
+const request = indexedDB.open("DevinityDB",1);
+request.onupgradeneeded = e=>{
+  db=e.target.result;
+  if(!db.objectStoreNames.contains("diary")) db.createObjectStore("diary",{keyPath:"time"});
+  if(!db.objectStoreNames.contains("contacts")) db.createObjectStore("contacts",{keyPath:"name"});
+  if(!db.objectStoreNames.contains("reports")) db.createObjectStore("reports",{keyPath:"id"});
+};
+request.onsuccess = e=>{db=e.target.result; console.log("DB ready");}
+
+// ---------- Settings ----------
 apiKey.value=localStorage.getItem("apiKey")||"";
 model.value=localStorage.getItem("model")||"gemini:gemini-2.5-flash";
 function saveSettings(){localStorage.setItem("apiKey",apiKey.value.trim());localStorage.setItem("model",model.value);alert("Saved");}
 
+// ---------- UI ----------
 function showSettings(){chat.style.display="none";settings.style.display="block";}
 function showChat(){settings.style.display="none";chat.style.display="block";}
 function addMsg(t,c){const d=document.createElement("div");d.className="msg "+c;d.innerText=t;chatBox.appendChild(d);chatBox.scrollTop=chatBox.scrollHeight;}
-
 function switchVideoSmooth(state){
   const srcMap={smiling:"mp4/smiling.mp4",thinking:"mp4/thinking.mp4",talking:"mp4/talking.mp4",silent:"mp4/silent.mp4"};
   const nextVid=avatarVideos[1-currentAvatar];
@@ -112,6 +124,7 @@ function switchVideoSmooth(state){
   setTimeout(()=>{avatarVideos[currentAvatar].pause(); currentAvatar=1-currentAvatar;},600);
 }
 
+// ---------- Speech Recognition ----------
 if("webkitSpeechRecognition"in window){
   recognition=new webkitSpeechRecognition();
   recognition.lang="gu-IN"; recognition.continuous=false; recognition.interimResults=false;
@@ -132,6 +145,7 @@ function processCommand(text){
   askBot(text);
 }
 
+// ---------- Bot Request ----------
 async function askBot(text){
   const key=localStorage.getItem("apiKey"); if(!key){addMsg("API key સેટ નથી.","bot");return;}
   const [provider,modelName]=localStorage.getItem("model").split(":");
@@ -151,22 +165,18 @@ async function askBot(text){
 
 function speak(t){const u=new SpeechSynthesisUtterance(t);u.lang="gu-IN";u.onstart=()=>switchVideoSmooth("talking"); u.onend=()=>switchVideoSmooth("smiling"); speechSynthesis.speak(u);}
 
-/* ---------------- SMART LENS FIXED ---------------- */
+// ---------- Smart Lens ----------
 async function analyzeImage(file){
   const reader=new FileReader();
   reader.onload = async () => {
-    const key = localStorage.getItem("apiKey");
-    if(!key){alert("API Key set કરો"); return;}
-    const img = new Image();
-    img.src = reader.result;
-    img.onload = async () => {
-      const canvas = document.createElement("canvas");
-      const maxSize=400;
+    const key = localStorage.getItem("apiKey"); if(!key){alert("API Key set કરો"); return;}
+    const img = new Image(); img.src=reader.result;
+    img.onload = async ()=>{
+      const canvas=document.createElement("canvas"); const maxSize=400;
       let w=img.width,h=img.height;
       if(w>h && w>maxSize){h=h*maxSize/w; w=maxSize;} else if(h>w && h>maxSize){w=w*maxSize/h; h=maxSize;}
-      canvas.width=w; canvas.height=h;
-      canvas.getContext("2d").drawImage(img,0,0,w,h);
-      const smallBase64 = canvas.toDataURL("image/jpeg").split(",")[1];
+      canvas.width=w; canvas.height=h; canvas.getContext("2d").drawImage(img,0,0,w,h);
+      const smallBase64=canvas.toDataURL("image/jpeg").split(",")[1];
       lensResult.value="Processing...";
       try{
         const prompt="આ ફોટો વિષે વિગતવાર ગુજરાતી રિપોર્ટ આપો. જો પ્રાચીન શિલાલેખ / લિપિ હોય તો વિશ્લેષણ પણ આપો: "+smallBase64;
@@ -174,82 +184,83 @@ async function analyzeImage(file){
           method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
         });
         const j=await r.json();
-        lensResult.value = j.candidates?.[0]?.content?.parts?.[0]?.text || "જવાબ મળ્યો નથી";
+        const report = j.candidates?.[0]?.content?.parts?.[0]?.text || "જવાબ મળ્યો નથી";
+        lensResult.value = report;
+        saveReportIndexedDB(report);
       }catch(e){console.error(e); lensResult.value="Error processing image";}
     }
   };
   reader.readAsDataURL(file);
 }
 
-async function startCamera(){
-  try{
-    const constraints={video:{facingMode:{exact:"environment"}}};
-    cameraStreamObj=await navigator.mediaDevices.getUserMedia(constraints);
-    cameraStream.srcObject=cameraStreamObj;
-    cameraStream.style.display="block"; await cameraStream.play();
-  }catch(e){
-    try{cameraStreamObj=await navigator.mediaDevices.getUserMedia({video:true});
-      cameraStream.srcObject=cameraStreamObj; cameraStream.style.display="block"; await cameraStream.play();
-    }catch(err){alert("Camera access denied/unsupported"); console.error(err);}
-  }
-}
+async function startCamera(){try{
+  const constraints={video:{facingMode:{exact:"environment"}}};
+  cameraStreamObj=await navigator.mediaDevices.getUserMedia(constraints);
+  cameraStream.srcObject=cameraStreamObj; cameraStream.style.display="block"; await cameraStream.play();
+}catch(e){try{cameraStreamObj=await navigator.mediaDevices.getUserMedia({video:true});
+  cameraStream.srcObject=cameraStreamObj; cameraStream.style.display="block"; await cameraStream.play();
+}catch(err){alert("Camera access denied/unsupported"); console.error(err);}}}
 
 function capturePhoto(){
   if(!cameraStreamObj){alert("Camera not started"); return;}
-  const c=document.createElement("canvas");
-  c.width=cameraStream.videoWidth; c.height=cameraStream.videoHeight;
+  const c=document.createElement("canvas"); c.width=cameraStream.videoWidth; c.height=cameraStream.videoHeight;
   c.getContext("2d").drawImage(cameraStream,0,0,c.width,c.height);
   lensResult.value="Processing...";
   analyzeImage({name:"captured.jpg", dataURL:c.toDataURL("image/jpeg")});
 }
 
-function saveReport(){
-  const pdfContent=`Devinity Report\n\n${lensResult.value}\n\nDiary Entries:\n${JSON.stringify(JSON.parse(localStorage.getItem("diary")||"[]"),null,2)}`;
+function saveReport(){ // manual save as PDF
+  const pdfContent=`Devinity Report\n\n${lensResult.value}\n\nDiary Entries:\n${JSON.stringify([],null,2)}`;
   const blob=new Blob([pdfContent],{type:"application/pdf"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Devinity_Report.pdf"; a.click();
 }
 
-/* ---------------- CONTACTS ---------------- */
+function saveReportIndexedDB(report){
+  const tx = db.transaction("reports","readwrite"); const store=tx.objectStore("reports");
+  store.put({id:new Date().toISOString(), text:report});
+}
+
+// ---------- Contacts ----------
 function addContact(){
   const name=document.getElementById("cName").value.trim();
   const number=document.getElementById("cNum").value.trim();
   if(!name||!number){alert("Name અને Number ભરવું જરૂરી છે"); return;}
-  const contacts=JSON.parse(localStorage.getItem("contacts")||"[]");
-  if(contacts.some(c=>c.name===name)){alert("આ નામ પહેલેથી save છે"); return;}
-  contacts.push({name,number});
-  localStorage.setItem("contacts",JSON.stringify(contacts));
-  alert("Contact saved"); document.getElementById("cName").value=""; document.getElementById("cNum").value="";
+  const tx=db.transaction("contacts","readwrite"); const store=tx.objectStore("contacts");
+  store.put({name,number}); alert("Contact saved persistently"); document.getElementById("cName").value=""; document.getElementById("cNum").value="";
 }
 
-// Fixed Call with mobile dialer trigger
 function handleCall(text){
   const name = text.split("call")[1]?.trim();
-  const contacts = JSON.parse(localStorage.getItem("contacts")||"[]");
-  const contact = contacts.find(c => c.name===name);
-  if(contact){
-    addMsg(name+" ને કોલ કરી રહી છું","bot");
-    const a = document.createElement("a");
-    a.href = "tel:" + contact.number;
-    a.style.display="none";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  } else addMsg("આ નામનો સંપર્ક મળ્યો નથી","bot");
+  const tx=db.transaction("contacts","readonly"); const store=tx.objectStore("contacts");
+  const req = store.get(name);
+  req.onsuccess = e => {
+    const contact = e.target.result;
+    if(contact){
+      addMsg(name+" ને કોલ કરી રહી છું","bot");
+      const a = document.createElement("a");
+      a.href = "tel:" + contact.number;
+      a.style.display="none";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else addMsg("આ નામનો સંપર્ક મળ્યો નથી","bot");
+  }
 }
 
-/* ---------------- DIARY ---------------- */
+// ---------- Diary ----------
 function saveDiary(content){
   if(!content){addMsg("કૃપા કરીને નોંધ શું કરવી છે તે બોલો","bot"); return;}
-  const d=JSON.parse(localStorage.getItem("diary")||"[]");
-  d.push({time:new Date().toLocaleString(),text:content});
-  localStorage.setItem("diary",JSON.stringify(d));
-  addMsg("તમારી નોંધ સેવ કરી લીધી છે","bot");
+  const tx=db.transaction("diary","readwrite"); const store=tx.objectStore("diary");
+  const entry={time:new Date().toISOString(), text:content}; store.put(entry); addMsg("તમારી નોંધ સેવ કરી લીધી છે","bot");
 }
 
 function viewDiary(){
-  const d=JSON.parse(localStorage.getItem("diary")||"[]");
-  if(d.length===0){alert("કોઈ નોંધ ઉપલબ્ધ નથી"); return;}
-  alert(d.map(x=>x.time+" : "+x.text).join("\n\n"));
+  const tx=db.transaction("diary","readonly"); const store=tx.objectStore("diary");
+  const req = store.getAll(); req.onsuccess=e=>{
+    const entries=e.target.result;
+    if(entries.length===0){alert("કોઈ નોંધ ઉપલબ્ધ નથી"); return;}
+    alert(entries.map(x=>x.time+" : "+x.text).join("\n\n"));
+  };
 }
 </script>
 </body>
