@@ -65,7 +65,7 @@ input,select,textarea{width:100%;padding:8px;margin-bottom:10px;border:1px solid
 <div class="section">
 <h4>Smart Lens</h4>
 <input type="file" accept="image/*" onchange="analyzeImage(this.files[0])">
-<button class="btn blue" onclick="startCamera()">📷 Camera</button>
+<button class="btn blue" onclick="startCamera()">📷 Back Camera</button>
 <button class="btn blue" onclick="capturePhoto()">Capture Photo</button>
 <textarea id="lensResult" placeholder="Report will appear here"></textarea>
 <button class="btn blue" onclick="saveReport()">Save PDF</button>
@@ -95,6 +95,7 @@ const model=document.getElementById("model");
 const avatarVideos=[document.getElementById("avatar1"),document.getElementById("avatar2")];
 const cameraStream=document.getElementById("cameraStream");
 const lensResult=document.getElementById("lensResult");
+let cameraStreamObj=null;
 
 /* ---------------- SETTINGS ---------------- */
 apiKey.value=localStorage.getItem("apiKey")||"";
@@ -129,8 +130,8 @@ function stopListening(){if(recognition&&isListening){recognition.stop();}}
 /* ---------------- COMMANDS ---------------- */
 function processCommand(text){
   switchVideoSmooth("thinking");
-  if(text.startsWith("નોંધ કર")||text.startsWith("નોંધ કરી")||text.startsWith("ડાયરી માં લખ")||text.startsWith("લખી લે")){
-    const content=text.replace("નોંધ કર","").replace("નોંધ કરી","").replace("ડાયરી માં લખ","").replace("લખી લે","").trim();
+  if(text.startsWith("નોંધ")||text.startsWith("ડાયરી")){
+    const content=text.replace(/નોંધ કર|નોંધ કરી|ડાયરી માં લખ|લખી લે/g,"").trim();
     saveDiary(content); return;
   }
   if(text.includes("call")){handleCall(text);return;}
@@ -143,9 +144,18 @@ async function askBot(text){
   const [provider,modelName]=localStorage.getItem("model").split(":");
   try{
     let reply="";
-    if(provider==="openai"){const r=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({model:modelName,messages:[{role:"system",content:"You are Devinity, Gujarati female assistant. Reply only in Gujarati. No symbols."},{role:"user",content:text}]})}); const j=await r.json(); reply=j.choices?.[0]?.message?.content;}
-    if(provider==="groq"){const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({model:modelName,messages:[{role:"system",content:"Reply only in Gujarati as a female assistant."},{role:"user",content:text}]})}); const j=await r.json(); reply=j.choices?.[0]?.message?.content;}
-    if(provider==="gemini"){const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"You are Devinity, Gujarati female assistant. Reply Gujarati only. "+text}]}]})}); const j=await r.json(); reply=j.candidates?.[0]?.content?.parts?.[0]?.text;}
+    if(provider==="openai"){
+      const r=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({model:modelName,messages:[{role:"system",content:"You are Devinity, Gujarati female assistant. Reply only in Gujarati. No symbols."},{role:"user",content:text}]})});
+      const j=await r.json(); reply=j.choices?.[0]?.message?.content;
+    }
+    if(provider==="groq"){
+      const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({model:modelName,messages:[{role:"system",content:"Reply only in Gujarati as a female assistant."},{role:"user",content:text}]})});
+      const j=await r.json(); reply=j.choices?.[0]?.message?.content;
+    }
+    if(provider==="gemini"){
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"You are Devinity, Gujarati female assistant. Reply Gujarati only. "+text}]}]})});
+      const j=await r.json(); reply=j.candidates?.[0]?.content?.parts?.[0]?.text;
+    }
     if(!reply){addMsg("જવાબ મળ્યો નથી.","bot");return;}
     addMsg(reply,"bot"); stopListening(); speak(reply);
   }catch(e){console.error(e);addMsg("API error થયો.","bot");}
@@ -155,25 +165,99 @@ async function askBot(text){
 function speak(t){const u=new SpeechSynthesisUtterance(t);u.lang="gu-IN";u.onstart=()=>switchVideoSmooth("talking"); u.onend=()=>switchVideoSmooth("smiling"); speechSynthesis.speak(u);}
 
 /* ---------------- SMART LENS ---------------- */
-async function analyzeImage(file){const reader=new FileReader(); reader.onload=async()=>{const key=localStorage.getItem("apiKey"); const img=reader.result.split(",")[1]; try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,{method:"POST",headers:{"Content-Type":"application/json"},body: JSON.stringify({contents:[{parts:[{text:"Analyze this image in Gujarati in detail"},{inlineData:{mimeType:"image/jpeg",data:img}}]}]})}); const j=await r.json(); lensResult.value=j.candidates?.[0]?.content?.parts?.[0]?.text||"જવાબ મળ્યો નથી";} catch(e){console.error(e); lensResult.value="Error in processing image";}}; reader.readAsDataURL(file);}
+async function analyzeImage(file){
+  const reader=new FileReader();
+  reader.onload=async ()=>{
+    const key=localStorage.getItem("apiKey");
+    if(!key){alert("API Key set કરો"); return;}
+    const base64 = reader.result.split(",")[1];
+    try{
+      const prompt = "આ ફોટો વિષે વિગતવાર ગુજરાતી રિપોર્ટ આપો: "+base64;
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+      });
+      const j = await r.json();
+      lensResult.value = j.candidates?.[0]?.content?.parts?.[0]?.text || "જવાબ મળ્યો નથી";
+    } catch(e){console.error(e); lensResult.value="Error processing image";}
+  };
+  reader.readAsDataURL(file);
+}
 
-async function startCamera(){try{cameraStream.style.display="block"; cameraStreamObj=await navigator.mediaDevices.getUserMedia({video:true}); cameraStream.srcObject=cameraStreamObj; cameraStream.play();} catch(e){alert("Camera access denied / unsupported"); console.error(e);}}
+async function startCamera(){
+  try{
+    const constraints = { video: { facingMode: { exact: "environment" } } };
+    cameraStreamObj = await navigator.mediaDevices.getUserMedia(constraints);
+    cameraStream.srcObject = cameraStreamObj;
+    cameraStream.style.display="block";
+    await cameraStream.play();
+  } catch(e){
+    // fallback
+    try{
+      cameraStreamObj = await navigator.mediaDevices.getUserMedia({video:true});
+      cameraStream.srcObject = cameraStreamObj;
+      cameraStream.style.display="block";
+      await cameraStream.play();
+    } catch(err){alert("Camera access denied / unsupported"); console.error(err);}
+  }
+}
 
-function capturePhoto(){if(!cameraStreamObj){alert("Camera not started"); return;} const c=document.createElement("canvas"); c.width=cameraStream.videoWidth; c.height=cameraStream.videoHeight; c.getContext("2d").drawImage(cameraStream,0,0,c.width,c.height); lensResult.value="Processing..."; analyzeImageDataURL(c.toDataURL("image/jpeg"));}
+function capturePhoto(){
+  if(!cameraStreamObj){alert("Camera not started"); return;}
+  const c=document.createElement("canvas");
+  c.width=cameraStream.videoWidth;
+  c.height=cameraStream.videoHeight;
+  c.getContext("2d").drawImage(cameraStream,0,0,c.width,c.height);
+  lensResult.value="Processing...";
+  analyzeImageDataURL(c.toDataURL("image/jpeg"));
+}
 
-async function analyzeImageDataURL(dataURL){const key=localStorage.getItem("apiKey"); if(!key){alert("API Key set કરો"); return;} const img=dataURL.split(",")[1]; try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,{method:"POST",headers:{"Content-Type":"application/json"},body: JSON.stringify({contents:[{parts:[{text:"Analyze this image in Gujarati in detail"},{inlineData:{mimeType:"image/jpeg",data:img}}]}]})}); const j=await r.json(); lensResult.value=j.candidates?.[0]?.content?.parts?.[0]?.text||"જવાબ મળ્યો નથી";} catch(e){console.error(e); lensResult.value="Error in processing image";}}
+async function analyzeImageDataURL(dataURL){analyzeImage({name:"captured.jpg", dataURL});}
 
 /* ---------------- SAVE PDF ---------------- */
-function saveReport(){const pdfContent=`Devinity Report\n\n${lensResult.value}\n\nDiary Entries:\n${JSON.stringify(JSON.parse(localStorage.getItem("diary")||"[]"),null,2)}`; const blob=new Blob([pdfContent],{type:"application/pdf"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Devinity_Report.pdf"; a.click();}
+function saveReport(){
+  const pdfContent=`Devinity Report\n\n${lensResult.value}\n\nDiary Entries:\n${JSON.stringify(JSON.parse(localStorage.getItem("diary")||"[]"),null,2)}`;
+  const blob=new Blob([pdfContent],{type:"application/pdf"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Devinity_Report.pdf"; a.click();
+}
 
 /* ---------------- CONTACTS ---------------- */
-function addContact(){const name=document.getElementById("cName").value.trim(); const number=document.getElementById("cNum").value.trim(); if(!name||!number){alert("Name અને Number ભરવું જરૂરી છે"); return;} const contacts=JSON.parse(localStorage.getItem("contacts")||"[]"); contacts.push({name,number}); localStorage.setItem("contacts",JSON.stringify(contacts)); alert("Contact saved"); document.getElementById("cName").value=""; document.getElementById("cNum").value="";}
+function addContact(){
+  const name=document.getElementById("cName").value.trim();
+  const number=document.getElementById("cNum").value.trim();
+  if(!name||!number){alert("Name અને Number ભરવું જરૂરી છે"); return;}
+  const contacts=JSON.parse(localStorage.getItem("contacts")||"[]");
+  if(contacts.some(c=>c.name===name)){alert("આ નામ પહેલેથી save છે"); return;}
+  contacts.push({name,number});
+  localStorage.setItem("contacts",JSON.stringify(contacts));
+  alert("Contact saved");
+  document.getElementById("cName").value="";
+  document.getElementById("cNum").value="";
+}
 
-function handleCall(text){const name=text.split("call")[1]?.trim(); const list=JSON.parse(localStorage.getItem("contacts")||"[]"); const c=list.find(x=>x.name===name); if(c){window.location.href="tel:"+c.number; addMsg(name+" ને કોલ કરી રહી છું","bot");}else addMsg("આ નામનો સંપર્ક મળ્યો નથી","bot");}
+function handleCall(text){
+  const name=text.split("call")[1]?.trim();
+  const contacts=JSON.parse(localStorage.getItem("contacts")||"[]");
+  const contact=contacts.find(c=>c.name===name);
+  if(contact){addMsg(name+" ને કોલ કરી રહી છું","bot"); window.location.href="tel:"+contact.number;}
+  else addMsg("આ નામનો સંપર્ક મળ્યો નથી","bot");
+}
 
 /* ---------------- DIARY ---------------- */
-function saveDiary(content){if(!content){addMsg("કૃપા કરીને નોંધ શું કરવી છે તે બોલો","bot"); return;} const d=JSON.parse(localStorage.getItem("diary")||"[]"); d.push({time:new Date().toLocaleString(), text:content}); localStorage.setItem("diary",JSON.stringify(d)); addMsg("તમારી નોંધ સેવ કરી લીધી છે","bot");}
-function viewDiary(){const d=JSON.parse(localStorage.getItem("diary")||"[]"); if(d.length===0){alert("કોઈ નોંધ ઉપલબ્ધ નથી"); return;} alert(d.map(x=>x.time+" : "+x.text).join("\n\n"));}
+function saveDiary(content){
+  if(!content){addMsg("કૃપા કરીને નોંધ શું કરવી છે તે બોલો","bot"); return;}
+  const d=JSON.parse(localStorage.getItem("diary")||"[]");
+  d.push({time:new Date().toLocaleString(),text:content});
+  localStorage.setItem("diary",JSON.stringify(d));
+  addMsg("તમારી નોંધ સેવ કરી લીધી છે","bot");
+}
+
+function viewDiary(){
+  const d=JSON.parse(localStorage.getItem("diary")||"[]");
+  if(d.length===0){alert("કોઈ નોંધ ઉપલબ્ધ નથી"); return;}
+  alert(d.map(x=>x.time+" : "+x.text).join("\n\n"));
+}
 </script>
 </body>
 </html>
