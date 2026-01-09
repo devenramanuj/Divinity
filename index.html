@@ -209,6 +209,46 @@
             display: block;
         }
         
+        /* CONTACT ITEMS STYLE */
+        .contact-item {
+            background: #0f172a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #334155;
+        }
+        
+        .contact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .contact-name {
+            color: #ec4899;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .contact-number {
+            color: #34d399;
+            font-size: 16px;
+        }
+        
+        .delete-contact {
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
         /* VANSHAVALI TAB */
         .vanshavali-container {
             background: #0f172a;
@@ -274,6 +314,16 @@
         textarea {
             resize: vertical;
             min-height: 100px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group input {
+            margin-bottom: 0;
         }
         
         .modal-button {
@@ -348,6 +398,11 @@
                 min-width: 90px;
                 padding: 10px;
                 font-size: 14px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                gap: 10px;
             }
         }
         
@@ -559,29 +614,41 @@
             
             <!-- CALL/WHATSAPP TAB -->
             <div id="callTab" class="tab-content">
-                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
-                    <i class="fas fa-phone"></i> કૉલ માટે નંબર
-                </label>
-                <input type="text" id="phoneNumber" placeholder="+91 1234567890">
+                <h3 style="color: #cbd5e1; margin-bottom: 15px; text-align: center;">
+                    <i class="fas fa-phone"></i> કૉલ કરવા માટે
+                </h3>
                 
-                <button class="modal-button" onclick="callNumber()" style="background: linear-gradient(135deg, #10b981, #059669);">
-                    <i class="fas fa-phone"></i> કૉલ કરો
+                <div class="input-group">
+                    <input type="text" id="callName" placeholder="નામ (જેમકે: પિતાજી)">
+                    <input type="text" id="callNumber" placeholder="નંબર (+91 1234567890)">
+                </div>
+                
+                <button class="modal-button" onclick="addContact('call')" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <i class="fas fa-plus"></i> કૉલ કોન્ટેક્ટ ઉમેરો
                 </button>
+                
+                <div id="callContacts" style="margin-top: 20px; max-height: 200px; overflow-y: auto;">
+                    <!-- Call contacts will appear here -->
+                </div>
                 
                 <div style="height: 20px;"></div>
                 
-                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
-                    <i class="fab fa-whatsapp"></i> WhatsApp નંબર
-                </label>
-                <input type="text" id="whatsappNumber" placeholder="+91 1234567890">
+                <h3 style="color: #cbd5e1; margin-bottom: 15px; text-align: center;">
+                    <i class="fab fa-whatsapp"></i> WhatsApp માટે
+                </h3>
                 
-                <button class="modal-button" onclick="openWhatsApp()" style="background: linear-gradient(135deg, #25D366, #128C7E);">
-                    <i class="fab fa-whatsapp"></i> WhatsApp ખોલો
+                <div class="input-group">
+                    <input type="text" id="whatsappName" placeholder="નામ (જેમકે: ભાઈ)">
+                    <input type="text" id="whatsappNumber" placeholder="નંબર (+91 1234567890)">
+                </div>
+                
+                <button class="modal-button" onclick="addContact('whatsapp')" style="background: linear-gradient(135deg, #25D366, #128C7E);">
+                    <i class="fas fa-plus"></i> WhatsApp કોન્ટેક્ટ ઉમેરો
                 </button>
                 
-                <button class="modal-button" onclick="saveSettings()" style="margin-top: 20px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-                    <i class="fas fa-save"></i> નંબર સંગ્રહો
-                </button>
+                <div id="whatsappContacts" style="margin-top: 20px; max-height: 200px; overflow-y: auto;">
+                    <!-- WhatsApp contacts will appear here -->
+                </div>
             </div>
             
             <!-- Close Button -->
@@ -611,6 +678,8 @@
         let currentVideo = 'smiling';
         let cameraStream = null;
         let currentTab = 'generalTab';
+        let callContacts = [];
+        let whatsappContacts = [];
         
         // Initialize App
         function initApp() {
@@ -621,6 +690,7 @@
             // Load data
             loadDiary();
             loadSettings();
+            loadContacts();
             
             // Welcome message
             setTimeout(() => {
@@ -748,44 +818,79 @@
             setVideo('silent');
         }
         
-        // Handle Voice Commands
+        // Handle Voice Commands - IMPROVED RESPONSES
         function handleVoiceCommand(text) {
             const lowerText = text.toLowerCase();
             
+            // Open settings
             if (lowerText.includes('સેટિંગ્સ') || lowerText.includes('ગોઠવણી')) {
                 openSettings();
                 speak("સેટિંગ્સ ખોલું છું");
                 return;
             }
             
+            // Call commands
             if (lowerText.includes('કૉલ') || lowerText.includes('ફોન')) {
-                callNumber();
+                if (callContacts.length > 0) {
+                    if (callContacts.length === 1) {
+                        speak(`${callContacts[0].name} ને કૉલ કરું છું`);
+                        window.location.href = `tel:${callContacts[0].number}`;
+                    } else {
+                        speak("કોને કૉલ કરવું છે? સેટિંગ્સમાં તમારા કૉલ કોન્ટેક્ટ છે");
+                        openSettings();
+                        setTimeout(() => switchTab('callTab'), 300);
+                    }
+                } else {
+                    speak("કૃપા કરીને સેટિંગ્સમાં કૉલ કોન્ટેક્ટ ઉમેરો");
+                    openSettings();
+                    setTimeout(() => switchTab('callTab'), 300);
+                }
                 return;
             }
             
+            // WhatsApp commands
             if (lowerText.includes('વોટ્સએપ') || lowerText.includes('મેસેજ')) {
-                openWhatsApp();
+                if (whatsappContacts.length > 0) {
+                    if (whatsappContacts.length === 1) {
+                        speak(`${whatsappContacts[0].name} ને WhatsApp ખોલું છું`);
+                        window.open(`https://wa.me/${whatsappContacts[0].number.replace(/\D/g, '')}`, '_blank');
+                    } else {
+                        speak("કોને WhatsApp કરવું છે? સેટિંગ્સમાં તમારા WhatsApp કોન્ટેક્ટ છે");
+                        openSettings();
+                        setTimeout(() => switchTab('callTab'), 300);
+                    }
+                } else {
+                    speak("કૃપા કરીને સેટિંગ્સમાં WhatsApp કોન્ટેક્ટ ઉમેરો");
+                    openSettings();
+                    setTimeout(() => switchTab('callTab'), 300);
+                }
                 return;
             }
             
-            if (lowerText.includes('નોંધ કરો')) {
-                const note = text.replace('નોંધ કરો', '').trim();
+            // Diary
+            if (lowerText.includes('નોંધ કરો') || lowerText.includes('ડાયરી')) {
+                const note = text.replace('નોંધ કરો', '').replace('ડાયરી', '').trim();
                 if (note) {
                     addDiaryEntry(note);
-                    speak("ડાયરીમાં નોંધ કરી: " + note);
+                    speak("ડાયરીમાં નોંધ કરી ગઈ છું");
                 } else {
                     speak("ડાયરીમાં શું લખવું છે?");
                 }
                 return;
             }
             
+            // Vanshavali
             if (lowerText.includes('વંશાવળી') || lowerText.includes('પરિવાર')) {
-                speak("સેટિંગ્સમાં વંશાવળી ટેબમાં જુઓ");
-                openSettings();
-                setTimeout(() => switchTab('vanshavaliTab'), 300);
+                if (typeof window.vanshavaliData !== 'undefined') {
+                    const count = countVanshavaliMembers();
+                    speak(`તમારી વંશાવળીમાં ${count} સભ્યો છે. ${window.vanshavaliData.name} મૂળ પુરુષ છે.`);
+                } else {
+                    speak("વંશાવળી માહિતી ઉપલબ્ધ નથી");
+                }
                 return;
             }
             
+            // Camera
             if (lowerText.includes('કૅમેરા') || lowerText.includes('ફોટો')) {
                 speak("સેટિંગ્સમાં કૅમેરા ટેબમાં જુઓ");
                 openSettings();
@@ -793,29 +898,223 @@
                 return;
             }
             
+            // Greetings
             if (lowerText.includes('નમસ્તે') || lowerText.includes('હેલો')) {
-                speak("નમસ્તે! કેવા છો?");
+                const responses = [
+                    "નમસ્તે! કેવા છો?",
+                    "હેલો! કેમ છો?",
+                    "નમસ્તે! મને તમને મળીને આનંદ થયો"
+                ];
+                speak(responses[Math.floor(Math.random() * responses.length)]);
                 return;
             }
             
             if (lowerText.includes('જય સીયારામ')) {
-                speak("જય સીયારામ! ભગવાન તમારું કલ્યાણ કરે!");
+                speak("જય સીયારામ! ભગવાન રામ તમારું કલ્યાણ કરે!");
                 return;
             }
             
+            // Time
             if (lowerText.includes('સમય')) {
                 const time = new Date().toLocaleTimeString('gu-IN', {hour: '2-digit', minute: '2-digit'});
                 speak(`હવે સમય છે ${time}`);
                 return;
             }
             
-            if (lowerText.includes('તારીખ')) {
-                const date = new Date().toLocaleDateString('gu-IN');
-                speak(`આજે તારીખ છે ${date}`);
+            // Date
+            if (lowerText.includes('તારીખ') || lowerText.includes('દિવસ')) {
+                const date = new Date().toLocaleDateString('gu-IN', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                speak(`આજે ${date} છે`);
                 return;
             }
             
-            speak(`તમે કહ્યું: ${text}. હું હજુ શીખી રહી છું.`);
+            // Weather (sample response)
+            if (lowerText.includes('હવામાન') || lowerText.includes('ઠંડી') || lowerText.includes('ગરમી')) {
+                speak("હવામાનની માહિતી મારી પાસે હજુ નથી. હું જલ્દી આ ફીચર ઉમેરીશ.");
+                return;
+            }
+            
+            // Questions about capabilities
+            if (lowerText.includes('તમે શું કરી શકો') || lowerText.includes('કરવાનું')) {
+                speak("હું કૉલ કરી શકું છું, WhatsApp ખોલી શકું છું, ડાયરીમાં નોંધ કરી શકું છું, વંશાવળી બતાવી શકું છું, ફોટો ખેંચી શકું છું અને વાતચીત કરી શકું છું.");
+                return;
+            }
+            
+            // Thank you
+            if (lowerText.includes('આભાર') || lowerText.includes('ધન્યવાદ')) {
+                speak("તમારું સ્વાગત છે! હું તમારી સેવા કરવા માટે અહીં છું.");
+                return;
+            }
+            
+            // How are you
+            if (lowerText.includes('કેમ છો') || lowerText.includes('કેવા છો')) {
+                speak("હું ઠીક છું, આપની સેવા કરવા માટે તૈયાર છું. તમે કેવા છો?");
+                return;
+            }
+            
+            // If nothing matches, give helpful response instead of "I'm still learning"
+            const helpfulResponses = [
+                "મને સમજાયું નથી, ફરી કહો.",
+                "ક્ષમા કરશો, હું હજુ આ પ્રશ્ન સમજી શકી નથી.",
+                "તમે સેટિંગ્સમાં જઈને મને વધુ કામગીરી શીખવાડી શકો છો."
+            ];
+            speak(helpfulResponses[Math.floor(Math.random() * helpfulResponses.length)]);
+        }
+        
+        // CONTACTS FUNCTIONS
+        function loadContacts() {
+            const savedCallContacts = localStorage.getItem('divinity_call_contacts');
+            const savedWhatsappContacts = localStorage.getItem('divinity_whatsapp_contacts');
+            
+            if (savedCallContacts) {
+                try {
+                    callContacts = JSON.parse(savedCallContacts);
+                } catch(e) {
+                    callContacts = [];
+                }
+            }
+            
+            if (savedWhatsappContacts) {
+                try {
+                    whatsappContacts = JSON.parse(savedWhatsappContacts);
+                } catch(e) {
+                    whatsappContacts = [];
+                }
+            }
+            
+            renderContacts();
+        }
+        
+        function addContact(type) {
+            let nameInput, numberInput;
+            let contactsArray;
+            
+            if (type === 'call') {
+                nameInput = document.getElementById('callName');
+                numberInput = document.getElementById('callNumber');
+                contactsArray = callContacts;
+            } else {
+                nameInput = document.getElementById('whatsappName');
+                numberInput = document.getElementById('whatsappNumber');
+                contactsArray = whatsappContacts;
+            }
+            
+            const name = nameInput.value.trim();
+            const number = numberInput.value.trim();
+            
+            if (!name || !number) {
+                speak("કૃપા કરીને નામ અને નંબર બંને ભરો");
+                return;
+            }
+            
+            if (number.length < 10) {
+                speak("કૃપા કરીને સાચો નંબર ભરો");
+                return;
+            }
+            
+            const contact = {
+                id: Date.now(),
+                name: name,
+                number: number
+            };
+            
+            contactsArray.push(contact);
+            
+            if (type === 'call') {
+                localStorage.setItem('divinity_call_contacts', JSON.stringify(callContacts));
+                nameInput.value = '';
+                numberInput.value = '';
+                speak(`${name} નો કૉલ કોન્ટેક્ટ ઉમેર્યો`);
+            } else {
+                localStorage.setItem('divinity_whatsapp_contacts', JSON.stringify(whatsappContacts));
+                nameInput.value = '';
+                numberInput.value = '';
+                speak(`${name} નો WhatsApp કોન્ટેક્ટ ઉમેર્યો`);
+            }
+            
+            renderContacts();
+        }
+        
+        function deleteContact(type, id) {
+            if (type === 'call') {
+                callContacts = callContacts.filter(contact => contact.id !== id);
+                localStorage.setItem('divinity_call_contacts', JSON.stringify(callContacts));
+                speak("કૉલ કોન્ટેક્ટ ડિલીટ કર્યો");
+            } else {
+                whatsappContacts = whatsappContacts.filter(contact => contact.id !== id);
+                localStorage.setItem('divinity_whatsapp_contacts', JSON.stringify(whatsappContacts));
+                speak("WhatsApp કોન્ટેક્ટ ડિલીટ કર્યો");
+            }
+            
+            renderContacts();
+        }
+        
+        function renderContacts() {
+            const callContainer = document.getElementById('callContacts');
+            const whatsappContainer = document.getElementById('whatsappContacts');
+            
+            // Render call contacts
+            if (callContacts.length === 0) {
+                callContainer.innerHTML = '<div style="color: #94a3b8; text-align: center; padding: 20px;">કોઈ કૉલ કોન્ટેક્ટ નથી</div>';
+            } else {
+                let callHtml = '';
+                callContacts.forEach(contact => {
+                    callHtml += `
+                        <div class="contact-item">
+                            <div class="contact-header">
+                                <div class="contact-name">${contact.name}</div>
+                                <button class="delete-contact" onclick="deleteContact('call', ${contact.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="contact-number">${contact.number}</div>
+                            <button class="modal-button" onclick="makeCall('${contact.number}')" style="margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #10b981, #059669);">
+                                <i class="fas fa-phone"></i> કૉલ કરો
+                            </button>
+                        </div>
+                    `;
+                });
+                callContainer.innerHTML = callHtml;
+            }
+            
+            // Render WhatsApp contacts
+            if (whatsappContacts.length === 0) {
+                whatsappContainer.innerHTML = '<div style="color: #94a3b8; text-align: center; padding: 20px;">કોઈ WhatsApp કોન્ટેક્ટ નથી</div>';
+            } else {
+                let whatsappHtml = '';
+                whatsappContacts.forEach(contact => {
+                    whatsappHtml += `
+                        <div class="contact-item">
+                            <div class="contact-header">
+                                <div class="contact-name">${contact.name}</div>
+                                <button class="delete-contact" onclick="deleteContact('whatsapp', ${contact.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="contact-number">${contact.number}</div>
+                            <button class="modal-button" onclick="openWhatsAppContact('${contact.number}')" style="margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #25D366, #128C7E);">
+                                <i class="fab fa-whatsapp"></i> WhatsApp ખોલો
+                            </button>
+                        </div>
+                    `;
+                });
+                whatsappContainer.innerHTML = whatsappHtml;
+            }
+        }
+        
+        function makeCall(number) {
+            speak("કૉલ કરું છું");
+            window.location.href = `tel:${number}`;
+        }
+        
+        function openWhatsAppContact(number) {
+            speak("WhatsApp ખોલું છું");
+            window.open(`https://wa.me/${number.replace(/\D/g, '')}`, '_blank');
         }
         
         // SETTINGS FUNCTIONS
@@ -823,6 +1122,7 @@
             document.getElementById('settingsModal').style.display = 'block';
             loadVanshavali();
             loadDiaryEntries();
+            renderContacts();
         }
         
         function closeSettings() {
@@ -936,11 +1236,15 @@
             container.innerHTML = html;
         }
         
-        function addDiaryEntry() {
-            const textarea = document.getElementById('newDiaryEntry');
-            const text = textarea.value.trim();
+        function addDiaryEntry(text = null) {
+            let entryText = text;
             
-            if (!text) {
+            if (!entryText) {
+                const textarea = document.getElementById('newDiaryEntry');
+                entryText = textarea.value.trim();
+            }
+            
+            if (!entryText) {
                 speak("કૃપા કરીને કંઈક લખો");
                 return;
             }
@@ -949,12 +1253,15 @@
                 id: Date.now(),
                 date: new Date().toLocaleDateString('gu-IN'),
                 time: new Date().toLocaleTimeString('gu-IN', {hour: '2-digit', minute: '2-digit'}),
-                content: text
+                content: entryText
             };
             
             diaryEntries.push(entry);
             localStorage.setItem('divinity_diary', JSON.stringify(diaryEntries));
-            textarea.value = '';
+            
+            if (!text) {
+                document.getElementById('newDiaryEntry').value = '';
+            }
             
             loadDiaryEntries();
             speak("ડાયરીમાં નોંધ ઉમેરી ગઈ છું");
@@ -1016,42 +1323,13 @@
             speak("ફોટો સેવ થઈ ગયો");
         }
         
-        // CALL & WHATSAPP
-        function callNumber() {
-            const phoneNumber = document.getElementById('phoneNumber').value || localStorage.getItem('divinity_phone');
-            
-            if (phoneNumber && phoneNumber.length > 5) {
-                speak(`${phoneNumber} પર કૉલ કરું છું`);
-                window.location.href = `tel:${phoneNumber}`;
-            } else {
-                speak("કૃપા કરીને સેટિંગ્સમાં ફોન નંબર ઉમેરો");
-                switchTab('callTab');
-            }
-        }
-        
-        function openWhatsApp() {
-            const whatsappNumber = document.getElementById('whatsappNumber').value || localStorage.getItem('divinity_whatsapp');
-            
-            if (whatsappNumber && whatsappNumber.length > 5) {
-                speak(`WhatsApp ખોલું છું`);
-                window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank');
-            } else {
-                speak("કૃપા કરીને સેટિંગ્સમાં WhatsApp નંબર ઉમેરો");
-                switchTab('callTab');
-            }
-        }
-        
         // SETTINGS MANAGEMENT
         function loadSettings() {
-            document.getElementById('phoneNumber').value = localStorage.getItem('divinity_phone') || '';
-            document.getElementById('whatsappNumber').value = localStorage.getItem('divinity_whatsapp') || '';
             document.getElementById('aiModel').value = localStorage.getItem('divinity_aimodel') || 'local';
             document.getElementById('language').value = localStorage.getItem('divinity_language') || 'gu-IN';
         }
         
         function saveSettings() {
-            localStorage.setItem('divinity_phone', document.getElementById('phoneNumber').value);
-            localStorage.setItem('divinity_whatsapp', document.getElementById('whatsappNumber').value);
             localStorage.setItem('divinity_aimodel', document.getElementById('aiModel').value);
             localStorage.setItem('divinity_language', document.getElementById('language').value);
             
