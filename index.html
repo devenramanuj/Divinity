@@ -2,22 +2,25 @@
 <html lang="gu">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Divinity</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* BASIC RESET */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
         
         body, html {
             width: 100%;
             height: 100%;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            zoom: 1.2; /* Screen size bigger */
         }
         
-        /* VIDEO BACKGROUND - MUTED, LOOPING */
+        /* FULL SCREEN VIDEO BACKGROUND */
         #mainVideo {
             position: fixed;
             top: 0;
@@ -38,18 +41,16 @@
             z-index: 2;
             display: flex;
             flex-direction: column;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.3);
         }
         
         /* TOP BAR - SETTINGS BUTTON ONLY */
         .top-bar {
             padding: 15px 20px;
-            background: rgba(0, 0, 0, 0.7);
             display: flex;
-            justify-content: flex-end; /* Only settings button on right */
+            justify-content: flex-end;
             align-items: center;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 3;
         }
         
         .settings-btn {
@@ -62,28 +63,30 @@
             font-size: 22px;
             cursor: pointer;
             border: 1px solid rgba(139, 92, 246, 0.5);
-            z-index: 3;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         
-        /* MAIN CONTENT - REMOVED BIG WELCOME MESSAGE */
-        .main-content {
-            flex: 1;
+        /* BOTTOM CONTROLS AREA */
+        .bottom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 20px;
+            z-index: 3;
         }
         
-        /* MIC/STOP BUTTONS ON VIDEO - CENTERED */
-        .video-controls {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        /* CONTROL BUTTONS CONTAINER */
+        .controls-container {
             display: flex;
-            gap: 80px;
-            z-index: 3;
+            justify-content: center;
+            gap: 60px;
+            width: 100%;
+            margin-bottom: 20px;
         }
         
         /* CONTROL BUTTONS */
@@ -123,10 +126,6 @@
         
         /* STATUS INDICATOR */
         #status {
-            position: absolute;
-            bottom: 120px;
-            left: 50%;
-            transform: translateX(-50%);
             color: #34d399;
             font-size: 16px;
             background: rgba(0,0,0,0.7);
@@ -135,7 +134,9 @@
             border: 1px solid rgba(52, 211, 153, 0.3);
             backdrop-filter: blur(10px);
             white-space: nowrap;
-            z-index: 3;
+            margin-bottom: 10px;
+            text-align: center;
+            max-width: 90%;
         }
         
         /* MODAL - SETTINGS PAGE */
@@ -178,6 +179,7 @@
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            justify-content: center;
         }
         
         .modal-tab {
@@ -190,6 +192,7 @@
             cursor: pointer;
             text-align: center;
             min-width: 110px;
+            max-width: 150px;
         }
         
         .modal-tab.active {
@@ -308,32 +311,104 @@
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
         
-        /* RESPONSIVE */
-        @media (max-width: 480px) {
-            body, html {
-                zoom: 1.1;
-            }
-            
+        /* MOBILE FRIENDLY STYLES */
+        @media (max-width: 768px) {
             .control-btn {
                 width: 65px;
                 height: 65px;
                 font-size: 22px;
             }
             
-            .video-controls {
-                gap: 60px;
+            .controls-container {
+                gap: 50px;
             }
             
             #status {
                 font-size: 14px;
                 padding: 10px 20px;
-                bottom: 100px;
+                max-width: 85%;
+            }
+            
+            .bottom-controls {
+                padding: 15px;
+            }
+            
+            .settings-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+            
+            .modal-content {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .modal-tab {
+                min-width: 90px;
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .control-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
+            
+            .controls-container {
+                gap: 40px;
+            }
+            
+            #status {
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+            
+            .bottom-controls {
+                padding: 10px;
+            }
+            
+            .modal-tabs {
+                gap: 8px;
+            }
+            
+            .modal-tab {
+                min-width: 80px;
+                padding: 8px;
+                font-size: 12px;
+            }
+        }
+        
+        /* LANDSCAPE MODE */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .bottom-controls {
+                padding: 10px;
+            }
+            
+            .control-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 18px;
+            }
+            
+            #status {
+                font-size: 12px;
+                padding: 6px 12px;
+                margin-bottom: 5px;
+            }
+            
+            .controls-container {
+                gap: 30px;
+                margin-bottom: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- VIDEO BACKGROUND - MUTED & LOOPING -->
+    <!-- FULL SCREEN VIDEO BACKGROUND -->
     <video id="mainVideo" autoplay loop muted playsinline>
         <source src="smiling.mp4" type="video/mp4">
     </video>
@@ -347,18 +422,21 @@
             </button>
         </div>
         
-        <!-- Mic/Stop Buttons on Video -->
-        <div class="video-controls">
-            <button class="control-btn stop-btn" onclick="stopEverything()">
-                <i class="fas fa-stop"></i>
-            </button>
-            <button class="control-btn mic-btn" onclick="startListening()" id="micButton">
-                <i class="fas fa-microphone"></i>
-            </button>
+        <!-- Bottom Controls -->
+        <div class="bottom-controls">
+            <!-- Status Indicator -->
+            <div id="status">😊 સ્વાગત છે</div>
+            
+            <!-- Control Buttons -->
+            <div class="controls-container">
+                <button class="control-btn stop-btn" onclick="stopEverything()">
+                    <i class="fas fa-stop"></i>
+                </button>
+                <button class="control-btn mic-btn" onclick="startListening()" id="micButton">
+                    <i class="fas fa-microphone"></i>
+                </button>
+            </div>
         </div>
-        
-        <!-- Status Indicator -->
-        <div id="status">😊 સ્વાગત છે</div>
     </div>
     
     <!-- SETTINGS MODAL -->
