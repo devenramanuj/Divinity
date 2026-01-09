@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Divinity AI</title>
+    <title>Divinity</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* BASIC RESET */
@@ -14,6 +14,7 @@
             height: 100%;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, sans-serif;
+            zoom: 1.2; /* Screen size bigger */
         }
         
         /* VIDEO BACKGROUND - MUTED, LOOPING */
@@ -40,33 +41,31 @@
             background: rgba(0, 0, 0, 0.4);
         }
         
-        /* TOP BAR */
+        /* TOP BAR - SETTINGS BUTTON ONLY */
         .top-bar {
             padding: 15px 20px;
             background: rgba(0, 0, 0, 0.7);
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end; /* Only settings button on right */
             align-items: center;
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .app-title {
-            color: #ec4899;
+        .settings-btn {
+            background: rgba(139, 92, 246, 0.3);
+            color: #8b5cf6;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             font-size: 22px;
-            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            z-index: 3;
         }
         
-        #status {
-            color: #34d399;
-            font-size: 14px;
-            background: rgba(0,0,0,0.5);
-            padding: 8px 15px;
-            border-radius: 20px;
-            border: 1px solid rgba(52, 211, 153, 0.3);
-        }
-        
-        /* MAIN CONTENT - SIMPLE & CLEAN */
+        /* MAIN CONTENT - REMOVED BIG WELCOME MESSAGE */
         .main-content {
             flex: 1;
             display: flex;
@@ -74,60 +73,33 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            text-align: center;
         }
         
-        .welcome-message {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 25px;
-            border-radius: 20px;
-            margin-bottom: 40px;
-            border: 2px solid rgba(236, 72, 153, 0.3);
-            backdrop-filter: blur(10px);
-            max-width: 400px;
-        }
-        
-        .welcome-title {
-            color: #ec4899;
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        
-        .welcome-subtitle {
-            color: #94a3b8;
-            font-size: 16px;
-            line-height: 1.5;
-        }
-        
-        /* BOTTOM CONTROLS */
-        .bottom-controls {
-            padding: 25px 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .controls-row {
+        /* MIC/STOP BUTTONS ON VIDEO - CENTERED */
+        .video-controls {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             display: flex;
-            justify-content: center;
-            gap: 50px;
-            margin-bottom: 30px;
+            gap: 80px;
+            z-index: 3;
         }
         
-        /* SMALL BUTTONS */
+        /* CONTROL BUTTONS */
         .control-btn {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             border: none;
-            font-size: 22px;
+            font-size: 24px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            border: 3px solid rgba(255,255,255,0.2);
         }
         
         .control-btn:active {
@@ -149,32 +121,21 @@
             color: white;
         }
         
-        /* QUICK ACTIONS */
-        .quick-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .action-btn {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 15px 25px;
-            border-radius: 30px;
+        /* STATUS INDICATOR */
+        #status {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #34d399;
             font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            backdrop-filter: blur(5px);
-            min-width: 150px;
-            justify-content: center;
-        }
-        
-        .action-btn:active {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(0,0,0,0.7);
+            padding: 12px 25px;
+            border-radius: 30px;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+            z-index: 3;
         }
         
         /* MODAL - SETTINGS PAGE */
@@ -349,25 +310,24 @@
         
         /* RESPONSIVE */
         @media (max-width: 480px) {
+            body, html {
+                zoom: 1.1;
+            }
+            
             .control-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 18px;
+                width: 65px;
+                height: 65px;
+                font-size: 22px;
             }
             
-            .controls-row {
-                gap: 40px;
+            .video-controls {
+                gap: 60px;
             }
             
-            .action-btn {
-                min-width: 130px;
-                padding: 12px 20px;
+            #status {
                 font-size: 14px;
-            }
-            
-            .welcome-message {
-                padding: 20px;
-                max-width: 90%;
+                padding: 10px 20px;
+                bottom: 100px;
             }
         }
     </style>
@@ -380,51 +340,34 @@
     
     <!-- APP OVERLAY -->
     <div class="app-overlay">
-        <!-- Top Bar -->
+        <!-- Top Bar - Only Settings Button -->
         <div class="top-bar">
-            <div class="app-title">Divinity AI</div>
-            <div id="status">😊 સ્વાગત છે</div>
+            <button class="settings-btn" onclick="openSettings()">
+                <i class="fas fa-cog"></i>
+            </button>
         </div>
         
-        <!-- Main Content - Simple & Clean -->
-        <div class="main-content">
-            <div class="welcome-message">
-                <div class="welcome-title">👸 Divinity AI</div>
-                <div class="welcome-subtitle">
-                    તમારી વ્યક્તિગત AI સહાયક<br>
-                    મને બોલવા માટે માઇક બટન દબાવો
-                </div>
-            </div>
+        <!-- Mic/Stop Buttons on Video -->
+        <div class="video-controls">
+            <button class="control-btn stop-btn" onclick="stopEverything()">
+                <i class="fas fa-stop"></i>
+            </button>
+            <button class="control-btn mic-btn" onclick="startListening()" id="micButton">
+                <i class="fas fa-microphone"></i>
+            </button>
         </div>
         
-        <!-- Bottom Controls -->
-        <div class="bottom-controls">
-            <!-- Small Control Buttons -->
-            <div class="controls-row">
-                <button class="control-btn stop-btn" onclick="stopEverything()">
-                    <i class="fas fa-stop"></i>
-                </button>
-                <button class="control-btn mic-btn" onclick="startListening()" id="micButton">
-                    <i class="fas fa-microphone"></i>
-                </button>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <button class="action-btn" onclick="openSettings()">
-                    <i class="fas fa-cog"></i> સેટિંગ્સ
-                </button>
-            </div>
-        </div>
+        <!-- Status Indicator -->
+        <div id="status">😊 સ્વાગત છે</div>
     </div>
     
-    <!-- SETTINGS MODAL (Everything moved here) -->
+    <!-- SETTINGS MODAL -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <!-- Modal Title -->
             <div class="modal-title">
                 <i class="fas fa-cog"></i>
-                Divinity સેટિંગ્સ
+                સેટિંગ્સ
             </div>
             
             <!-- Tabs -->
@@ -467,7 +410,7 @@
                 </select>
                 
                 <button class="modal-button" onclick="saveSettings()">
-                    <i class="fas fa-save"></i> બધું સંગ્રહો
+                    <i class="fas fa-save"></i> સંગ્રહો
                 </button>
             </div>
             
@@ -475,7 +418,7 @@
             <div id="vanshavaliTab" class="tab-content">
                 <div style="text-align: center; margin-bottom: 15px;">
                     <div style="color: #14b8a6; font-size: 18px; margin-bottom: 5px;">
-                        <i class="fas fa-tree"></i> તમારી વંશાવળી
+                        <i class="fas fa-tree"></i> વંશાવળી
                     </div>
                     <div style="color: #94a3b8; font-size: 14px;">
                         કુલ સભ્યો: <span id="memberCount">0</span>
@@ -504,7 +447,7 @@
                 </div>
                 
                 <div style="color: #cbd5e1; margin-bottom: 10px;">
-                    તમારી ડાયરીમાં <span id="diaryCount">0</span> નોંધ છે
+                    ડાયરીમાં <span id="diaryCount">0</span> નોંધ છે
                 </div>
                 
                 <div id="diaryEntries" style="max-height: 200px; overflow-y: auto;">
@@ -570,6 +513,9 @@
         </div>
     </div>
 
+    <!-- External Vanshavali File -->
+    <script src="vanshavali_data.js"></script>
+
     <!-- Main App Script -->
     <script>
         // VIDEO STATES - LIP SYNC FIXED
@@ -590,7 +536,7 @@
         
         // Initialize App
         function initApp() {
-            console.log("🚀 Divinity AI Started");
+            console.log("🚀 App Started");
             updateStatus("😊 સ્વાગત છે");
             setVideo('smiling');
             
@@ -600,7 +546,7 @@
             
             // Welcome message
             setTimeout(() => {
-                speak("હું Divinity છું, તમારી AI સહાયક. બોલવા માટે માઇક બટન દબાવો.");
+                speak("હું તમારી સહાયક છું. બોલવા માટે માઇક બટન દબાવો.");
             }, 1000);
         }
         
@@ -647,16 +593,15 @@
             const speech = new SpeechSynthesisUtterance();
             speech.text = text;
             speech.lang = 'gu-IN';
-            speech.rate = 0.9; // Slower for better lip sync
+            speech.rate = 0.9;
             speech.pitch = 1.1;
             speech.volume = 1;
             
             isSpeaking = true;
             setVideo('talking');
             
-            // Sync video with speech timing
             const video = document.getElementById('mainVideo');
-            video.currentTime = 0; // Start from beginning
+            video.currentTime = 0;
             
             speech.onstart = () => {
                 console.log("Speaking:", text);
@@ -666,7 +611,6 @@
             speech.onend = () => {
                 isSpeaking = false;
                 setVideo('silent');
-                // Small delay before showing ready status
                 setTimeout(() => updateStatus("👸 તૈયાર છું"), 500);
             };
             
@@ -676,7 +620,6 @@
                 updateStatus("👸 તૈયાર છું");
             };
             
-            // Start speech after video is ready
             setTimeout(() => {
                 window.speechSynthesis.speak(speech);
             }, 100);
@@ -692,7 +635,7 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             
             if (!SpeechRecognition) {
-                speak("માફ કરજો, વૉઇસ સપોર્ટ નથી.");
+                speak("વૉઇસ સપોર્ટ નથી.");
                 return;
             }
             
@@ -731,26 +674,22 @@
         function handleVoiceCommand(text) {
             const lowerText = text.toLowerCase();
             
-            // Open settings
             if (lowerText.includes('સેટિંગ્સ') || lowerText.includes('ગોઠવણી')) {
                 openSettings();
                 speak("સેટિંગ્સ ખોલું છું");
                 return;
             }
             
-            // Call
             if (lowerText.includes('કૉલ') || lowerText.includes('ફોન')) {
                 callNumber();
                 return;
             }
             
-            // WhatsApp
             if (lowerText.includes('વોટ્સએપ') || lowerText.includes('મેસેજ')) {
                 openWhatsApp();
                 return;
             }
             
-            // Diary
             if (lowerText.includes('નોંધ કરો')) {
                 const note = text.replace('નોંધ કરો', '').trim();
                 if (note) {
@@ -762,7 +701,6 @@
                 return;
             }
             
-            // Vanshavali
             if (lowerText.includes('વંશાવળી') || lowerText.includes('પરિવાર')) {
                 speak("સેટિંગ્સમાં વંશાવળી ટેબમાં જુઓ");
                 openSettings();
@@ -770,7 +708,6 @@
                 return;
             }
             
-            // Camera
             if (lowerText.includes('કૅમેરા') || lowerText.includes('ફોટો')) {
                 speak("સેટિંગ્સમાં કૅમેરા ટેબમાં જુઓ");
                 openSettings();
@@ -778,18 +715,16 @@
                 return;
             }
             
-            // Greetings
             if (lowerText.includes('નમસ્તે') || lowerText.includes('હેલો')) {
                 speak("નમસ્તે! કેવા છો?");
                 return;
             }
             
             if (lowerText.includes('જય સીયારામ')) {
-                speak("જય સીયારામ! ભગવાન રામ તમારું કલ્યાણ કરે!");
+                speak("જય સીયારામ! ભગવાન તમારું કલ્યાણ કરે!");
                 return;
             }
             
-            // Time/Date
             if (lowerText.includes('સમય')) {
                 const time = new Date().toLocaleTimeString('gu-IN', {hour: '2-digit', minute: '2-digit'});
                 speak(`હવે સમય છે ${time}`);
@@ -802,7 +737,6 @@
                 return;
             }
             
-            // Default
             speak(`તમે કહ્યું: ${text}. હું હજુ શીખી રહી છું.`);
         }
         
@@ -819,20 +753,16 @@
         }
         
         function switchTab(tabId) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
             
-            // Remove active from all tab buttons
             document.querySelectorAll('.modal-tab').forEach(tabBtn => {
                 tabBtn.classList.remove('active');
             });
             
-            // Show selected tab
             document.getElementById(tabId).classList.add('active');
             
-            // Activate tab button
             event.target.classList.add('active');
             
             currentTab = tabId;
@@ -842,55 +772,54 @@
         function loadVanshavali() {
             const container = document.getElementById('vanshavaliList');
             
-            // Sample vanshavali data
-            const vanshavaliData = {
-                name: "શ્રીમાન રામચંદ્રજી",
-                info: "મૂળ પુરુષ",
-                children: [
-                    {
-                        name: "લવ",
-                        info: "પહેલો પુત્ર",
-                        children: [
-                            { name: "પ્રથમ", info: "લવનો પુત્ર" },
-                            { name: "દ્વિતિય", info: "લવનો પુત્ર" }
-                        ]
-                    },
-                    {
-                        name: "કુશ",
-                        info: "બીજો પુત્ર",
-                        children: [
-                            { name: "અશ્વજીત", info: "કુશનો પુત્ર" },
-                            { name: "શતાજિત", info: "કુશનો પુત્ર" }
-                        ]
+            if (typeof window.vanshavaliData !== 'undefined') {
+                let html = '';
+                let memberCount = 0;
+                
+                function addMembers(node, level = 0) {
+                    memberCount++;
+                    const indent = '&nbsp;&nbsp;&nbsp;'.repeat(level);
+                    const prefix = level === 0 ? '👑 ' : '├─ ';
+                    
+                    html += `<div class="vanshavali-item" style="margin-left: ${level * 20}px;">
+                        ${indent}${prefix}<strong>${node.name}</strong>
+                        ${node.info ? `<br><small style="color: #94a3b8;">${node.info}</small>` : ''}
+                    </div>`;
+                    
+                    if (node.children) {
+                        node.children.forEach(child => addMembers(child, level + 1));
                     }
-                ]
-            };
-            
-            let html = '';
-            let memberCount = 0;
-            
-            function addMembers(node, level = 0) {
-                memberCount++;
-                const indent = '&nbsp;&nbsp;&nbsp;'.repeat(level);
-                const prefix = level === 0 ? '👑 ' : '├─ ';
-                
-                html += `<div class="vanshavali-item" style="margin-left: ${level * 20}px;">
-                    ${indent}${prefix}<strong>${node.name}</strong>
-                    ${node.info ? `<br><small style="color: #94a3b8;">${node.info}</small>` : ''}
-                </div>`;
-                
-                if (node.children) {
-                    node.children.forEach(child => addMembers(child, level + 1));
                 }
+                
+                addMembers(window.vanshavaliData);
+                container.innerHTML = html;
+                document.getElementById('memberCount').textContent = memberCount;
+                
+            } else {
+                container.innerHTML = '<div style="color: #ef4444; text-align: center;">વંશાવળી ડેટા લોડ થયો નથી</div>';
             }
-            
-            addMembers(vanshavaliData);
-            container.innerHTML = html;
-            document.getElementById('memberCount').textContent = memberCount;
         }
         
         function speakVanshavali() {
-            speak("તમારી વંશાવળીમાં 7 સભ્યો છે. મૂળ પુરુષ છે શ્રીમાન રામચંદ્રજી");
+            if (typeof window.vanshavaliData !== 'undefined') {
+                const count = countVanshavaliMembers();
+                speak(`તમારી વંશાવળીમાં ${count} સભ્યો છે. મૂળ પુરુષ છે ${window.vanshavaliData.name}`);
+            } else {
+                speak("વંશાવળી ડેટા લોડ થયો નથી");
+            }
+        }
+        
+        function countVanshavaliMembers() {
+            if (!window.vanshavaliData) return 0;
+            
+            function count(node) {
+                let total = 1;
+                if (node.children) {
+                    node.children.forEach(child => total += count(child));
+                }
+                return total;
+            }
+            return count(window.vanshavaliData);
         }
         
         // DIARY FUNCTIONS
@@ -1001,9 +930,8 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            // Create download link
             const link = document.createElement('a');
-            link.download = 'divinity_photo_' + Date.now() + '.jpg';
+            link.download = 'photo_' + Date.now() + '.jpg';
             link.href = canvas.toDataURL('image/jpeg');
             link.click();
             
@@ -1062,7 +990,6 @@
             stopCamera();
             closeSettings();
             
-            // Visual feedback
             const stopBtn = document.querySelector('.stop-btn');
             stopBtn.style.background = "#10b981";
             setTimeout(() => {
