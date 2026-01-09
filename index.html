@@ -1,189 +1,161 @@
 <!DOCTYPE html>
 <html lang="gu">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Divinity</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidushi AI - Secure Builder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #6366f1; --accent: #f43f5e; --bg: #0f172a; }
+        body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; position: relative; overflow: hidden; }
+        
+        #video-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: 0.2; }
 
-<style>
-body{margin:0;font-family:system-ui;background:#f4f6fb}
-header{background:#2c3e90;color:#fff;padding:12px;text-align:center;font-size:18px}
-.topbar{display:flex;justify-content:flex-end;padding:8px;background:#e9ecff}
-.icon{font-size:22px;background:none;border:none}
-#avatarWrap{width:260px;margin:16px auto}
-#avatarVideo{width:100%;border-radius:16px;background:#000}
-#chatBox{height:30vh;overflow-y:auto;background:#fff;margin:12px;padding:12px;border-radius:12px}
-.msg{margin-bottom:8px}
-.user{text-align:right;color:#2c3e90}
-.bot{text-align:left}
-.controls{display:flex;gap:10px;padding:12px}
-.btn{flex:1;padding:12px;border:none;border-radius:10px;font-size:15px;color:#fff}
-.green{background:#1e8449}
-.red{background:#c0392b}
-#settings{display:none;padding:14px}
-.section{background:#fff;padding:12px;border-radius:12px;margin-bottom:12px}
-input{width:100%;padding:10px;margin-bottom:10px}
-</style>
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 25px; width: 100%; max-width: 700px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 1; }
+        
+        /* Settings Icon */
+        .settings-icon { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #94a3b8; transition: 0.3s; z-index: 10; }
+        .settings-icon:hover { color: white; transform: rotate(90deg); }
+
+        /* Settings Modal */
+        #settingsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
+        .modal-content { background: #1e293b; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--primary); }
+        .modal-content input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: #34d399; outline: none; box-sizing: border-box; }
+
+        textarea { width: 100%; height: 80px; background: rgba(15, 23, 42, 0.5); border: 2px solid #334155; border-radius: 16px; padding: 15px; color: #34d399; font-size: 16px; resize: none; outline: none; box-sizing: border-box; }
+        .controls { display: flex; gap: 10px; margin-top: 10px; }
+        .btn { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-build { background: var(--primary); color: white; }
+        .btn-mic { background: #334155; color: white; width: 60px; flex: 0; }
+        .btn-mic.listening { background: var(--accent); animation: pulse 1.5s infinite; }
+        
+        #renderArea { width: 100%; height: 400px; background: white; border-radius: 20px; margin-top: 20px; border: 5px solid #1e293b; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    </style>
 </head>
-
 <body>
 
-<header>Divinity</header>
+    <video autoplay loop muted playsinline id="video-background">
+        <source src="videos/smiling_video.mp4" type="video/mp4">
+    </video>
 
-<div class="topbar">
-  <button class="icon" onclick="toggleSettings()">⚙️</button>
-</div>
+    <i class="fas fa-cog settings-icon" onclick="openSettings()"></i>
 
-<div id="avatarWrap">
-  <video id="avatarVideo" playsinline muted preload="auto"></video>
-</div>
+    <div class="glass-card">
+        <center>
+            <h1 style="background: linear-gradient(to right, #818cf8, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin:0;">વિદુષી AI બિલ્ડર</h1>
+            <p style="color: #64748b; margin-bottom: 15px;">Gemini 2.5 Flash + Security Mode</p>
+        </center>
 
-<div id="chat">
-  <div id="chatBox"></div>
-  <div class="controls">
-    <button class="btn green" onclick="startListening()">🎤 બોલો</button>
-    <button class="btn red" onclick="stopListening()">⏹️</button>
-  </div>
-</div>
+        <textarea id="userCommand" placeholder="તમારો આદેશ બોલો અથવા લખો..."></textarea>
+        
+        <div class="controls">
+            <button id="micBtn" class="btn btn-mic" onclick="toggleMic()"><i class="fas fa-microphone"></i></button>
+            <button class="btn btn-build" onclick="buildApp()">બનાવો <i class="fas fa-magic"></i></button>
+        </div>
 
-<div id="settings">
-  <div class="section">
-    <h4>Contacts</h4>
-    <input id="cName" placeholder="Name">
-    <input id="cNum" placeholder="Number">
-    <button class="btn green" onclick="saveContact()">Save</button>
-  </div>
+        <div id="status" style="margin: 10px 0; font-size: 14px; color: #94a3b8;">રેડી ટુ હેલ્પ...</div>
+        
+        <div id="renderArea"><iframe id="appFrame"></iframe></div>
+    </div>
 
-  <div class="section">
-    <h4>Diary</h4>
-    <input id="dText" placeholder="નોંધ લખો">
-    <button class="btn green" onclick="saveDiaryManual()">Save</button>
-  </div>
-</div>
+    <div id="settingsModal">
+        <div class="modal-content">
+            <h3><i class="fas fa-key"></i> API સેટિંગ્સ</h3>
+            <p style="font-size: 12px; color: #94a3b8;">તમારી Gemini API Key અહીં સુરક્ષિત રીતે સેવ કરો</p>
+            <input type="password" id="apiKeyInput" placeholder="અહીં તમારી API Key પેસ્ટ કરો">
+            <button class="btn btn-build" onclick="saveSettings()">સેવ કરો</button>
+            <button style="background:none; border:none; color:#f43f5e; margin-top:10px; cursor:pointer;" onclick="closeSettings()">બંધ કરો</button>
+        </div>
+    </div>
 
-<script>
-/* ---------- Avatar ---------- */
-const avatar=document.getElementById("avatarVideo");
-const videos={
-  silent:"videos/silent.mp4",
-  thinking:"videos/thinking.mp4",
-  talking:"videos/talking.mp4",
-  smiling:"videos/smiling.mp4"
-};
-function setAvatar(state){
-  avatar.pause();
-  avatar.src=videos[state];
-  avatar.load();
-  avatar.play().catch(()=>{});
-}
-setAvatar("silent");
+    <script>
+        const videoBg = document.getElementById('video-background');
+        const videoSources = {
+            'smiling': 'videos/smiling_video.mp4',
+            'thinking': 'videos/thinking_video.mp4',
+            'talking': 'videos/talking_video.mp4',
+            'silent': 'videos/silent_video.mp4'
+        };
 
-/* ---------- UI ---------- */
-const chatBox=document.getElementById("chatBox");
-const settings=document.getElementById("settings");
-function toggleSettings(){
-  settings.style.display=settings.style.display==="block"?"none":"block";
-}
-function msg(t,c){
-  const d=document.createElement("div");
-  d.className="msg "+c;
-  d.innerText=t;
-  chatBox.appendChild(d);
-  chatBox.scrollTop=chatBox.scrollHeight;
-}
+        function playVideo(state) {
+            if (videoSources[state]) {
+                videoBg.src = videoSources[state];
+                videoBg.load();
+                videoBg.play();
+            }
+        }
 
-/* ---------- Storage ---------- */
-let db;
-const open=indexedDB.open("DivinityDB",1);
-open.onupgradeneeded=e=>{
-  db=e.target.result;
-  if(!db.objectStoreNames.contains("contacts"))
-    db.createObjectStore("contacts",{keyPath:"name"});
-  if(!db.objectStoreNames.contains("diary"))
-    db.createObjectStore("diary",{keyPath:"time"});
-};
-open.onsuccess=e=>db=e.target.result;
+        // --- Settings Logic ---
+        function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+        
+        function saveSettings() {
+            const key = document.getElementById('apiKeyInput').value;
+            if (key) {
+                localStorage.setItem('gemini_api_key', key);
+                alert("API Key સફળતાપૂર્વક સેવ થઈ ગઈ છે");
+                closeSettings();
+            }
+        }
 
-/* ---------- Voice ---------- */
-let recog;
-if("webkitSpeechRecognition"in window){
-  recog=new webkitSpeechRecognition();
-  recog.lang="gu-IN";
-  recog.onstart=()=>setAvatar("thinking");
-  recog.onresult=e=>{
-    const text=e.results[0][0].transcript;
-    msg(text,"user");
-    handleCommand(text);
-  };
-  recog.onend=()=>setAvatar("silent");
-}
-function startListening(){recog&&recog.start();}
-function stopListening(){recog&&recog.stop();}
+        // --- Gemini logic with LocalStorage ---
+        async function buildApp() {
+            const savedKey = localStorage.getItem('gemini_api_key');
+            if (!savedKey) {
+                alert("પહેલા સેટિંગ્સમાં જઈને API Key સેવ કરો");
+                openSettings();
+                return;
+            }
 
-/* ---------- Commands ---------- */
-function handleCommand(text){
-  if(text.includes("નોંધ")){
-    saveDiary(text.replace("નોંધ","").trim());
-    return;
-  }
-  if(text.includes("call")){
-    makeCall(text);
-    return;
-  }
-  reply(text);
-}
+            const command = document.getElementById('userCommand').value;
+            const status = document.getElementById('status');
+            const frame = document.getElementById('appFrame');
+            if (!command) return;
 
-/* ---------- Bot Reply ---------- */
-function reply(text){
-  const response="હું સાંભળી રહી છું. હાલ આ demo mode છે.";
-  msg(response,"bot");
-  setAvatar("talking");
-  speak(response);
-}
+            status.innerHTML = "⏳ પ્રોસેસિંગ...";
+            playVideo('thinking');
 
-/* ---------- Speech ---------- */
-function speak(t){
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(t);
-  u.lang="gu-IN";
-  u.onend=()=>setAvatar("smiling");
-  speechSynthesis.speak(u);
-}
+            const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${savedKey}`;
 
-/* ---------- Diary ---------- */
-function saveDiary(t){
-  const tx=db.transaction("diary","readwrite");
-  tx.objectStore("diary").put({time:new Date().toISOString(),text:t});
-  msg("નોંધ સાચવી લીધી છે","bot");
-}
-function saveDiaryManual(){
-  if(!dText.value)return;
-  saveDiary(dText.value);
-  dText.value="";
-}
+            try {
+                const response = await fetch(URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Create a single-file HTML/CSS/JS tool for: ${command}. ONLY code.` }] }]
+                    })
+                });
 
-/* ---------- Contacts ---------- */
-function saveContact(){
-  if(!cName.value||!cNum.value)return;
-  const tx=db.transaction("contacts","readwrite");
-  tx.objectStore("contacts").put({
-    name:cName.value.trim(),
-    number:cNum.value.trim()
-  });
-  alert("Contact saved");
-}
-function makeCall(text){
-  const name=text.split("call")[1]?.trim();
-  if(!name)return;
-  const tx=db.transaction("contacts","readonly");
-  const req=tx.objectStore("contacts").get(name);
-  req.onsuccess=e=>{
-    if(e.target.result)
-      location.href="tel:"+e.target.result.number;
-    else
-      msg("સંપર્ક મળ્યો નથી","bot");
-  };
-}
-</script>
+                const data = await response.json();
+                let aiCode = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (aiCode) {
+                    aiCode = aiCode.replace(/```html/g, "").replace(/```/g, "");
+                    status.innerHTML = "✅ એપ તૈયાર છે!";
+                    playVideo('smiling');
+                    const doc = frame.contentWindow.document;
+                    doc.open(); doc.write(aiCode); doc.close();
+                } else {
+                    status.innerHTML = "❌ કી ખોટી છે અથવા ક્વોટા પૂરો થયો છે";
+                    playVideo('silent');
+                }
+            } catch (err) {
+                status.innerHTML = "❌ ભૂલ આવી";
+                playVideo('silent');
+            }
+        }
+
+        // Voice logic (as per previous instructions)
+        function toggleMic() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'gu-IN';
+            recognition.onstart = () => { playVideo('talking'); document.getElementById('micBtn').classList.add('listening'); };
+            recognition.onend = () => { playVideo('smiling'); document.getElementById('micBtn').classList.remove('listening'); };
+            recognition.onresult = (e) => { document.getElementById('userCommand').value = e.results[0][0].transcript; };
+            recognition.start();
+        }
+    </script>
 </body>
 </html>
