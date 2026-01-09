@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Divinity AI - The Ultimate Oracle</title>
+    <title>Divinity AI - Ultimate Oracle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --accent: #f43f5e; --glass: rgba(0, 0, 0, 0.75); }
@@ -56,7 +56,7 @@
 
             <div class="section">
                 <label>Gemini Keys (Comma Separated)</label>
-                <textarea id="geminiKeys" rows="2" placeholder="Key1, Key2, Key3..."></textarea>
+                <textarea id="geminiKeys" rows="2" placeholder="Key1, Key2..."></textarea>
             </div>
 
             <div class="section">
@@ -83,7 +83,7 @@
 
     <div id="reportModal">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:15px;">
-            <h3 style="margin:0; color:#818cf8;">Analysis Report</h3>
+            <h3 style="margin:0; color:#818cf8;">Oracle Insights</h3>
             <div style="display:flex; gap:10px;">
                 <button onclick="saveText()" style="background:#10b981; color:#fff; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">Download</button>
                 <button onclick="closeReport()" style="background:#ef4444; color:#fff; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">Close</button>
@@ -95,7 +95,6 @@
     <script>
         const video = document.getElementById('video-background');
         let ragData = localStorage.getItem('div_rag') || "";
-        let currentKeyIdx = 0;
 
         function playV(s) { video.src = s + '.mp4'; video.load(); video.play().catch(e=>{}); }
         function toggleModal(id) { 
@@ -103,75 +102,59 @@
             m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
         }
 
-        // --- POWER VOICE ENGINE ---
-        // ૧. અવાજ એન્જિનને જગાડવા માટે (Resume Engine)
-function speak(text) {
-    window.speechSynthesis.cancel(); // જૂનું બધું બંધ કરો
-    
-    // ચિન્હો સાફ કરો
-    const cleanText = text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s]/g, ' ');
-    const msg = new SpeechSynthesisUtterance(cleanText);
-    
-    // ઉપલબ્ધ અવાજો લોડ કરો
-    const voices = window.speechSynthesis.getVoices();
-    const guVoice = voices.find(v => v.lang.includes('gu'));
-    const hiVoice = voices.find(v => v.lang.includes('hi'));
+        // --- BRAHMASTRA VOICE ENGINE ---
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            
+            // ચિન્હો સાફ કરો
+            const cleanText = text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s]/g, ' ');
+            
+            // ટુકડાઓમાં વહેંચો જેથી બ્રાઉઝર અટકે નહીં
+            const chunks = cleanText.match(/.{1,200}(\s|$)/g) || [cleanText];
+            
+            chunks.forEach((chunk, index) => {
+                const msg = new SpeechSynthesisUtterance(chunk);
+                const voices = window.speechSynthesis.getVoices();
+                const guVoice = voices.find(v => v.lang.includes('gu'));
+                const hiVoice = voices.find(v => v.lang.includes('hi'));
 
-    if(guVoice) msg.voice = guVoice;
-    else if(hiVoice) msg.voice = hiVoice;
+                if(guVoice) msg.voice = guVoice;
+                else if(hiVoice) msg.voice = hiVoice;
 
-    msg.lang = 'gu-IN';
-    msg.volume = 1.0;
-    msg.rate = 1.0;
+                msg.lang = 'gu-IN';
+                msg.volume = 1.0;
+                msg.rate = 1.0;
 
-    msg.onstart = () => playV('talking');
-    msg.onend = () => playV('smiling');
+                if (index === 0) msg.onstart = () => playV('talking');
+                if (index === chunks.length - 1) msg.onend = () => playV('smiling');
 
-    // ક્રોમ માટે ખાસ: અવાજ એન્જિન રિઝ્યૂમ કરો
-    window.speechSynthesis.resume(); 
-    window.speechSynthesis.speak(msg);
-}
+                window.speechSynthesis.resume(); // ક્રોમ ફિક્સ
+                window.speechSynthesis.speak(msg);
+            });
 
-// ૨. માઇક પર ક્લિક કરો ત્યારે જ સિસ્ટમને પરવાનગી આપો
-function startInteraction() {
-    // અવાજ એન્જિનને એક્ટિવેટ કરવા માટે ખાલી સ્પીચ આપો (Unlock Voice)
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+            // Keep Alive Loop
+            const r = setInterval(() => {
+                if (!window.speechSynthesis.speaking) clearInterval(r);
+                else window.speechSynthesis.resume();
+            }, 1000);
+        }
 
-    const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    rec.lang = 'gu-IN';
-    rec.onstart = () => { 
-        playV('talking'); 
-        document.getElementById('micBtn').classList.add('listening'); 
-        document.getElementById('status').innerText = "Divinity સાંભળે છે...";
-    };
-    rec.onresult = (e) => {
-        const resultText = e.results[0][0].transcript;
-        console.log("તમે બોલ્યા:", resultText);
-        // અહીં તમે ઈચ્છો તો ચેટ ફંક્શન કોલ કરી શકો
-    };
-    rec.onend = () => { 
-        document.getElementById('micBtn').classList.remove('listening'); 
-        playV('smiling'); 
-        document.getElementById('status').innerText = "Divinity Ready";
-    };
-    rec.start();
-}
-
-
-        window.speechSynthesis.onvoiceschanged = () => { console.log("Voices Loaded"); };
+        window.speechSynthesis.onvoiceschanged = () => { console.log("Voices Updated"); };
 
         function saveCore() {
             localStorage.setItem('div_gemini_keys', document.getElementById('geminiKeys').value);
             localStorage.setItem('div_groq_key', document.getElementById('groqKey').value);
             localStorage.setItem('div_active_model', document.getElementById('activeModel').value);
-            alert("Settings Saved Permanently!");
+            // ટેસ્ટ માટે સેવ કરતા જ અવાજ ચેક કરો
+            speak("જય સીયારામ, સેટિંગ્સ સેવ થઈ ગયા છે");
+            alert("Settings Optimized!");
             toggleModal('settingsModal');
         }
 
         function loadRAG(e) {
             const f = e.target.files[0];
             const reader = new FileReader();
-            reader.onload = (ev) => { ragData = ev.target.result; localStorage.setItem('div_rag', ragData); alert("Knowledge Base Ready!"); };
+            reader.onload = (ev) => { ragData = ev.target.result; localStorage.setItem('div_rag', ragData); alert("Knowledge Loaded"); };
             reader.readAsText(f);
         }
 
@@ -182,10 +165,8 @@ function startInteraction() {
                 v.srcObject.getTracks().forEach(t => t.stop());
                 v.style.display = 'none'; b.style.display = 'none';
             } else {
-                try {
-                    const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                    v.srcObject = s; v.style.display = 'block'; b.style.display = 'block';
-                } catch(e) { alert("Camera Access Error"); }
+                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                v.srcObject = s; v.style.display = 'block'; b.style.display = 'block';
             }
         }
 
@@ -194,71 +175,55 @@ function startInteraction() {
             const c = document.createElement('canvas');
             c.width = v.videoWidth; c.height = v.videoHeight;
             c.getContext('2d').drawImage(v, 0, 0);
-            const imgBase64 = c.toDataURL('image/jpeg').split(',')[1];
+            const img = c.toDataURL('image/jpeg').split(',')[1];
 
             document.getElementById('reportModal').style.display = 'block';
-            document.getElementById('reportBox').innerText = "Divinity Analysis In Progress...";
+            document.getElementById('reportBox').innerText = "Divinity વિશ્લેષણ કરી રહી છે...";
             playV('thinking');
 
-            const keysStr = localStorage.getItem('div_gemini_keys') || "";
-            const keys = keysStr.split(',').map(k => k.trim()).filter(k => k !== "");
-            
-            if(keys.length === 0) { alert("Please enter Gemini Keys!"); return; }
+            const keys = (localStorage.getItem('div_gemini_keys') || "").split(',').map(k => k.trim()).filter(k=>k);
+            if(!keys[0]) { alert("Please enter API Keys!"); return; }
 
             const callAI = async (idx) => {
-                if(idx >= keys.length) {
-                    document.getElementById('reportBox').innerText = "બધી કીની લિમિટ પૂરી થઈ ગઈ છે.";
-                    return;
-                }
-
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keys[idx]}`;
-                const prompt = "તમે Divinity છો, જેને દેવેન્દ્રભાઈએ બનાવી છે. જવાબની શરૂઆત 'જય સીયારામ' થી કરો. કેમેરામાં જે છે તેનું ઊંડું વિશ્લેષણ કરી ગુજરાતીમાં સમજાવો. બોલતી વખતે કોઈ પણ ચિન્હો (Symbols) ન વાપરવા.";
-
+                if(idx >= keys.length) return;
                 try {
-                    const res = await fetch(url, {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keys[idx]}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
-                            contents: [{ parts: [{text: prompt + "\nKnowledge: " + ragData}, {inline_data: {mime_type: "image/jpeg", data: imgBase64}}] }]
+                            contents: [{ parts: [{text: "તમે Divinity છો, દેવેન્દ્રભાઈએ બનાવી છે. શરૂઆત 'જય સીયારામ' થી કરો. કેમેરાનું એનાલિસિસ ગુજરાતીમાં કરો. ચિન્હો ન વાપરવા."}, {inline_data: {mime_type: "image/jpeg", data: img}}] }]
                         })
                     });
-                    
-                    if(res.status === 429) return callAI(idx + 1); // Key Rotation
-
-                    const data = await res.json();
-                    const finalOutput = data.candidates[0].content.parts[0].text;
-                    document.getElementById('reportBox').innerText = finalOutput;
-                    speak(finalOutput);
-                } catch(e) { return callAI(idx + 1); }
+                    if(res.status === 429) return callAI(idx + 1);
+                    const d = await res.json();
+                    const out = d.candidates[0].content.parts[0].text;
+                    document.getElementById('reportBox').innerText = out;
+                    speak(out);
+                } catch(e) { callAI(idx + 1); }
             };
-
-            await callAI(0);
-        }
-
-        function stopEverything() { 
-            window.speechSynthesis.cancel(); 
-            playV('smiling'); 
-            document.getElementById('micBtn').classList.remove('listening'); 
+            callAI(0);
         }
 
         function startInteraction() {
+            // અવાજ એન્જિનને જગાડવા માટે (Flicker)
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+            window.speechSynthesis.resume();
+
             const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             rec.lang = 'gu-IN';
             rec.onstart = () => { playV('talking'); document.getElementById('micBtn').classList.add('listening'); };
             rec.onend = () => { document.getElementById('micBtn').classList.remove('listening'); playV('smiling'); };
-            rec.onresult = (e) => { console.log(e.results[0][0].transcript); };
             rec.start();
         }
 
+        function stopEverything() { window.speechSynthesis.cancel(); playV('smiling'); }
         function saveText() {
             const b = new Blob([document.getElementById('reportBox').innerText], {type:'text/plain'});
             const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'Divinity_Report.txt'; a.click();
         }
-        
         function closeReport() { document.getElementById('reportModal').style.display = 'none'; stopEverything(); }
 
         window.onload = () => { 
-            console.log("જય સીયારામ!"); 
             document.getElementById('geminiKeys').value = localStorage.getItem('div_gemini_keys') || "";
             document.getElementById('groqKey').value = localStorage.getItem('div_groq_key') || "";
             document.getElementById('activeModel').value = localStorage.getItem('div_active_model') || "gemini";
