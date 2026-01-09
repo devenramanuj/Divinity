@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Divinity AI - Final</title>
+    <title>Divinity AI - Final Fix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --accent: #f43f5e; --glass: rgba(0, 0, 0, 0.9); }
@@ -11,21 +11,20 @@
         #mainVideo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
         .ui-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 50px; }
         .controls { display: flex; align-items: center; gap: 20px; background: rgba(0,0,0,0.7); padding: 15px 30px; border-radius: 50px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
-        .btn-mic { width: 70px; height: 70px; background: #fff; border: none; border-radius: 50%; font-size: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-mic.listening { background: var(--accent); color: #fff; animation: pulse 1.5s infinite; }
+        .btn-mic { width: 70px; height: 70px; background: #fff; border: none; border-radius: 50%; font-size: 30px; cursor: pointer; }
         .btn-stop { width: 50px; height: 50px; background: #ef4444; border: none; border-radius: 50%; color: #fff; cursor: pointer; }
         #settingsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
         .modal-card { background: #1e293b; width: 90%; max-width: 420px; padding: 25px; border-radius: 30px; border: 1px solid #3b82f6; color: #fff; box-sizing: border-box; overflow-y: auto; max-height: 90vh; }
         input, select, textarea { width: 100%; padding: 12px; margin-top: 8px; background: #0f172a; border: 1px solid #334155; color: #34d399; border-radius: 12px; box-sizing: border-box; }
-        #camBox { width: 100%; height: 200px; background: #000; border-radius: 15px; margin-top: 15px; display: none; border: 2px solid #3b82f6; overflow: hidden; position: relative; }
+        #camBox { width: 100%; height: 200px; background: #000; border-radius: 15px; margin-top: 15px; display: none; border: 2px solid #3b82f6; overflow: hidden; }
         #videoFeed { width: 100%; height: 100%; object-fit: cover; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(244, 63, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); } }
+        .action-btn { width: 100%; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <video id="mainVideo" autoplay loop muted playsinline><source src="silent.mp4" type="video/mp4"></video>
-    <i class="fas fa-cog" style="position:fixed; top:25px; right:25px; z-index:100; font-size:28px; color:#fff; cursor:pointer;" onclick="toggleM('settingsModal')"></i>
+    <i class="fas fa-cog" style="position:fixed; top:25px; right:25px; z-index:100; font-size:28px; color:rgba(255,255,255,0.7); cursor:pointer;" onclick="toggleM('settingsModal')"></i>
 
     <div class="ui-layer">
         <div id="status" style="margin-bottom: 15px; color: #34d399; font-size: 14px;">Divinity Ready</div>
@@ -37,20 +36,17 @@
 
     <div id="settingsModal">
         <div class="modal-card">
-            <h3 style="text-align:center;">Settings</h3>
+            <h3 style="text-align:center;">System Settings</h3>
             <select id="activeModel">
                 <option value="groq">Groq Llama 3 (70B)</option>
                 <option value="gemini">Gemini 2.5 Flash</option>
             </select>
             <textarea id="geminiKeys" rows="2" placeholder="Gemini Keys (Comma Separated)"></textarea>
             <input type="password" id="groqKey" placeholder="Groq API Key">
-            <button onclick="toggleCamera()" style="width:100%; padding:10px; margin-top:10px; border-radius:10px;">Camera On/Off</button>
-            <div id="camBox">
-                <video id="videoFeed" autoplay playsinline></video>
-                <button onclick="runVision()" style="width:90%; padding:10px; background:#3b82f6; color:#fff; position:absolute; bottom:10px; left:5%; border-radius:10px; border:none;">Analyze Vision</button>
-            </div>
-            <button onclick="saveConfig()" style="width:100%; padding:15px; margin-top:20px; background:#4f46e5; color:#fff; border-radius:10px; border:none; font-weight:bold;">SAVE ALL</button>
-            <p onclick="toggleM('settingsModal')" style="text-align:center; color:red; cursor:pointer;">Close</p>
+            <button class="action-btn" style="background: #334155; color: #fff;" onclick="toggleCamera()">Camera On / Off</button>
+            <div id="camBox"><video id="videoFeed" autoplay playsinline></video></div>
+            <button class="action-btn" style="background: linear-gradient(to right, #4f46e5, #3b82f6); color: #fff; margin-top: 20px;" onclick="saveConfig()">SAVE CONFIG</button>
+            <p onclick="toggleM('settingsModal')" style="text-align:center; color: #ef4444; cursor:pointer; margin-top: 15px;">CLOSE</p>
         </div>
     </div>
 
@@ -63,16 +59,18 @@
             const box = document.getElementById('camBox');
             const feed = document.getElementById('videoFeed');
             if(box.style.display === 'block') {
-                if(feed.srcObject) feed.srcObject.getTracks().forEach(t => t.stop());
+                feed.srcObject.getTracks().forEach(t => t.stop());
                 box.style.display = 'none';
             } else {
                 const s = await navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}});
-                feed.srcObject = s; box.style.display = 'block';
+                feed.srcObject = s;
+                box.style.display = 'block';
             }
         }
 
         function speak(text) {
             window.speechSynthesis.cancel();
+            // ચિન્હો કાઢી નાખ્યા જેથી અવાજ સ્પષ્ટ આવે
             const cleanText = text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s]/g, ' ');
             const msg = new SpeechSynthesisUtterance("જય સીયારામ " + cleanText);
             msg.lang = 'gu-IN';
@@ -82,68 +80,72 @@
             window.speechSynthesis.speak(msg);
         }
 
-        async function fetchAI(prompt, img = null) {
+        // --- મુખ્ય API લોજિક જે જવાબ આપશે ---
+        async function fetchAI(prompt) {
             const model = document.getElementById('activeModel').value;
-            const gKey = localStorage.getItem('div_gemini_keys').split(',')[0].trim();
-            const grKey = localStorage.getItem('div_groq_key');
+            const groqKey = localStorage.getItem('div_groq_key');
+            const geminiKeys = (localStorage.getItem('div_gemini_keys') || "").split(',').map(k => k.trim());
 
             try {
                 if (model === "groq") {
                     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                        method: 'POST', headers: { 'Authorization': `Bearer ${grKey}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ model: "llama3-70b-8192", messages: [{ role: "user", content: "તમે Divinity છો. ગુજરાતીમાં ટૂંકો જવાબ આપો. પ્રશ્ન: " + prompt }] })
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model: "llama3-70b-8192",
+                            messages: [{ role: "user", content: "તમે Divinity છો. ટૂંકો અને સચોટ જવાબ ગુજરાતીમાં આપો. પ્રશ્ન: " + prompt }]
+                        })
                     });
-                    const d = await res.json(); return d.choices[0].message.content;
+                    const data = await res.json();
+                    return data.choices[0].message.content;
                 } else {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gKey}`;
-                    const payload = { contents: [{ parts: [{ text: "તમે Divinity છો. ગુજરાતીમાં જવાબ આપો. પ્રશ્ન: " + prompt }] }] };
-                    if(img) payload.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: img } });
-                    const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
-                    const d = await res.json(); return d.candidates[0].content.parts[0].text;
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKeys[0]}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: "તમે Divinity છો. ગુજરાતીમાં જવાબ આપો. પ્રશ્ન: " + prompt }] }]
+                        })
+                    });
+                    const data = await res.json();
+                    return data.candidates[0].content.parts[0].text;
                 }
-            } catch (e) { return "ભૂલ આવી છે."; }
+            } catch (e) { return "ભૂલ આવી છે, API કી ચેક કરો."; }
         }
 
         function startInteraction() {
             window.speechSynthesis.resume();
-            const rec = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
+            const rec = new (window.webkitSpeechRecognition)();
             rec.lang = 'gu-IN';
-            rec.onstart = () => { document.getElementById('micBtn').classList.add('listening'); };
+            rec.onstart = () => { document.getElementById('micBtn').style.background = "#f43f5e"; };
             rec.onresult = async (e) => {
                 const speech = e.results[0][0].transcript;
-                if(speech.includes("કેલ્ક્યુલેટર")) {
-                    speak("કેલ્ક્યુલેટર ખોલું છું.");
-                    window.location.href = "intent://com.android.calculator2/#Intent;scheme=android-app;end"; return;
+                if(speech.includes("કેલ્ક્યુલેટર") || speech.toLowerCase().includes("calculator")) {
+                    speak("ચોક્કસ દેવેન્દ્રભાઈ હું કેલ્ક્યુલેટર ખોલું છું");
+                    setTimeout(()=> { window.location.href = "intent://com.android.calculator2/#Intent;scheme=android-app;end"; }, 2000);
+                    return;
                 }
                 setV("thinking");
-                const reply = await fetchAI(speech); speak(reply);
+                const reply = await fetchAI(speech);
+                speak(reply);
             };
-            rec.onend = () => { document.getElementById('micBtn').classList.remove('listening'); };
+            rec.onend = () => { document.getElementById('micBtn').style.background = "#fff"; };
             rec.start();
         }
 
-        async function runVision() {
-            const v = document.getElementById('videoFeed');
-            const c = document.createElement('canvas');
-            c.width = v.videoWidth; c.height = v.videoHeight;
-            c.getContext('2d').drawImage(v, 0, 0);
-            const img = c.toDataURL('image/jpeg').split(',')[1];
-            toggleM('settingsModal'); setV("thinking");
-            const out = await fetchAI("આ ફોટામાં શું છે?", img); speak(out);
-        }
-
         function stopEverything() { window.speechSynthesis.cancel(); setV("silent"); }
+        
         function saveConfig() {
             localStorage.setItem('div_active_model', document.getElementById('activeModel').value);
             localStorage.setItem('div_gemini_keys', document.getElementById('geminiKeys').value);
             localStorage.setItem('div_groq_key', document.getElementById('groqKey').value);
-            speak("સેટિંગ્સ સેવ થઈ ગયા છે."); toggleM('settingsModal');
+            speak("સેટિંગ્સ સેવ થઈ ગયા છે");
+            toggleM('settingsModal');
         }
 
         window.onload = () => {
             document.getElementById('geminiKeys').value = localStorage.getItem('div_gemini_keys') || "";
             document.getElementById('groqKey').value = localStorage.getItem('div_groq_key') || "";
-            setV("silent");
+            document.getElementById('activeModel').value = localStorage.getItem('div_active_model') || "groq";
         };
     </script>
 </body>
