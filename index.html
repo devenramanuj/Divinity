@@ -3,51 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Divinity - Camera & Silent MP4</title>
+    <title>Divinity - Gemini 2.5 Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --accent: #f43f5e; --glass: rgba(0, 0, 0, 0.85); }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Poppins', sans-serif; background: #000; }
-        
-        /* બેકગ્રાઉન્ડ વિડિયો - Smiling/Thinking/Talking */
         #mainVideo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.9; }
-        
         .ui-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 40px; }
         .controls { display: flex; align-items: center; gap: 20px; background: var(--glass); padding: 15px 25px; border-radius: 50px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
         .btn { border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; color: #fff; }
         .btn-mic { width: 70px; height: 70px; background: #fff; color: #000; font-size: 28px; }
-        .btn-mic.listening { background: var(--accent); color: #fff; animation: pulse 1.5s infinite; }
-        .btn-stop { width: 50px; height: 50px; background: #ef4444; font-size: 18px; }
-
-        /* કેમેરા વિન્ડો */
-        #cameraContainer { display: none; position: fixed; top: 20px; left: 20px; width: 150px; height: 200px; border-radius: 20px; overflow: hidden; border: 2px solid #4f46e5; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #cameraContainer { display: none; position: fixed; top: 20px; left: 20px; width: 150px; height: 200px; border-radius: 20px; overflow: hidden; border: 2px solid #4f46e5; z-index: 100; }
         #cameraView { width: 100%; height: 100%; object-fit: cover; }
-
         #settingsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .modal-card { background: #1e293b; width: 90%; max-width: 400px; padding: 25px; border-radius: 30px; border: 1px solid #4f46e5; }
-        input, select, textarea { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #34d399; border-radius: 10px; margin-bottom: 10px; }
-        
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(244, 63, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); } }
+        input, select, textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; color: #34d399; border-radius: 10px; margin-bottom: 10px; font-family: inherit; }
     </style>
 </head>
 <body>
 
-    <video id="mainVideo" autoplay loop muted playsinline>
-        <source src="silent.mp4" type="video/mp4">
-    </video>
+    <video id="mainVideo" autoplay loop muted playsinline><source src="silent.mp4" type="video/mp4"></video>
 
-    <div id="cameraContainer">
-        <video id="cameraView" autoplay playsinline></video>
-    </div>
+    <div id="cameraContainer"><video id="cameraView" autoplay playsinline></video></div>
 
     <i class="fas fa-cog" style="position:fixed; top:25px; right:25px; z-index:100; font-size:26px; color:rgba(255,255,255,0.5); cursor:pointer;" onclick="toggleM('settingsModal')"></i>
 
     <div class="ui-layer">
-        <div id="status" style="margin-bottom: 15px; color: #818cf8; font-size: 14px;">Divinity: Vision Ready</div>
+        <div id="status" style="margin-bottom: 15px; color: #818cf8; font-size: 14px;">Divinity Ready</div>
         <div class="controls">
-            <button class="btn btn-stop" onclick="stopAll()"><i class="fas fa-stop"></i></button>
+            <button class="btn" style="background:#ef4444; width:50px; height:50px;" onclick="stopAll()"><i class="fas fa-stop"></i></button>
             <button id="micBtn" class="btn btn-mic" onclick="startInteraction()"><i class="fas fa-microphone"></i></button>
-            <button class="btn btn-stop" style="background:#4f46e5" onclick="toggleCamera()"><i class="fas fa-camera"></i></button>
+            <button class="btn" style="background:#4f46e5; width:50px; height:50px;" onclick="toggleCamera()"><i class="fas fa-camera"></i></button>
         </div>
     </div>
 
@@ -55,38 +41,26 @@
         <div class="modal-card">
             <h3 style="text-align:center; color:#fff;">Engine Config</h3>
             <select id="activeModel">
-                <option value="groq">Groq Llama 3 (70B)</option>
-                <option value="gemini2.5">Gemini 2.5 Flash</option>
-                <option value="gemini-latest">Gemini Flash Latest</option>
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                <option value="llama3-70b-8192">Groq Llama 3 (70B)</option>
+                <option value="gemini-1.5-flash-latest">Gemini Flash Latest</option>
             </select>
             <input type="password" id="groqKey" placeholder="Groq Key">
             <textarea id="geminiKeys" rows="2" placeholder="Gemini Keys (Comma Separated)"></textarea>
-            <button onclick="saveConfig()" style="width:100%; padding:15px; background:#4f46e5; color:#fff; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">SAVE ALL</button>
-            <p onclick="toggleM('settingsModal')" style="text-align:center; color:red; cursor:pointer; margin-top:10px;">Close</p>
+            <button onclick="saveConfig()" style="width:100%; padding:15px; background:#4f46e5; color:#fff; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">SAVE CONFIG</button>
         </div>
     </div>
 
     <script>
         const mainVideo = document.getElementById('mainVideo');
-        
-        // વિડિયો બદલવાનું ફંક્શન
-        function setVideo(src) {
-            mainVideo.src = src + ".mp4";
-            mainVideo.play().catch(e => {});
-        }
+        function setVideo(src) { mainVideo.src = src + ".mp4"; mainVideo.play().catch(e => {}); }
+        function toggleM(id) { const m = document.getElementById(id); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; }
 
-        function toggleM(id) {
-            const m = document.getElementById(id);
-            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-        }
-
-        // --- CAMERA LOGIC ---
         async function toggleCamera() {
             const container = document.getElementById('cameraContainer');
             const videoEl = document.getElementById('cameraView');
             if (container.style.display === 'block') {
-                const tracks = videoEl.srcObject.getTracks();
-                tracks.forEach(t => t.stop());
+                videoEl.srcObject.getTracks().forEach(t => t.stop());
                 container.style.display = 'none';
             } else {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
@@ -95,53 +69,39 @@
             }
         }
 
-        // --- VOICE & INTERACTION ---
         function speak(text) {
             window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(text);
+            const msg = new SpeechSynthesisUtterance(text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s]/g, ' '));
             msg.lang = 'gu-IN';
-            msg.onstart = () => setVideo("talking"); // જ્યારે બોલે ત્યારે talking.mp4
-            msg.onend = () => setVideo("silent");   // બોલી રહ્યા પછી પાછું silent.mp4
+            msg.onstart = () => setVideo("talking");
+            msg.onend = () => setVideo("silent");
             window.speechSynthesis.speak(msg);
         }
 
         function startInteraction() {
             const rec = new (window.webkitSpeechRecognition)();
             rec.lang = 'gu-IN';
-            rec.onstart = () => {
-                document.getElementById('micBtn').classList.add('listening');
-                document.getElementById('status').innerText = "સાંભળી રહી છું...";
-            };
+            rec.onstart = () => { document.getElementById('micBtn').style.background = "#f43f5e"; };
             rec.onresult = async (e) => {
                 const speech = e.results[0][0].transcript;
-                
-                // કેલ્ક્યુલેટર કમાન્ડ
                 if (speech.includes("કેલ્ક્યુલેટર") || speech.toLowerCase().includes("calculator")) {
                     speak("ચોક્કસ દેવેન્દ્રભાઈ કેલ્ક્યુલેટર ખોલી રહી છું");
                     setTimeout(() => { window.location.href = "intent://com.android.calculator2/#Intent;scheme=android-app;end"; }, 2000);
                     return;
                 }
-
-                document.getElementById('status').innerText = "વિચારી રહી છું...";
-                setVideo("thinking"); // વિચારતી વખતે thinking.mp4 અથવા silent.mp4
-                
-                // અહીં તમારું AI Fetch લોજિક આવશે...
-                setTimeout(() => { speak("જય શ્રી કૃષ્ણ દેવેન્દ્રભાઈ મેં તમારો પ્રશ્ન સાંભળ્યો"); }, 1500);
+                setVideo("thinking");
+                // API Call Logic using document.getElementById('activeModel').value
+                speak("જય શ્રી કૃષ્ણ દેવેન્દ્રભાઈ તમે પૂછ્યું કે " + speech);
             };
-            rec.onend = () => document.getElementById('micBtn').classList.remove('listening');
+            rec.onend = () => { document.getElementById('micBtn').style.background = "#fff"; };
             rec.start();
         }
 
-        function stopAll() {
-            window.speechSynthesis.cancel();
-            setVideo("silent");
-            document.getElementById('status').innerText = "Stopped";
-        }
-
+        function stopAll() { window.speechSynthesis.cancel(); setVideo("silent"); }
         function saveConfig() {
             localStorage.setItem('div_active_model', document.getElementById('activeModel').value);
             toggleM('settingsModal');
-            speak("સેટિંગ્સ સેવ થઈ ગયા છે");
+            speak("જય શ્રી કૃષ્ણ સેટિંગ્સ સેવ થઈ ગયા છે");
         }
     </script>
 </body>
