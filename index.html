@@ -2,342 +2,399 @@
 <html lang="gu">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Divinity AI - જય સીયારામ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { 
-            --pink: #ec4899;
-            --purple: #8b5cf6;
-            --green: #138808;
+        /* BASIC RESET */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body, html { 
-            width: 100%; 
-            height: 100%; 
-            overflow: hidden; 
-            background: #000; 
-            font-family: sans-serif;
-        }
-        
-        .container {
+        /* VIDEO BACKGROUND */
+        #mainVideo {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-            background: linear-gradient(135deg, #000428, #004e92);
-            color: white;
+            object-fit: cover;
+            z-index: 1;
         }
         
-        .status-bar {
-            text-align: center;
-            padding: 15px;
-            background: rgba(0,0,0,0.7);
-            border-radius: 20px;
-            margin-bottom: 20px;
+        /* APP OVERLAY */
+        .app-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        /* TOP BAR */
+        .top-bar {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .app-title {
+            color: #ec4899;
+            font-size: 20px;
+            font-weight: bold;
         }
         
         #status {
-            color: var(--pink);
-            font-size: 18px;
+            color: #34d399;
+            font-size: 14px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(52, 211, 153, 0.3);
         }
         
+        .settings-btn {
+            background: rgba(139, 92, 246, 0.3);
+            color: #8b5cf6;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+        
+        /* MAIN CONTENT */
         .main-content {
             flex: 1;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
+            justify-content: space-between;
         }
         
-        .title {
-            color: var(--pink);
-            font-size: 28px;
-            margin-bottom: 10px;
+        /* VANSHAVALI SECTION */
+        .vanshavali-box {
+            background: rgba(15, 23, 42, 0.85);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            max-height: 200px;
+            overflow-y: auto;
+            backdrop-filter: blur(5px);
         }
         
-        .subtitle {
-            color: #ccc;
+        .section-title {
+            color: #14b8a6;
             font-size: 16px;
-            margin-bottom: 30px;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-        }
-        
-        .btn:active {
-            transform: scale(0.95);
-        }
-        
-        .btn-mic {
-            background: linear-gradient(135deg, var(--pink), var(--purple));
-            color: white;
-        }
-        
-        .btn-stop {
-            background: #ef4444;
-            color: white;
-        }
-        
-        .btn-settings {
-            background: rgba(255,255,255,0.1);
-            color: var(--pink);
-        }
-        
-        .features {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .feature-btn {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 14px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         
-        .vanshavali-display {
-            background: rgba(0,0,0,0.5);
-            border-radius: 15px;
-            padding: 15px;
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            text-align: left;
-        }
-        
         .vanshavali-item {
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 0;
+            border-left: 2px solid #ec4899;
+            padding-left: 10px;
+            margin: 5px 0;
+            color: #e2e8f0;
+            font-size: 14px;
         }
         
-        .loading {
-            text-align: center;
+        /* BOTTOM CONTROLS */
+        .bottom-controls {
             padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+        
+        /* BIG BUTTONS */
+        .control-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .mic-btn {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white;
+        }
+        
+        .mic-btn.listening {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #ef4444, #ec4899);
+        }
+        
+        .stop-btn {
+            background: #ef4444;
+            color: white;
+        }
+        
+        /* QUICK ACTIONS */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .action-btn:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 500px;
+            margin: 0 auto;
+            border: 2px solid #ec4899;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        
+        /* ANIMATIONS */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 480px) {
+            .control-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 24px;
+            }
+            
+            .controls-row {
+                gap: 30px;
+            }
+            
+            .action-btn {
+                padding: 10px 15px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Status Bar -->
-        <div class="status-bar">
-            <div id="status">👸 Divinity તૈયાર છે</div>
+    <!-- VIDEO BACKGROUND -->
+    <video id="mainVideo" autoplay loop muted playsinline>
+        <source src="silent.mp4" type="video/mp4">
+    </video>
+    
+    <!-- APP OVERLAY -->
+    <div class="app-overlay">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="app-title">Divinity AI</div>
+            <div id="status">😊 સ્માઈલિંગ</div>
+            <button class="settings-btn" onclick="toggleModal()">
+                <i class="fas fa-cog"></i>
+            </button>
         </div>
         
         <!-- Main Content -->
         <div class="main-content">
-            <div class="title">Divinity AI</div>
-            <div class="subtitle">તમારી વ્યક્તિગત સહાયક</div>
-            
-            <!-- Vanshavali Display -->
-            <div id="vanshavaliContainer" class="vanshavali-display">
-                <div class="loading" id="vanshavaliLoading">
-                    <i class="fas fa-spinner fa-spin"></i> વંશાવળી લોડ થઈ રહ્યો છે...
+            <!-- Vanshavali Box -->
+            <div class="vanshavali-box">
+                <div class="section-title">
+                    <i class="fas fa-tree"></i>
+                    <span>તમારી વંશાવળી</span>
+                </div>
+                <div id="vanshavaliList">
+                    <!-- Vanshavali will load here -->
                 </div>
             </div>
             
-            <!-- Controls -->
-            <div class="controls">
-                <button class="btn btn-stop" onclick="stopEverything()">
+            <!-- Empty space for video visibility -->
+            <div style="flex: 1;"></div>
+        </div>
+        
+        <!-- Bottom Controls -->
+        <div class="bottom-controls">
+            <!-- Big Control Buttons -->
+            <div class="controls-row">
+                <button class="control-btn stop-btn" onclick="stopEverything()">
                     <i class="fas fa-stop"></i>
                 </button>
-                <button class="btn btn-mic" onclick="startListening()">
+                <button class="control-btn mic-btn" onclick="startListening()" id="micButton">
                     <i class="fas fa-microphone"></i>
-                </button>
-                <button class="btn btn-settings" onclick="showSettings()">
-                    <i class="fas fa-cog"></i>
                 </button>
             </div>
             
-            <!-- Features -->
-            <div class="features">
-                <button class="feature-btn" onclick="speak('હું Divinity છું. તમે ડાયરીમાં નોંધ કરવા માટે નોંધ કરો કહી શકો છો.')">
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button class="action-btn" onclick="callNumber()">
+                    <i class="fas fa-phone"></i> કૉલ
+                </button>
+                <button class="action-btn" onclick="openWhatsApp()">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </button>
+                <button class="action-btn" onclick="showDiary()">
                     <i class="fas fa-book"></i> ડાયરી
                 </button>
-                <button class="feature-btn" onclick="showVanshavali()">
-                    <i class="fas fa-tree"></i> વંશાવળી
-                </button>
-                <button class="feature-btn" onclick="testCamera()">
+                <button class="action-btn" onclick="openCamera()">
                     <i class="fas fa-camera"></i> કૅમેરા
                 </button>
             </div>
         </div>
     </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h3 style="color: #ec4899; text-align: center; margin-bottom: 20px;">
+                <i class="fas fa-cog"></i> Divinity સેટિંગ્સ
+            </h3>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
+                    કૉલ માટે નંબર
+                </label>
+                <input type="text" id="phoneNumber" placeholder="+91 1234567890" 
+                       style="width: 100%; padding: 12px; background: #0f172a; color: white; border: 1px solid #334155; border-radius: 10px;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
+                    WhatsApp નંબર
+                </label>
+                <input type="text" id="whatsappNumber" placeholder="+91 1234567890" 
+                       style="width: 100%; padding: 12px; background: #0f172a; color: white; border: 1px solid #334155; border-radius: 10px;">
+            </div>
+            
+            <button onclick="saveSettings()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #ec4899, #8b5cf6); color: white; border: none; border-radius: 10px; margin-top: 10px; font-weight: bold;">
+                <i class="fas fa-save"></i> સેટિંગ્સ સેવ કરો
+            </button>
+            
+            <button onclick="toggleModal()" style="width: 100%; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 10px; margin-top: 15px;">
+                <i class="fas fa-times"></i> બંધ કરો
+            </button>
+        </div>
+    </div>
 
-    <!-- Vanshavali Data INLINE - No external file needed -->
+    <!-- Vanshavali External File -->
+    <script src="vanshavali_data.js"></script>
+
+    <!-- Main App Script -->
     <script>
-        // VANSHAVALI DATA - DIRECTLY IN HTML
-        window.vanshavaliData = {
-            name: "જગદગુરુ રામાનંદાચાર્યજી", 
-            info: "વિ. સં. ૧૩૫૬",
-            children: [{
-                name: "અનંતાનંદજી", 
-                children: [{
-                    name: "ગેંડાજી", 
-                    children: [{
-                        name: "લક્ષ્મીદાસજી", 
-                        children: [{
-                            name: "માધવદાસજી", 
-                            children: [{
-                                name: "ખોજીજી", 
-                                children: [{
-                                    name: "મહેન્દ્રદાસજી", 
-                                    info: "પાલડી-મારવાડ (૧૪૯૫)", 
-                                    children: [{
-                                        name: "પુરણદાસજી બાપુ", 
-                                        info: "ઝીંઝર સમાધિ (૧૯૩૧)", 
-                                        children: [
-                                            {
-                                                name: "ગંગારામજી", 
-                                                children: [
-                                                    { 
-                                                        name: "આશારામજી", 
-                                                        children: [
-                                                            { 
-                                                                name: "ગિરધરદાસજી", 
-                                                                children: [
-                                                                    { name: "હરીરામજી" }
-                                                                ] 
-                                                            }, 
-                                                            { 
-                                                                name: "મોજીરમજી", 
-                                                                children: [
-                                                                    { 
-                                                                        name: "જેજેરામ", 
-                                                                        children: [
-                                                                            { name: "ગૌતમ" }
-                                                                        ] 
-                                                                    }
-                                                                ] 
-                                                            }, 
-                                                            { 
-                                                                name: "સીતારામજી", 
-                                                                children: [
-                                                                    { name: "પ્રભુદાસ" }, 
-                                                                    { name: "રાજુભાઈ" }
-                                                                ] 
-                                                            }
-                                                        ]
-                                                    },
-                                                    { 
-                                                        name: "વ્રજેશરામજી", 
-                                                        children: [
-                                                            { 
-                                                                name: "ભગવાનદાસજી", 
-                                                                info: "ગાંગોદ", 
-                                                                children: [
-                                                                    { name: "બાબુરામજી" }, 
-                                                                    { name: "ઈશ્વરદાસજી" }
-                                                                ] 
-                                                            }, 
-                                                            { 
-                                                                name: "તુલસીદાસજી", 
-                                                                info: "રોજકા", 
-                                                                children: [
-                                                                    { name: "મનસુખભાઈ" }, 
-                                                                    { name: "વિમુભાઈ" }, 
-                                                                    { name: "પરશુરામ" }
-                                                                ] 
-                                                            }
-                                                        ]
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                name: "રઘુરામજી", 
-                                                children: [{
-                                                    name: "દયારામજી", 
-                                                    info: "દિવાળીબેન (ઝમરાળા)", 
-                                                    children: [
-                                                        { name: "કાશીરામજી", info: "રામપુર" }, 
-                                                        { name: "વશરામજી", info: "સંખેજ" }, 
-                                                        { 
-                                                            name: "જાનકીદાસજી", 
-                                                            info: "ઝીંઝર", 
-                                                            children: [
-                                                                { name: "મનહરલાલ" }, 
-                                                                { name: "પ્રતાપભાઈ" }, 
-                                                                { name: "વૈકુંઠભાઈ" }, 
-                                                                { name: "સતીષભાઈ" }, 
-                                                                { name: "દેવેન્દ્રભાઈ" }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }]
-                                            }
-                                        ]
-                                    }]
-                                }]
-                            }]
-                        }]
-                    }]
-                }]
-            }]
+        // VIDEO STATES - 4 VIDEOS
+        const videoStates = {
+            'silent': 'silent.mp4',
+            'talking': 'talking.mp4', 
+            'thinking': 'thinking.mp4',
+            'smiling': 'smiling.mp4'
         };
-
-        // App Variables
-        let isSpeaking = false;
-        let diaryEntries = [];
         
-        // Initialize
-        function init() {
-            console.log("🚀 Divinity App Started");
-            console.log("✅ Vanshavali Data Loaded:", window.vanshavaliData.name);
+        // App Variables
+        let diaryEntries = [];
+        let isListening = false;
+        let isSpeaking = false;
+        let currentVideo = 'smiling';
+        
+        // Initialize App
+        function initApp() {
+            console.log("🚀 Divinity AI with 4 Videos Started");
+            updateStatus("😊 સ્વાગત છે");
+            setVideo('smiling');
             
-            // Load diary from localStorage
-            const saved = localStorage.getItem('divinity_diary');
-            if (saved) {
-                diaryEntries = JSON.parse(saved);
-            }
+            // Load diary
+            loadDiary();
             
-            // Display vanshavali
-            showVanshavali();
+            // Load vanshavali
+            setTimeout(loadVanshavali, 500);
             
-            // Welcome message
+            // Load settings
+            loadSettings();
+            
+            // Welcome message after 1 second
             setTimeout(() => {
-                speak("હું Divinity છું, તમારી AI સહાયક. તૈયાર છું.");
+                speak("જય સીયારામ. હું Divinity છું, તમારી AI સહાયક. બોલવા માટે માઇક બટન દબાવો.");
             }, 1000);
         }
         
-        // Speak function
+        // Set Video Function
+        function setVideo(state) {
+            const video = document.getElementById('mainVideo');
+            if (videoStates[state]) {
+                video.src = videoStates[state];
+                video.play().catch(e => console.log("Video play error:", e));
+                currentVideo = state;
+            }
+        }
+        
+        // Update Status
+        function updateStatus(text) {
+            document.getElementById('status').textContent = text;
+        }
+        
+        // Speak Function with Video Change
         function speak(text) {
             if (isSpeaking) {
                 window.speechSynthesis.cancel();
@@ -350,33 +407,34 @@
             speech.pitch = 1.2;
             
             isSpeaking = true;
+            setVideo('talking');
             updateStatus("🎤 બોલું છું...");
             
-            speech.onstart = function() {
+            speech.onstart = () => {
                 console.log("Speaking:", text);
             };
             
-            speech.onend = function() {
+            speech.onend = speech.onerror = () => {
                 isSpeaking = false;
-                updateStatus("👸 તૈયાર છું");
-            };
-            
-            speech.onerror = function() {
-                isSpeaking = false;
+                setVideo('silent');
                 updateStatus("👸 તૈયાર છું");
             };
             
             window.speechSynthesis.speak(speech);
         }
         
-        // Start listening
+        // Start Listening
         function startListening() {
+            if (isListening || isSpeaking) return;
+            
+            setVideo('thinking');
             updateStatus("🎤 સાંભળું છું...");
+            document.getElementById('micButton').classList.add('listening');
             
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             
             if (!SpeechRecognition) {
-                speak("માફ કરજો, આ ડિવાઇસમાં વૉઇસ સપોર્ટ નથી.");
+                speak("માફ કરજો, વૉઇસ સપોર્ટ નથી.");
                 return;
             }
             
@@ -385,32 +443,40 @@
             recognition.continuous = false;
             recognition.interimResults = false;
             
-            recognition.onresult = function(event) {
+            isListening = true;
+            
+            recognition.onresult = (event) => {
                 const text = event.results[0][0].transcript;
                 console.log("You said:", text);
-                handleCommand(text);
+                handleVoiceCommand(text);
             };
             
-            recognition.onerror = function(event) {
-                console.error("Recognition error:", event.error);
+            recognition.onerror = () => {
                 speak("સમજાયું નથી, ફરી કહો.");
-                updateStatus("👸 તૈયાર છું");
+                resetListening();
             };
             
-            recognition.onend = function() {
-                updateStatus("👸 તૈયાર છું");
+            recognition.onend = () => {
+                resetListening();
             };
             
             recognition.start();
         }
         
-        // Handle voice commands
-        function handleCommand(text) {
+        function resetListening() {
+            isListening = false;
+            document.getElementById('micButton').classList.remove('listening');
+            setVideo('silent');
+            updateStatus("👸 તૈયાર છું");
+        }
+        
+        // Handle Voice Commands
+        function handleVoiceCommand(text) {
             const lowerText = text.toLowerCase();
             
             // Greetings
-            if (lowerText.includes('હેલો') || lowerText.includes('નમસ્તે') || lowerText.includes('હાય')) {
-                speak("નમસ્તે! કેવા છો? હું Divinity છું.");
+            if (lowerText.includes('નમસ્તે') || lowerText.includes('હેલો')) {
+                speak("નમસ્તે! કેવા છો?");
                 return;
             }
             
@@ -419,136 +485,217 @@
                 return;
             }
             
-            // Diary command
+            // Call Command
+            if (lowerText.includes('કૉલ કરો') || lowerText.includes('ફોન કરો')) {
+                callNumber();
+                return;
+            }
+            
+            // WhatsApp Command
+            if (lowerText.includes('વોટ્સએપ') || lowerText.includes('મેસેજ')) {
+                openWhatsApp();
+                return;
+            }
+            
+            // Diary Command
             if (lowerText.includes('નોંધ કરો')) {
                 const note = text.replace('નોંધ કરો', '').trim();
                 if (note) {
                     addDiaryEntry(note);
-                    speak("ડાયરીમાં નોંધ કરી ગઈ છું: " + note);
-                } else {
-                    speak("ડાયરીમાં શું લખવું છે?");
+                    speak("ડાયરીમાં નોંધ કરી: " + note);
                 }
                 return;
             }
             
-            // Vanshavali command
+            // Vanshavali Command
             if (lowerText.includes('વંશાવળી') || lowerText.includes('પરિવાર')) {
-                const count = countVanshavaliMembers(window.vanshavaliData);
-                speak(`તમારી વંશાવળીમાં ${count} સભ્યો છે. મૂળ પુરુષ છે ${window.vanshavaliData.name}`);
+                if (window.vanshavaliData) {
+                    const count = countVanshavaliMembers();
+                    speak(`તમારી વંશાવળીમાં ${count} સભ્યો છે. મૂળ પુરુષ છે ${window.vanshavaliData.name}`);
+                } else {
+                    speak("વંશાવળી ડેટા લોડ થયો નથી.");
+                }
                 return;
             }
             
             // Time/Date
-            if (lowerText.includes('સમય') || lowerText.includes('કેટલા વાગ્યા')) {
-                const now = new Date();
-                const time = now.toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
+            if (lowerText.includes('સમય')) {
+                const time = new Date().toLocaleTimeString('gu-IN', {hour: '2-digit', minute: '2-digit'});
                 speak(`હવે સમય છે ${time}`);
                 return;
             }
             
             if (lowerText.includes('તારીખ')) {
-                const now = new Date();
-                const date = now.toLocaleDateString('gu-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                speak(`આજે ${date} છે`);
+                const date = new Date().toLocaleDateString('gu-IN');
+                speak(`આજે તારીખ છે ${date}`);
                 return;
             }
             
-            // Default response
+            // Default
             speak(`તમે કહ્યું: ${text}. હું હજુ શીખી રહી છું.`);
         }
         
-        // Show vanshavali
-        function showVanshavali() {
-            const container = document.getElementById('vanshavaliContainer');
+        // Load Vanshavali from external file
+        function loadVanshavali() {
+            const container = document.getElementById('vanshavaliList');
             
-            if (!window.vanshavaliData) {
-                container.innerHTML = '<div style="color: #ef4444;">વંશાવળી ડેટા નથી મળ્યો</div>';
-                return;
-            }
-            
-            let html = '<div style="color: var(--pink); font-weight: bold; margin-bottom: 10px;">🌳 તમારી વંશાવળી</div>';
-            
-            // Extract and display all names
-            function addNames(node, level = 0) {
-                const indent = '&nbsp;&nbsp;&nbsp;'.repeat(level);
-                const prefix = level === 0 ? '👑 ' : '├─ ';
+            if (typeof window.vanshavaliData !== 'undefined') {
+                let html = '';
                 
-                html += `<div class="vanshavali-item" style="margin-left: ${level * 20}px;">
-                    ${indent}${prefix}${node.name}
-                    ${node.info ? `<br><small style="color: #94a3b8;">${node.info}</small>` : ''}
-                </div>`;
-                
-                if (node.children) {
-                    node.children.forEach(child => {
-                        addNames(child, level + 1);
-                    });
+                function addMembers(node, level = 0) {
+                    const indent = '&nbsp;&nbsp;'.repeat(level);
+                    const prefix = level === 0 ? '👑 ' : '├─ ';
+                    
+                    html += `<div class="vanshavali-item" style="margin-left: ${level * 15}px;">
+                        ${indent}${prefix}<strong>${node.name}</strong>
+                        ${node.info ? `<br><small style="color: #94a3b8;">${node.info}</small>` : ''}
+                    </div>`;
+                    
+                    if (node.children) {
+                        node.children.forEach(child => addMembers(child, level + 1));
+                    }
                 }
+                
+                addMembers(window.vanshavaliData);
+                container.innerHTML = html;
+                
+            } else {
+                container.innerHTML = '<div style="color: #ef4444;">વંશાવળી ડેટા લોડ થયો નથી</div>';
             }
-            
-            addNames(window.vanshavaliData);
-            
-            const total = countVanshavaliMembers(window.vanshavaliData);
-            html += `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); color: var(--green);">
-                કુલ સભ્યો: ${total}
-            </div>`;
-            
-            container.innerHTML = html;
         }
         
-        // Count vanshavali members
-        function countVanshavaliMembers(node) {
-            let count = 1;
-            if (node.children) {
-                node.children.forEach(child => {
-                    count += countVanshavaliMembers(child);
-                });
+        function countVanshavaliMembers() {
+            if (!window.vanshavaliData) return 0;
+            
+            function count(node) {
+                let total = 1;
+                if (node.children) {
+                    node.children.forEach(child => total += count(child));
+                }
+                return total;
             }
-            return count;
+            return count(window.vanshavaliData);
         }
         
-        // Add diary entry
+        // CALL FUNCTION
+        function callNumber() {
+            const phoneNumber = document.getElementById('phoneNumber').value || '+91';
+            
+            if (phoneNumber && phoneNumber !== '+91') {
+                speak(`કૉલ કરું છું: ${phoneNumber}`);
+                window.location.href = `tel:${phoneNumber}`;
+            } else {
+                speak("કૃપા કરીને સેટિંગ્સમાં ફોન નંબર ઉમેરો.");
+                toggleModal();
+            }
+        }
+        
+        // WHATSAPP FUNCTION
+        function openWhatsApp() {
+            const whatsappNumber = document.getElementById('whatsappNumber').value || '+91';
+            
+            if (whatsappNumber && whatsappNumber !== '+91') {
+                speak(`WhatsApp ખોલું છું: ${whatsappNumber}`);
+                window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank');
+            } else {
+                speak("કૃપા કરીને સેટિંગ્સમાં WhatsApp નંબર ઉમેરો.");
+                toggleModal();
+            }
+        }
+        
+        // Diary Functions
+        function loadDiary() {
+            const saved = localStorage.getItem('divinity_diary');
+            if (saved) diaryEntries = JSON.parse(saved);
+        }
+        
         function addDiaryEntry(text) {
             const entry = {
                 id: Date.now(),
                 date: new Date().toLocaleDateString('gu-IN'),
-                time: new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' }),
+                time: new Date().toLocaleTimeString('gu-IN'),
                 content: text
             };
             
-            diaryEntries.unshift(entry);
+            diaryEntries.push(entry);
             localStorage.setItem('divinity_diary', JSON.stringify(diaryEntries));
         }
         
-        // Test camera
-        function testCamera() {
+        function showDiary() {
+            speak(`તમારી ડાયરીમાં ${diaryEntries.length} નોંધ છે. નવી નોંધ ઉમેરવા 'નોંધ કરો' કહો.`);
+        }
+        
+        // Camera
+        function openCamera() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                speak("કૅમેરા સપોર્ટેડ છે. પરવાનગી આપતા ચાલુ થશે.");
+                speak("કૅમેરા ચાલુ કરું છું. પરવાનગી આપો.");
+                
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        speak("કૅમેરા ચાલુ થઈ ગઈ!");
+                        // You can add camera preview here
+                    })
+                    .catch(error => {
+                        console.error("Camera error:", error);
+                        speak("કૅમેરા માટે પરવાનગી નથી આપેલી.");
+                    });
             } else {
                 speak("કૅમેરા સપોર્ટ નથી.");
             }
         }
         
-        // Show settings
-        function showSettings() {
-            speak("સેટિંગ્સ ખોલું છું. તમે અહીં ડાયરી, વંશાવળી અને કૅમેરા મેનેજ કરી શકો છો.");
-        }
-        
-        // Stop everything
+        // Stop Everything
         function stopEverything() {
             window.speechSynthesis.cancel();
+            isListening = false;
             isSpeaking = false;
+            setVideo('silent');
             updateStatus("⏹️ બંધ કર્યું");
-            setTimeout(() => updateStatus("👸 તૈયાર છું"), 2000);
+            
+            // Visual feedback
+            document.querySelector('.stop-btn').style.background = "#10b981";
+            setTimeout(() => {
+                document.querySelector('.stop-btn').style.background = "#ef4444";
+            }, 300);
+            
             speak("બધું બંધ કર્યું");
         }
         
-        // Update status
-        function updateStatus(text) {
-            document.getElementById('status').textContent = text;
+        // Settings Functions
+        function loadSettings() {
+            const savedPhone = localStorage.getItem('divinity_phone');
+            const savedWhatsApp = localStorage.getItem('divinity_whatsapp');
+            
+            if (savedPhone) document.getElementById('phoneNumber').value = savedPhone;
+            if (savedWhatsApp) document.getElementById('whatsappNumber').value = savedWhatsApp;
         }
         
+        function saveSettings() {
+            const phone = document.getElementById('phoneNumber').value;
+            const whatsapp = document.getElementById('whatsappNumber').value;
+            
+            localStorage.setItem('divinity_phone', phone);
+            localStorage.setItem('divinity_whatsapp', whatsapp);
+            
+            speak("સેટિંગ્સ સેવ થઈ ગયા");
+            toggleModal();
+        }
+        
+        function toggleModal() {
+            const modal = document.getElementById('settingsModal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('settingsModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+        
         // Initialize on load
-        window.onload = init;
+        window.onload = initApp;
     </script>
 </body>
 </html>
