@@ -104,25 +104,59 @@
         }
 
         // --- POWER VOICE ENGINE ---
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            // ચિન્હો કાઢી નાખ્યા જેથી સાંભળવામાં તકલીફ ન પડે
-            const cleanText = text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s]/g, ' ');
-            const msg = new SpeechSynthesisUtterance(cleanText);
-            
-            const voices = window.speechSynthesis.getVoices();
-            const guVoice = voices.find(v => v.lang.includes('gu'));
-            const hiVoice = voices.find(v => v.lang.includes('hi'));
+        // ૧. અવાજ એન્જિનને જગાડવા માટે (Resume Engine)
+function speak(text) {
+    window.speechSynthesis.cancel(); // જૂનું બધું બંધ કરો
+    
+    // ચિન્હો સાફ કરો
+    const cleanText = text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s]/g, ' ');
+    const msg = new SpeechSynthesisUtterance(cleanText);
+    
+    // ઉપલબ્ધ અવાજો લોડ કરો
+    const voices = window.speechSynthesis.getVoices();
+    const guVoice = voices.find(v => v.lang.includes('gu'));
+    const hiVoice = voices.find(v => v.lang.includes('hi'));
 
-            if(guVoice) msg.voice = guVoice;
-            else if(hiVoice) msg.voice = hiVoice;
+    if(guVoice) msg.voice = guVoice;
+    else if(hiVoice) msg.voice = hiVoice;
 
-            msg.lang = 'gu-IN';
-            msg.rate = 1.0;
-            msg.onstart = () => playV('talking');
-            msg.onend = () => playV('smiling');
-            window.speechSynthesis.speak(msg);
-        }
+    msg.lang = 'gu-IN';
+    msg.volume = 1.0;
+    msg.rate = 1.0;
+
+    msg.onstart = () => playV('talking');
+    msg.onend = () => playV('smiling');
+
+    // ક્રોમ માટે ખાસ: અવાજ એન્જિન રિઝ્યૂમ કરો
+    window.speechSynthesis.resume(); 
+    window.speechSynthesis.speak(msg);
+}
+
+// ૨. માઇક પર ક્લિક કરો ત્યારે જ સિસ્ટમને પરવાનગી આપો
+function startInteraction() {
+    // અવાજ એન્જિનને એક્ટિવેટ કરવા માટે ખાલી સ્પીચ આપો (Unlock Voice)
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+
+    const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    rec.lang = 'gu-IN';
+    rec.onstart = () => { 
+        playV('talking'); 
+        document.getElementById('micBtn').classList.add('listening'); 
+        document.getElementById('status').innerText = "Divinity સાંભળે છે...";
+    };
+    rec.onresult = (e) => {
+        const resultText = e.results[0][0].transcript;
+        console.log("તમે બોલ્યા:", resultText);
+        // અહીં તમે ઈચ્છો તો ચેટ ફંક્શન કોલ કરી શકો
+    };
+    rec.onend = () => { 
+        document.getElementById('micBtn').classList.remove('listening'); 
+        playV('smiling'); 
+        document.getElementById('status').innerText = "Divinity Ready";
+    };
+    rec.start();
+}
+
 
         window.speechSynthesis.onvoiceschanged = () => { console.log("Voices Loaded"); };
 
