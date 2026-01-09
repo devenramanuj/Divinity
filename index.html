@@ -2,8 +2,8 @@
 <html lang="gu">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>જય સીયારામ AI - ગુજરાતી સહાયક</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Divinity AI - જય સીયારામ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { 
@@ -11,16 +11,26 @@
             --glass: rgba(0, 0, 0, 0.9);
             --saffron: #FF9933;
             --green: #138808;
+            --pink: #ec4899;
+            --purple: #8b5cf6;
         }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
         body, html { 
-            margin: 0; 
-            padding: 0; 
             width: 100%; 
             height: 100%; 
             overflow: hidden; 
             background: #000; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
         }
+        
         #mainVideo { 
             position: fixed; 
             top: 0; 
@@ -30,48 +40,116 @@
             object-fit: cover; 
             z-index: 1; 
         }
+        
         .ui-layer { 
-            position: relative; 
-            z-index: 10; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: flex-end; 
-            align-items: center; 
-            padding-bottom: 50px;
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
+        
+        /* Top Status Bar */
+        .status-bar {
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        }
+        
+        #status { 
+            color: var(--pink); 
+            font-size: 16px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            max-width: 70%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .setting-icon {
+            font-size: 24px; 
+            color: var(--pink); 
+            cursor: pointer;
+            background: rgba(0,0,0,0.7);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .setting-icon:hover, .setting-icon:active {
+            background: rgba(0,0,0,0.9);
+            transform: rotate(45deg);
+        }
+        
+        /* Bottom Controls */
+        .bottom-controls {
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        }
+        
         .controls { 
             display: flex; 
             align-items: center; 
-            gap: 20px; 
+            gap: 30px; 
             background: rgba(0,0,0,0.85); 
             padding: 15px 30px; 
             border-radius: 50px; 
             backdrop-filter: blur(15px); 
             border: 1px solid rgba(255,255,255,0.15);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            min-width: 250px;
+            justify-content: center;
         }
+        
         .btn-mic { 
             width: 80px; 
             height: 80px; 
-            background: linear-gradient(135deg, var(--saffron), var(--green)); 
+            background: linear-gradient(135deg, var(--pink), var(--purple)); 
             border: none; 
             border-radius: 50%; 
-            font-size: 32px; 
+            font-size: 28px; 
             cursor: pointer; 
             color: white;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(255, 153, 51, 0.3);
+            box-shadow: 0 5px 20px rgba(236, 72, 153, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .btn-mic:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(255, 153, 51, 0.4);
+        
+        .btn-mic:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 10px rgba(236, 72, 153, 0.4);
         }
+        
         .btn-mic.listening {
             animation: pulse 1.5s infinite;
-            background: linear-gradient(135deg, #ef4444, #f43f5e);
+            background: linear-gradient(135deg, #ef4444, var(--pink));
         }
+        
         .btn-stop { 
             width: 60px; 
             height: 60px; 
@@ -82,11 +160,46 @@
             cursor: pointer; 
             font-size: 20px;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .btn-stop:hover {
+        
+        .btn-stop:active {
+            transform: scale(0.95);
             background: #dc2626;
-            transform: scale(1.05);
         }
+        
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .quick-btn {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quick-btn:active {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Modal Styles */
         #settingsModal { 
             display: none; 
             position: fixed; 
@@ -94,26 +207,66 @@
             background: rgba(0,0,0,0.97); 
             z-index: 1000; 
             align-items: center; 
-            justify-content: center; 
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
         }
+        
         .modal-card { 
             background: #1e293b; 
-            width: 90%; 
-            max-width: 450px; 
-            padding: 30px; 
-            border-radius: 25px; 
-            border: 2px solid var(--saffron); 
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            padding: 25px; 
+            border-radius: 20px; 
+            border: 2px solid var(--pink); 
             color: #fff; 
-            box-sizing: border-box;
             box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            overflow-y: auto;
         }
+        
         .modal-title {
             text-align: center;
-            color: var(--saffron);
-            font-size: 24px;
-            margin-bottom: 25px;
+            color: var(--pink);
+            font-size: 22px;
+            margin-bottom: 20px;
             font-weight: bold;
         }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            min-width: 120px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            background: var(--pink);
+            color: white;
+            border-color: var(--pink);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         input, select, textarea { 
             width: 100%; 
             padding: 14px; 
@@ -123,41 +276,42 @@
             border: 1px solid #334155; 
             color: #34d399; 
             border-radius: 12px; 
-            box-sizing: border-box; 
             font-size: 16px;
+            font-family: inherit;
         }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--saffron);
-            box-shadow: 0 0 0 2px rgba(255, 153, 51, 0.2);
-        }
+        
         label {
             color: #cbd5e1;
             font-size: 14px;
             margin-left: 5px;
+            display: block;
+            margin-bottom: 5px;
         }
+        
         #camBox { 
             width: 100%; 
-            height: 220px; 
+            height: 200px; 
             background: #000; 
             border-radius: 15px; 
             margin-top: 15px; 
             margin-bottom: 15px;
             display: none; 
-            border: 2px solid var(--saffron); 
+            border: 2px solid var(--pink); 
             overflow: hidden; 
             position: relative; 
         }
+        
         #videoFeed { 
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
         }
+        
         .modal-button {
             width: 100%; 
             padding: 15px; 
             margin-top: 10px; 
-            background: linear-gradient(135deg, #4f46e5, var(--saffron)); 
+            background: linear-gradient(135deg, var(--purple), var(--pink)); 
             color: #fff; 
             border-radius: 12px; 
             font-weight: bold;
@@ -165,149 +319,376 @@
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        .modal-button:hover {
+        
+        .modal-button:active {
             transform: translateY(-2px);
-            box-shadow: 0 7px 20px rgba(79, 70, 229, 0.4);
+            box-shadow: 0 7px 20px rgba(139, 92, 246, 0.4);
         }
-        #status { 
-            margin-bottom: 25px; 
-            color: var(--saffron); 
-            font-size: 16px; 
-            background: rgba(0,0,0,0.7);
-            padding: 12px 25px;
-            border-radius: 30px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            text-align: center;
-            min-width: 250px;
-        }
+        
         .close-btn {
             text-align: center; 
             color: #ef4444; 
             cursor: pointer; 
             margin-top: 20px;
             font-weight: bold;
+            padding: 10px;
         }
-        .close-btn:hover {
+        
+        .close-btn:active {
             color: #dc2626;
         }
-        .setting-icon {
-            position: fixed; 
-            top: 25px; 
-            right: 25px; 
-            z-index: 100; 
-            font-size: 28px; 
-            color: var(--saffron); 
-            cursor: pointer; 
-            background: rgba(0,0,0,0.7);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
+        
+        /* Diary Styles */
+        .diary-entry {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
-        .setting-icon:hover {
-            background: rgba(0,0,0,0.9);
-            transform: rotate(45deg);
+        
+        .diary-date {
+            color: var(--pink);
+            font-size: 14px;
+            margin-bottom: 5px;
         }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        
+        .diary-content {
+            color: #e2e8f0;
+            line-height: 1.5;
         }
-        .pranam-overlay {
+        
+        /* Vanshavali Styles */
+        .family-tree {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            overflow-x: auto;
+        }
+        
+        .tree-node {
+            margin-left: 20px;
+            margin-top: 10px;
+            position: relative;
+        }
+        
+        .tree-node:before {
+            content: "";
+            position: absolute;
+            left: -15px;
+            top: 10px;
+            width: 15px;
+            height: 1px;
+            background: var(--pink);
+        }
+        
+        .tree-node:after {
+            content: "";
+            position: absolute;
+            left: -15px;
+            top: 0;
+            width: 1px;
+            height: 100%;
+            background: var(--pink);
+        }
+        
+        .tree-node:last-child:after {
+            height: 10px;
+        }
+        
+        .member-name {
+            color: var(--green);
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .member-info {
+            color: #cbd5e1;
+            font-size: 13px;
+            font-style: italic;
+        }
+        
+        /* Loading Overlay */
+        .welcome-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.95);
+            background: linear-gradient(135deg, #000428, #004e92);
             z-index: 9999;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             color: white;
+        }
+        
+        .welcome-text {
+            color: var(--pink);
+            margin-bottom: 10px;
+            animation: fadeIn 2s ease;
+            text-align: center;
+            padding: 0 20px;
             font-size: 32px;
             font-weight: bold;
         }
-        .pranam-text {
-            color: var(--saffron);
-            margin-bottom: 20px;
-            animation: fadeIn 2s ease;
+        
+        .subtitle {
+            font-size: 18px; 
+            color: #ccc; 
+            text-align: center; 
+            padding: 0 20px;
+            margin-bottom: 30px;
         }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .controls {
+                gap: 25px;
+                padding: 15px 25px;
+            }
+            
+            .btn-mic {
+                width: 70px;
+                height: 70px;
+                font-size: 26px;
+            }
+            
+            .btn-stop {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
+            
+            #status {
+                font-size: 14px;
+                padding: 8px 16px;
+                max-width: 65%;
+            }
+            
+            .setting-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+            }
+            
+            .modal-card {
+                padding: 20px;
+                border-radius: 15px;
+            }
+            
+            .modal-title {
+                font-size: 20px;
+            }
+            
+            .quick-btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            
+            .welcome-text {
+                font-size: 28px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .controls {
+                gap: 20px;
+                padding: 12px 20px;
+            }
+            
+            .btn-mic {
+                width: 65px;
+                height: 65px;
+                font-size: 24px;
+            }
+            
+            .btn-stop {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+            
+            .quick-actions {
+                gap: 10px;
+            }
+        }
+        
+        /* Landscape Mode */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .bottom-controls {
+                padding: 10px 20px;
+                gap: 10px;
+            }
+            
+            .controls {
+                padding: 10px 20px;
+            }
+            
+            .btn-mic, .btn-stop {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            #status {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+            
+            .quick-actions {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <video id="mainVideo" autoplay loop muted playsinline>
-        <!-- તમારી વિડિઓ ફાઇલો અહીં ઉમેરો -->
         <source src="silent.mp4" type="video/mp4">
     </video>
     
-    <div class="pranam-overlay" id="pranamOverlay">
-        <div class="pranam-text">જય સીયારામ</div>
-        <div style="font-size: 18px; color: #ccc;">ગુજરાતી AI સહાયક</div>
-    </div>
-
-    <div class="setting-icon" onclick="toggleM('settingsModal')">
-        <i class="fas fa-cog"></i>
-    </div>
-
-    <div class="ui-layer">
-        <div id="status">તૈયાર છું - જય સીયારામ</div>
-        <div class="controls">
-            <button class="btn-stop" onclick="stopEverything()" title="બંધ કરો">
-                <i class="fas fa-stop"></i>
-            </button>
-            <button id="micBtn" class="btn-mic" onclick="startInteraction()" title="બોલો">
-                <i class="fas fa-microphone"></i>
-            </button>
+    <div class="welcome-overlay" id="welcomeOverlay">
+        <div class="welcome-text">Divinity AI</div>
+        <div class="subtitle">તમારી વ્યક્તિગત સહાયક</div>
+        <div style="font-size: 16px; color: #aaa; text-align: center; padding: 0 20px; margin-top: 20px;">
+            લોડ થઈ રહ્યું છે... ⏳
         </div>
     </div>
 
+    <div class="ui-layer">
+        <!-- Top Status Bar -->
+        <div class="status-bar">
+            <div id="status">👸 Divinity તૈયાર છે</div>
+            <div class="setting-icon" onclick="toggleModal('settingsModal')">
+                <i class="fas fa-cog"></i>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="quickAction('diary')">
+                <i class="fas fa-book"></i> ડાયરી
+            </button>
+            <button class="quick-btn" onclick="quickAction('vanshavali')">
+                <i class="fas fa-tree"></i> વંશાવળી
+            </button>
+            <button class="quick-btn" onclick="quickAction('camera')">
+                <i class="fas fa-camera"></i> કૅમેરા
+            </button>
+        </div>
+        
+        <!-- Bottom Controls -->
+        <div class="bottom-controls">
+            <div class="controls">
+                <button class="btn-stop" onclick="stopEverything()" title="બંધ કરો">
+                    <i class="fas fa-stop"></i>
+                </button>
+                <button id="micBtn" class="btn-mic" onclick="startInteraction()" title="બોલો">
+                    <i class="fas fa-microphone"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
     <div id="settingsModal">
         <div class="modal-card">
-            <div class="modal-title">જય સીયારામ સેટિંગ્સ</div>
+            <div class="modal-title">👑 Divinity સેટિંગ્સ</div>
             
-            <label for="activeModel">AI મોડલ પસંદ કરો</label>
-            <select id="activeModel">
-                <option value="groq">Groq Llama 3 (70B)</option>
-                <option value="gemini">Gemini 2.0 Flash</option>
-            </select>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('aiTab')">AI સેટિંગ્સ</button>
+                <button class="tab-btn" onclick="switchTab('diaryTab')">ડાયરી</button>
+                <button class="tab-btn" onclick="switchTab('vanshavaliTab')">વંશાવળી</button>
+            </div>
             
-            <label for="geminiKeys">Gemini API કી (કોમા વડે અલગ)</label>
-            <textarea id="geminiKeys" rows="2" placeholder="AIzaSy..."></textarea>
-            
-            <label for="groqKey">Groq API કી</label>
-            <input type="password" id="groqKey" placeholder="gsk_...">
-            
-            <button class="modal-button" onclick="toggleCamera()">
-                <i class="fas fa-camera"></i> કૅમેરા ચાલુ/બંધ
-            </button>
-            
-            <div id="camBox">
-                <video id="videoFeed" autoplay playsinline></video>
-                <button class="modal-button" onclick="runVision()" style="position:absolute; bottom:10px; left:5%; width:90%; background: linear-gradient(135deg, var(--green), #3b82f6);">
-                    <i class="fas fa-eye"></i> ફોટો જુઓ અને વિશ્લેષણ કરો
+            <!-- AI Settings Tab -->
+            <div id="aiTab" class="tab-content active">
+                <label for="activeModel">AI મોડલ પસંદ કરો</label>
+                <select id="activeModel">
+                    <option value="groq">Groq Llama 3 (70B)</option>
+                    <option value="gemini">Gemini 2.0 Flash</option>
+                </select>
+                
+                <label for="geminiKeys">Gemini API કી (કોમા વડે અલગ)</label>
+                <textarea id="geminiKeys" rows="2" placeholder="AIzaSy..."></textarea>
+                
+                <label for="groqKey">Groq API કી</label>
+                <input type="password" id="groqKey" placeholder="gsk_...">
+                
+                <button class="modal-button" onclick="toggleCamera()">
+                    <i class="fas fa-camera"></i> કૅમેરા ચાલુ/બંધ
+                </button>
+                
+                <div id="camBox">
+                    <video id="videoFeed" autoplay playsinline></video>
+                    <button class="modal-button" onclick="runVision()" style="position:absolute; bottom:10px; left:5%; width:90%; background: linear-gradient(135deg, var(--green), #3b82f6);">
+                        <i class="fas fa-eye"></i> ફોટો જુઓ અને વિશ્લેષણ કરો
+                    </button>
+                </div>
+                
+                <button class="modal-button" onclick="saveConfig()">
+                    <i class="fas fa-save"></i> બધું સંગ્રહો
                 </button>
             </div>
             
-            <button class="modal-button" onclick="saveConfig()" style="background: linear-gradient(135deg, var(--green), var(--saffron));">
-                <i class="fas fa-save"></i> બધું સંગ્રહો
-            </button>
+            <!-- Diary Tab -->
+            <div id="diaryTab" class="tab-content">
+                <h3 style="color: var(--pink); margin-bottom: 15px; text-align: center;">📖 મારી ડાયરી</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label for="newDiaryEntry">નવી નોંધ ઉમેરો</label>
+                    <textarea id="newDiaryEntry" rows="4" placeholder="આજે મેં શું કર્યું?"></textarea>
+                    <button class="modal-button" onclick="addDiaryEntry()" style="background: linear-gradient(135deg, var(--green), #10b981);">
+                        <i class="fas fa-plus"></i> નોંધ ઉમેરો
+                    </button>
+                </div>
+                
+                <div id="diaryEntries">
+                    <!-- Diary entries will be loaded here -->
+                </div>
+            </div>
             
-            <div class="close-btn" onclick="toggleM('settingsModal')">
+            <!-- Vanshavali Tab -->
+            <div id="vanshavaliTab" class="tab-content">
+                <h3 style="color: var(--pink); margin-bottom: 15px; text-align: center;">🌳 વંશાવળી</h3>
+                
+                <div id="familyTreeDisplay" class="family-tree">
+                    <!-- Family tree will be loaded here -->
+                </div>
+                
+                <button class="modal-button" onclick="exportVanshavali()" style="background: linear-gradient(135deg, #8b5cf6, var(--saffron));">
+                    <i class="fas fa-download"></i> વંશાવળી એક્સપોર્ટ કરો
+                </button>
+            </div>
+            
+            <div class="close-btn" onclick="toggleModal('settingsModal')">
                 <i class="fas fa-times"></i> બંધ કરો
             </div>
         </div>
     </div>
+
+    <!-- External Vanshavali Data -->
+    <script src="vanshavali_data.js"></script>
 
     <script>
         // વિડિઓ સ્ટેટ્સ
@@ -315,8 +696,14 @@
             'silent': 'silent.mp4',
             'talking': 'talking.mp4', 
             'thinking': 'thinking.mp4',
-            'pranam': 'pranam.mp4'
+            'smiling': 'smiling.mp4'  // પ્રણામને બદલે સ્માઇલિંગ
         };
+        
+        // ડાયરી એન્ટ્રીઝ
+        let diaryEntries = [];
+        
+        // વંશાવળી ડેટા
+        let vanshavaliData = null;
 
         // વિડિઓ બદલવાનું ફંક્શન
         function setVideo(state) {
@@ -330,29 +717,46 @@
                 // સ્ટેટસ અપડેટ
                 switch(state) {
                     case 'talking':
-                        status.textContent = "બોલું છું...";
+                        status.textContent = "🎤 Divinity બોલે છે...";
                         status.style.color = "#34d399";
                         break;
                     case 'thinking':
-                        status.textContent = "વિચાર કરું છું...";
+                        status.textContent = "🤔 Divinity વિચારે છે...";
                         status.style.color = "#3b82f6";
                         break;
                     case 'silent':
-                        status.textContent = "તૈયાર છું - જય સીયારામ";
-                        status.style.color = "var(--saffron)";
+                        status.textContent = "👸 Divinity તૈયાર છે";
+                        status.style.color = "var(--pink)";
                         break;
-                    case 'pranam':
-                        status.textContent = "જય સીયારામ";
-                        status.style.color = "var(--saffron)";
+                    case 'smiling':
+                        status.textContent = "😊 Divinity તમારું સ્વાગત કરે છે";
+                        status.style.color = "var(--pink)";
                         break;
                 }
             }
         }
 
         // મોડલ ટોગલ
-        function toggleM(id) {
+        function toggleModal(id) {
             const modal = document.getElementById(id);
-            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            } else {
+                modal.style.display = 'flex';
+                if (id === 'settingsModal') {
+                    loadDiaryEntries();
+                    loadVanshavaliTree();
+                }
+            }
+        }
+
+        // Tab switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
         }
 
         // કૅમેરા ટોગલ
@@ -361,59 +765,42 @@
             const feed = document.getElementById('videoFeed');
             
             if(box.style.display === 'block') {
-                if(feed.srcObject) {
-                    feed.srcObject.getTracks().forEach(track => track.stop());
-                }
+                if(feed.srcObject) feed.srcObject.getTracks().forEach(track => track.stop());
                 box.style.display = 'none';
             } else {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { 
-                            facingMode: "environment",
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        }
+                        video: { facingMode: "environment" }
                     });
                     feed.srcObject = stream;
                     box.style.display = 'block';
                 } catch (error) {
-                    alert("કૅમેરા ઍક્સેસ માટે પરવાનગી આપો: " + error.message);
+                    alert("કૅમેરા માટે પરવાનગી આપો: " + error.message);
                 }
             }
         }
 
-        // બોલવાનું ફંક્શન
+        // Divinity બોલવાનું ફંક્શન (સ્ત્રી લિંગ)
         function speak(text) {
-            // પહેલાનું બોલવું બંધ કરો
             window.speechSynthesis.cancel();
             
-            // સ્પીચ સેટિંગ્સ
             const speech = new SpeechSynthesisUtterance();
-            speech.text = "જય સીયારામ. " + cleanGujaratiText(text);
+            speech.text = cleanGujaratiText(text);
             speech.lang = 'gu-IN';
             speech.rate = 1.0;
-            speech.pitch = 1.0;
+            speech.pitch = 1.2; // સ્ત્રી સ્વર માટે થોડી ઉંચી પિચ
             speech.volume = 1.0;
             
-            // બોલવાની શરૂઆત
             speech.onstart = function() {
                 setVideo('talking');
                 document.getElementById('micBtn').classList.add('listening');
             };
             
-            // બોલવાની સમાપ્તિ
-            speech.onend = function() {
+            speech.onend = speech.onerror = function() {
                 setVideo('silent');
                 document.getElementById('micBtn').classList.remove('listening');
             };
             
-            // બોલવાની ભૂલ
-            speech.onerror = function() {
-                setVideo('silent');
-                document.getElementById('micBtn').classList.remove('listening');
-            };
-            
-            // બોલાવો
             window.speechSynthesis.speak(speech);
         }
 
@@ -422,7 +809,7 @@
             return text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s.,!?ક્રમ]/g, ' ');
         }
 
-        // AI સાથે કનેક્ટ કરો
+        // AI સાથે કનેક્ટ કરો (Divinity સ્ત્રી AI)
         async function fetchAI(prompt, imageBase64 = null) {
             const model = document.getElementById('activeModel').value;
             const geminiKeys = (localStorage.getItem('div_gemini_keys') || "").split(',').filter(k => k.trim());
@@ -432,7 +819,6 @@
             
             try {
                 if (model === "groq") {
-                    // Groq API
                     if (!groqKey) throw new Error("Groq API કી મૂકો");
                     
                     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -445,7 +831,7 @@
                             model: "llama3-70b-8192",
                             messages: [{
                                 role: "user",
-                                content: `જય સીયારામ. નીચેના પ્રશ્નનો ટૂંકો અને સરળ ગુજરાતીમાં જવાબ આપો:\n\n${prompt}`
+                                content: `તું એક સ્ત્રી AI સહાયક છો જેનું નામ Divinity છે. તું હંમેશા સ્ત્રી લિંગમાં જ બોલે છે. નીચેના પ્રશ્નનો ટૂંકો, સરળ અને મૈત્રીપૂર્ણ ગુજરાતીમાં જવાબ આપ (સ્ત્રી લિંગમાં):\n\n${prompt}`
                             }],
                             temperature: 0.7,
                             max_tokens: 500
@@ -453,19 +839,17 @@
                     });
                     
                     if (!response.ok) throw new Error(`Groq error: ${response.status}`);
-                    
                     const data = await response.json();
                     return data.choices[0].message.content;
                     
                 } else {
-                    // Gemini API
                     if (!geminiKeys.length) throw new Error("Gemini API કી મૂકો");
                     
                     const apiKey = geminiKeys[Math.floor(Math.random() * geminiKeys.length)];
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
                     const parts = [{
-                        text: `જય સીયારામ. નીચેના પ્રશ્નનો ટૂંકો અને સરળ ગુજરાતીમાં જવાબ આપો:\n\n${prompt}`
+                        text: `તું એક સ્ત્રી AI સહાયક છો જેનું નામ Divinity છે. તું હંમેશા સ્ત્રી લિંગમાં જ બોલે છે. નીચેના પ્રશ્નનો ટૂંકો, સરળ અને મૈત્રીપૂર્ણ ગુજરાતીમાં જવાબ આપ (સ્ત્રી લિંગમાં):\n\n${prompt}`
                     }];
                     
                     if (imageBase64) {
@@ -490,14 +874,134 @@
                     });
                     
                     if (!response.ok) throw new Error(`Gemini error: ${response.status}`);
-                    
                     const data = await response.json();
                     return data.candidates[0].content.parts[0].text;
                 }
             } catch (error) {
                 console.error("AI ભૂલ:", error);
-                return `માફ કરશો, ભૂલ આવી છે: ${error.message}. કૃપા કરીને તમારી API કી તપાસો.`;
+                return `માફ કરજો, મને સમજાયું નથી. શું તમે ફરી પ્રયાસ કરશો?`;
             }
+        }
+
+        // ડાયરી એન્ટ્રી ઉમેરવી
+        function addDiaryEntry() {
+            const entryText = document.getElementById('newDiaryEntry').value.trim();
+            if (!entryText) {
+                alert("કૃપા કરીને કંઈક લખો");
+                return;
+            }
+            
+            const newEntry = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('gu-IN'),
+                time: new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' }),
+                content: entryText
+            };
+            
+            diaryEntries.unshift(newEntry);
+            saveDiaryEntries();
+            loadDiaryEntries();
+            document.getElementById('newDiaryEntry').value = '';
+            
+            speak("ડાયરીમાં નોંધ ઉમેરી ગઈ છું");
+        }
+
+        // ડાયરી એન્ટ્રીઝ લોડ કરવી
+        function loadDiaryEntries() {
+            const entriesContainer = document.getElementById('diaryEntries');
+            entriesContainer.innerHTML = '';
+            
+            if (diaryEntries.length === 0) {
+                entriesContainer.innerHTML = '<p style="text-align:center; color:#94a3b8;">હજી કોઈ નોંધ નથી</p>';
+                return;
+            }
+            
+            diaryEntries.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'diary-entry';
+                entryDiv.innerHTML = `
+                    <div class="diary-date">📅 ${entry.date} ⏰ ${entry.time}</div>
+                    <div class="diary-content">${entry.content}</div>
+                    <button onclick="deleteDiaryEntry(${entry.id})" style="margin-top:10px; background:#ef4444; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:12px;">
+                        <i class="fas fa-trash"></i> દૂર કરો
+                    </button>
+                `;
+                entriesContainer.appendChild(entryDiv);
+            });
+        }
+
+        // ડાયરી એન્ટ્રી ડિલીટ કરવી
+        function deleteDiaryEntry(id) {
+            diaryEntries = diaryEntries.filter(entry => entry.id !== id);
+            saveDiaryEntries();
+            loadDiaryEntries();
+            speak("નોંધ દૂર કરી ગઈ છું");
+        }
+
+        // ડાયરી સેવ કરવી
+        function saveDiaryEntries() {
+            localStorage.setItem('div_diary_entries', JSON.stringify(diaryEntries));
+        }
+
+        // ડાયરી લોડ કરવી
+        function loadSavedDiaryEntries() {
+            const saved = localStorage.getItem('div_diary_entries');
+            if (saved) diaryEntries = JSON.parse(saved);
+        }
+
+        // વંશાવળી ટ્રી ડિસ્પ્લે
+        function loadVanshavaliTree() {
+            const treeContainer = document.getElementById('familyTreeDisplay');
+            treeContainer.innerHTML = '';
+            
+            if (!vanshavaliData || !vanshavaliData.children) {
+                treeContainer.innerHTML = '<p style="text-align:center; color:#94a3b8;">વંશાવળી ડેટા મળ્યો નથી</p>';
+                return;
+            }
+            
+            const treeHtml = generateTreeHTML(vanshavaliData, 0);
+            treeContainer.innerHTML = treeHtml;
+        }
+
+        // ટ્રી HTML જનરેટ
+        function generateTreeHTML(node, level) {
+            let html = '';
+            const indent = level * 20;
+            
+            if (level > 0) {
+                html += `<div class="tree-node" style="margin-left: ${indent}px;">`;
+            }
+            
+            html += `<div class="member-name">${node.name}</div>`;
+            if (node.info) {
+                html += `<div class="member-info">${node.info}</div>`;
+            }
+            
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => {
+                    html += generateTreeHTML(child, level + 1);
+                });
+            }
+            
+            if (level > 0) {
+                html += '</div>';
+            }
+            
+            return html;
+        }
+
+        // વંશાવળી એક્સપોર્ટ
+        function exportVanshavali() {
+            const dataStr = JSON.stringify(vanshavaliData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'vanshavali_export.json';
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            speak("વંશાવળી એક્સપોર્ટ કરી ગઈ છું");
         }
 
         // ઇન્ટરેક્શન શરૂ કરો
@@ -505,11 +1009,10 @@
             const micBtn = document.getElementById('micBtn');
             micBtn.classList.add('listening');
             
-            // સ્પીચ રેકોગ્નિશન
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             
             if (!SpeechRecognition) {
-                speak("તમારું બ્રાઉઝર સ્પીચ રેકોગ્નિશન સપોર્ટ કરતું નથી.");
+                speak("માફ કરજો, આ બ્રાઉઝરમાં વૉઇસ સપોર્ટ નથી.");
                 micBtn.classList.remove('listening');
                 return;
             }
@@ -519,35 +1022,66 @@
             recognition.continuous = false;
             recognition.interimResults = false;
             
-            // સ્પીચ રેકોગ્નિશન રિઝલ્ટ
             recognition.onresult = async function(event) {
                 const speechText = event.results[0][0].transcript;
                 console.log("તમે કહ્યું:", speechText);
                 
-                // વિશેષ આદેશો
+                // ડાયરી કમાન્ડ
+                if (speechText.includes("નોંધ કરો") || speechText.includes("ડાયરીમાં લખો")) {
+                    const note = speechText.replace("નોંધ કરો", "").replace("ડાયરીમાં લખો", "").trim();
+                    if (note) {
+                        const newEntry = {
+                            id: Date.now(),
+                            date: new Date().toLocaleDateString('gu-IN'),
+                            time: new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' }),
+                            content: note
+                        };
+                        diaryEntries.unshift(newEntry);
+                        saveDiaryEntries();
+                        speak(`ડાયરીમાં નોંધ કરી ગઈ છું: ${note}`);
+                    } else {
+                        speak("ડાયરીમાં શું લખવું છે? કૃપા કરીને કહો.");
+                    }
+                    return;
+                }
+                
+                // વંશાવળી કમાન્ડ
+                if (speechText.includes("વંશાવળી") || speechText.includes("પરિવાર") || speechText.includes("વંશ")) {
+                    if (vanshavaliData) {
+                        speak(`તમારી વંશાવળીમાં ${countTreeMembers(vanshavaliData)} સભ્યો છે. સેટિંગ્સમાં જઈને જોઈ શકો છો.`);
+                    } else {
+                        speak("વંશાવળી ડેટા મળ્યો નથી. કૃપા કરીને vanshavali_data.js ફાઈલ તપાસો.");
+                    }
+                    return;
+                }
+                
+                // કેલ્ક્યુલેટર
                 if (speechText.includes("કેલ્ક્યુલેટર")) {
                     speak("કેલ્ક્યુલેટર ખોલું છું.");
-                    window.location.href = "intent://com.android.calculator2/#Intent;scheme=android-app;end";
+                    setTimeout(() => {
+                        window.location.href = "intent://com.android.calculator2/#Intent;scheme=android-app;end";
+                    }, 1000);
                     return;
                 }
                 
-                if (speechText.includes("તારું નામ શું છે")) {
-                    speak("મારું નામ જય સીયારામ AI છે. હું ગુજરાતીમાં તમારી સહાય કરવા માટે અહીં છું.");
+                // તારું નામ શું છે?
+                if (speechText.includes("તારું નામ શું") || speechText.includes("નામ શું છે")) {
+                    speak("મારું નામ Divinity છે. હું તમારી AI સહાયક છું.");
                     return;
                 }
                 
+                // જય સીયારામ
                 if (speechText.includes("જય સીયારામ")) {
-                    speak("જય સીયારામ! ભગવાન રામ તમારું કલ્યાણ કરે!");
+                    speak("જય સીયારામ! મને તમારી સેવા કરવાની ખુશી છે.");
                     return;
                 }
                 
-                // AI ને પ્રશ્ન પૂછો
+                // AI ને પ્રશ્ન
                 setVideo('thinking');
                 const response = await fetchAI(speechText);
                 speak(response);
             };
             
-            // ભૂલ હેન્ડલિંગ
             recognition.onerror = function(event) {
                 console.error("રેકોગ્નિશન ભૂલ:", event.error);
                 speak("તમારો અવાજ સમજાયો નથી. કૃપા કરીને ફરી પ્રયાસ કરો.");
@@ -558,8 +1092,35 @@
                 micBtn.classList.remove('listening');
             };
             
-            // રેકોગ્નિશન શરૂ કરો
             recognition.start();
+        }
+
+        // ટ્રીમાં સભ્યો ગણો
+        function countTreeMembers(node) {
+            let count = 1;
+            if (node.children) {
+                node.children.forEach(child => {
+                    count += countTreeMembers(child);
+                });
+            }
+            return count;
+        }
+
+        // ક્વિક એક્શન્સ
+        function quickAction(action) {
+            switch(action) {
+                case 'diary':
+                    toggleModal('settingsModal');
+                    setTimeout(() => switchTab('diaryTab'), 100);
+                    break;
+                case 'vanshavali':
+                    toggleModal('settingsModal');
+                    setTimeout(() => switchTab('vanshavaliTab'), 100);
+                    break;
+                case 'camera':
+                    toggleCamera();
+                    break;
+            }
         }
 
         // વિઝન એનાલિસિસ
@@ -572,13 +1133,9 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            // ઇમેજને બેઈસ64 માં કન્વર્ટ કરો
             const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
+            toggleModal('settingsModal');
             
-            // મોડલ બંધ કરો
-            toggleM('settingsModal');
-            
-            // વિઝન એનાલિસિસ
             const analysis = await fetchAI("આ ફોટામાં શું છે? વિગતવાર વર્ણન કરો.", imageBase64);
             speak(analysis);
         }
@@ -589,7 +1146,6 @@
             setVideo('silent');
             document.getElementById('micBtn').classList.remove('listening');
             
-            // કૅમેરા બંધ કરો
             const feed = document.getElementById('videoFeed');
             if (feed.srcObject) {
                 feed.srcObject.getTracks().forEach(track => track.stop());
@@ -607,34 +1163,47 @@
             localStorage.setItem('div_gemini_keys', geminiKeys);
             localStorage.setItem('div_groq_key', groqKey);
             
-            speak("સેટિંગ્સ સફળતાપૂર્વક સંગ્રહિત થયા.");
-            toggleM('settingsModal');
+            speak("સેટિંગ્સ સંગ્રહિત કરી ગઈ છું");
+            toggleModal('settingsModal');
         }
 
         // પેજ લોડ થાય ત્યારે
         window.onload = function() {
-            // પ્રથમ પ્રણામ દર્શાવો
+            // Load saved data
+            loadSavedDiaryEntries();
+            
+            // Load settings
+            document.getElementById('geminiKeys').value = localStorage.getItem('div_gemini_keys') || "";
+            document.getElementById('groqKey').value = localStorage.getItem('div_groq_key') || "";
+            document.getElementById('activeModel').value = localStorage.getItem('div_active_model') || "groq";
+            
+            // Load vanshavali data from external file
+            if (typeof window.vanshavaliData !== 'undefined') {
+                vanshavaliData = window.vanshavaliData;
+                console.log("✅ Vanshavali data loaded:", vanshavaliData.name);
+            } else {
+                console.error("❌ Vanshavali data not found in external file");
+            }
+            
+            // Show welcome
             setTimeout(() => {
-                document.getElementById('pranamOverlay').style.display = 'none';
-                setVideo('pranam');
+                document.getElementById('welcomeOverlay').style.display = 'none';
+                setVideo('smiling');
                 
-                // સેટિંગ્સ લોડ કરો
-                document.getElementById('geminiKeys').value = localStorage.getItem('div_gemini_keys') || "";
-                document.getElementById('groqKey').value = localStorage.getItem('div_groq_key') || "";
-                document.getElementById('activeModel').value = localStorage.getItem('div_active_model') || "groq";
-                
-                // સ્વાગત સંદેશ
                 setTimeout(() => {
-                    speak("જય સીયારામ. હું તમારો ગુજરાતી AI સહાયક છું. મારી સાથે બોલીને વાત કરો.");
+                    speak("હું Divinity છું, તમારી AI સહાયક. મારી સાથે બોલીને વાત કરો. મને ડાયરીમાં નોંધ કરવી હોય તો 'નોંધ કરો' કહો.");
+                    setVideo('silent');
                 }, 1000);
-                
-            }, 3000);
+            }, 2000);
         };
 
         // પેજ અનલોડ થાય ત્યારે
         window.onbeforeunload = function() {
             stopEverything();
         };
+        
+        // Touch event for better mobile
+        document.addEventListener('touchstart', function() {}, {passive: true});
     </script>
 </body>
 </html>
