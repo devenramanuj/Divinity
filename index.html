@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Divinity AI - જય સીયારામ</title>
+    <title>Divinity AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* BASIC RESET */
@@ -66,18 +66,6 @@
             border: 1px solid rgba(52, 211, 153, 0.3);
         }
         
-        .settings-btn {
-            background: rgba(139, 92, 246, 0.3);
-            color: #8b5cf6;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            font-size: 22px;
-            cursor: pointer;
-            border: 1px solid rgba(139, 92, 246, 0.5);
-        }
-        
         /* MAIN CONTENT - SIMPLE & CLEAN */
         .main-content {
             flex: 1;
@@ -126,20 +114,20 @@
             margin-bottom: 30px;
         }
         
-        /* BIG BUTTONS */
+        /* SMALL BUTTONS */
         .control-btn {
-            width: 85px;
-            height: 85px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             border: none;
-            font-size: 30px;
+            font-size: 22px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            border: 3px solid rgba(255,255,255,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.1);
         }
         
         .control-btn:active {
@@ -362,9 +350,9 @@
         /* RESPONSIVE */
         @media (max-width: 480px) {
             .control-btn {
-                width: 75px;
-                height: 75px;
-                font-size: 26px;
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
             }
             
             .controls-row {
@@ -396,17 +384,14 @@
         <div class="top-bar">
             <div class="app-title">Divinity AI</div>
             <div id="status">😊 સ્વાગત છે</div>
-            <button class="settings-btn" onclick="openSettings()">
-                <i class="fas fa-cog"></i>
-            </button>
         </div>
         
         <!-- Main Content - Simple & Clean -->
         <div class="main-content">
             <div class="welcome-message">
-                <div class="welcome-title">👸 જય સીયારામ</div>
+                <div class="welcome-title">👸 Divinity AI</div>
                 <div class="welcome-subtitle">
-                    હું Divinity છું - તમારી વ્યક્તિગત AI સહાયક<br>
+                    તમારી વ્યક્તિગત AI સહાયક<br>
                     મને બોલવા માટે માઇક બટન દબાવો
                 </div>
             </div>
@@ -414,7 +399,7 @@
         
         <!-- Bottom Controls -->
         <div class="bottom-controls">
-            <!-- Big Control Buttons -->
+            <!-- Small Control Buttons -->
             <div class="controls-row">
                 <button class="control-btn stop-btn" onclick="stopEverything()">
                     <i class="fas fa-stop"></i>
@@ -426,12 +411,6 @@
             
             <!-- Quick Actions -->
             <div class="quick-actions">
-                <button class="action-btn" onclick="callNumber()">
-                    <i class="fas fa-phone"></i> કૉલ કરો
-                </button>
-                <button class="action-btn" onclick="openWhatsApp()">
-                    <i class="fab fa-whatsapp"></i> WhatsApp
-                </button>
                 <button class="action-btn" onclick="openSettings()">
                     <i class="fas fa-cog"></i> સેટિંગ્સ
                 </button>
@@ -462,20 +441,13 @@
                 <div class="modal-tab" onclick="switchTab('cameraTab')">
                     <i class="fas fa-camera"></i> કૅમેરા
                 </div>
+                <div class="modal-tab" onclick="switchTab('callTab')">
+                    <i class="fas fa-phone"></i> કૉલ/WhatsApp
+                </div>
             </div>
             
             <!-- GENERAL TAB -->
             <div id="generalTab" class="tab-content active">
-                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
-                    <i class="fas fa-phone"></i> કૉલ માટે નંબર
-                </label>
-                <input type="text" id="phoneNumber" placeholder="+91 1234567890">
-                
-                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
-                    <i class="fab fa-whatsapp"></i> WhatsApp નંબર
-                </label>
-                <input type="text" id="whatsappNumber" placeholder="+91 1234567890">
-                
                 <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
                     <i class="fas fa-microphone"></i> AI મોડલ
                 </label>
@@ -483,6 +455,15 @@
                     <option value="local">લોકલ (ઓફલાઈન)</option>
                     <option value="groq">Groq Llama 3</option>
                     <option value="gemini">Gemini Flash</option>
+                </select>
+                
+                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
+                    <i class="fas fa-language"></i> ભાષા
+                </label>
+                <select id="language">
+                    <option value="gu-IN">ગુજરાતી</option>
+                    <option value="hi-IN">હિંદી</option>
+                    <option value="en-US">અંગ્રેજી</option>
                 </select>
                 
                 <button class="modal-button" onclick="saveSettings()">
@@ -555,15 +536,39 @@
                 </div>
             </div>
             
+            <!-- CALL/WHATSAPP TAB -->
+            <div id="callTab" class="tab-content">
+                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
+                    <i class="fas fa-phone"></i> કૉલ માટે નંબર
+                </label>
+                <input type="text" id="phoneNumber" placeholder="+91 1234567890">
+                
+                <button class="modal-button" onclick="callNumber()" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <i class="fas fa-phone"></i> કૉલ કરો
+                </button>
+                
+                <div style="height: 20px;"></div>
+                
+                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
+                    <i class="fab fa-whatsapp"></i> WhatsApp નંબર
+                </label>
+                <input type="text" id="whatsappNumber" placeholder="+91 1234567890">
+                
+                <button class="modal-button" onclick="openWhatsApp()" style="background: linear-gradient(135deg, #25D366, #128C7E);">
+                    <i class="fab fa-whatsapp"></i> WhatsApp ખોલો
+                </button>
+                
+                <button class="modal-button" onclick="saveSettings()" style="margin-top: 20px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                    <i class="fas fa-save"></i> નંબર સંગ્રહો
+                </button>
+            </div>
+            
             <!-- Close Button -->
             <button class="close-modal" onclick="closeSettings()">
                 <i class="fas fa-times"></i> બંધ કરો
             </button>
         </div>
     </div>
-
-    <!-- External Vanshavali File -->
-    <script src="vanshavali_data.js"></script>
 
     <!-- Main App Script -->
     <script>
@@ -595,7 +600,7 @@
             
             // Welcome message
             setTimeout(() => {
-                speak("જય સીયારામ. હું Divinity છું. બોલવા માટે માઇક બટન દબાવો.");
+                speak("હું Divinity છું, તમારી AI સહાયક. બોલવા માટે માઇક બટન દબાવો.");
             }, 1000);
         }
         
@@ -837,54 +842,55 @@
         function loadVanshavali() {
             const container = document.getElementById('vanshavaliList');
             
-            if (typeof window.vanshavaliData !== 'undefined') {
-                let html = '';
-                let memberCount = 0;
-                
-                function addMembers(node, level = 0) {
-                    memberCount++;
-                    const indent = '&nbsp;&nbsp;&nbsp;'.repeat(level);
-                    const prefix = level === 0 ? '👑 ' : '├─ ';
-                    
-                    html += `<div class="vanshavali-item" style="margin-left: ${level * 20}px;">
-                        ${indent}${prefix}<strong>${node.name}</strong>
-                        ${node.info ? `<br><small style="color: #94a3b8;">${node.info}</small>` : ''}
-                    </div>`;
-                    
-                    if (node.children) {
-                        node.children.forEach(child => addMembers(child, level + 1));
+            // Sample vanshavali data
+            const vanshavaliData = {
+                name: "શ્રીમાન રામચંદ્રજી",
+                info: "મૂળ પુરુષ",
+                children: [
+                    {
+                        name: "લવ",
+                        info: "પહેલો પુત્ર",
+                        children: [
+                            { name: "પ્રથમ", info: "લવનો પુત્ર" },
+                            { name: "દ્વિતિય", info: "લવનો પુત્ર" }
+                        ]
+                    },
+                    {
+                        name: "કુશ",
+                        info: "બીજો પુત્ર",
+                        children: [
+                            { name: "અશ્વજીત", info: "કુશનો પુત્ર" },
+                            { name: "શતાજિત", info: "કુશનો પુત્ર" }
+                        ]
                     }
+                ]
+            };
+            
+            let html = '';
+            let memberCount = 0;
+            
+            function addMembers(node, level = 0) {
+                memberCount++;
+                const indent = '&nbsp;&nbsp;&nbsp;'.repeat(level);
+                const prefix = level === 0 ? '👑 ' : '├─ ';
+                
+                html += `<div class="vanshavali-item" style="margin-left: ${level * 20}px;">
+                    ${indent}${prefix}<strong>${node.name}</strong>
+                    ${node.info ? `<br><small style="color: #94a3b8;">${node.info}</small>` : ''}
+                </div>`;
+                
+                if (node.children) {
+                    node.children.forEach(child => addMembers(child, level + 1));
                 }
-                
-                addMembers(window.vanshavaliData);
-                container.innerHTML = html;
-                document.getElementById('memberCount').textContent = memberCount;
-                
-            } else {
-                container.innerHTML = '<div style="color: #ef4444; text-align: center;">વંશાવળી ડેટા લોડ થયો નથી</div>';
             }
+            
+            addMembers(vanshavaliData);
+            container.innerHTML = html;
+            document.getElementById('memberCount').textContent = memberCount;
         }
         
         function speakVanshavali() {
-            if (typeof window.vanshavaliData !== 'undefined') {
-                const count = countVanshavaliMembers();
-                speak(`તમારી વંશાવળીમાં ${count} સભ્યો છે. મૂળ પુરુષ છે ${window.vanshavaliData.name}`);
-            } else {
-                speak("વંશાવળી ડેટા લોડ થયો નથી");
-            }
-        }
-        
-        function countVanshavaliMembers() {
-            if (!window.vanshavaliData) return 0;
-            
-            function count(node) {
-                let total = 1;
-                if (node.children) {
-                    node.children.forEach(child => total += count(child));
-                }
-                return total;
-            }
-            return count(window.vanshavaliData);
+            speak("તમારી વંશાવળીમાં 7 સભ્યો છે. મૂળ પુરુષ છે શ્રીમાન રામચંદ્રજી");
         }
         
         // DIARY FUNCTIONS
@@ -1013,7 +1019,7 @@
                 window.location.href = `tel:${phoneNumber}`;
             } else {
                 speak("કૃપા કરીને સેટિંગ્સમાં ફોન નંબર ઉમેરો");
-                openSettings();
+                switchTab('callTab');
             }
         }
         
@@ -1025,7 +1031,7 @@
                 window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank');
             } else {
                 speak("કૃપા કરીને સેટિંગ્સમાં WhatsApp નંબર ઉમેરો");
-                openSettings();
+                switchTab('callTab');
             }
         }
         
@@ -1034,12 +1040,14 @@
             document.getElementById('phoneNumber').value = localStorage.getItem('divinity_phone') || '';
             document.getElementById('whatsappNumber').value = localStorage.getItem('divinity_whatsapp') || '';
             document.getElementById('aiModel').value = localStorage.getItem('divinity_aimodel') || 'local';
+            document.getElementById('language').value = localStorage.getItem('divinity_language') || 'gu-IN';
         }
         
         function saveSettings() {
             localStorage.setItem('divinity_phone', document.getElementById('phoneNumber').value);
             localStorage.setItem('divinity_whatsapp', document.getElementById('whatsappNumber').value);
             localStorage.setItem('divinity_aimodel', document.getElementById('aiModel').value);
+            localStorage.setItem('divinity_language', document.getElementById('language').value);
             
             speak("સેટિંગ્સ સેવ થઈ ગયા");
         }
