@@ -9,25 +9,28 @@
         :root { --accent: #f43f5e; --glass: rgba(0, 0, 0, 0.7); }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Poppins', sans-serif; background: black; color: white; }
 
-        /* Full Background Video */
         #video-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
 
-        /* Minimal Home Controls */
         .controls-overlay { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 20px; z-index: 10; }
-        .btn-mic { width: 75px; height: 75px; background: white; color: black; border: none; border-radius: 50%; font-size: 30px; cursor: pointer; box-shadow: 0 0 30px rgba(255,255,255,0.2); transition: 0.3s; }
+        .btn-mic { width: 75px; height: 75px; background: white; color: black; border: none; border-radius: 50%; font-size: 30px; cursor: pointer; box-shadow: 0 0 30px rgba(255,255,255,0.2); }
         .btn-mic.listening { background: var(--accent); color: white; animation: pulse 1.5s infinite; }
-        
-        .settings-btn { position: fixed; top: 20px; right: 20px; z-index: 10; font-size: 26px; color: rgba(255,255,255,0.6); cursor: pointer; padding: 10px; }
+        .btn-stop { width: 55px; height: 55px; background: #ef4444; color: white; border: none; border-radius: 50%; font-size: 22px; cursor: pointer; }
 
-        /* Centered Settings Modal for Mobile */
+        .settings-btn { position: fixed; top: 20px; right: 20px; z-index: 10; font-size: 26px; color: rgba(255,255,255,0.6); cursor: pointer; }
+
+        /* Settings Modal */
         #settingsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .settings-content { background: #1e293b; padding: 30px; border-radius: 28px; width: 85%; max-width: 380px; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .settings-content { background: #1e293b; padding: 30px; border-radius: 28px; width: 85%; max-width: 380px; max-height: 85vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); }
         
         .setting-section { margin-bottom: 25px; text-align: left; }
-        h3 { font-size: 13px; color: #818cf8; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
-        input, select { width: 100%; padding: 14px; background: #0f172a; border: 1px solid #334155; color: #34d399; border-radius: 12px; margin-bottom: 12px; box-sizing: border-box; outline: none; }
+        h3 { font-size: 13px; color: #818cf8; margin-bottom: 12px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; color: #34d399; border-radius: 12px; margin-bottom: 12px; box-sizing: border-box; }
         
-        #cameraPreview { width: 100%; height: 200px; background: black; border-radius: 15px; margin-top: 10px; display: none; object-fit: cover; }
+        #cameraPreview { width: 100%; height: 180px; background: black; border-radius: 15px; margin-top: 10px; display: none; object-fit: cover; }
+
+        /* Report View Modal */
+        #reportModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 80%; background: #111827; color: white; border-radius: 24px; z-index: 200; padding: 25px; overflow-y: auto; border: 1px solid #4f46e5; }
+        .report-body { line-height: 1.6; font-size: 15px; color: #e5e7eb; white-space: pre-wrap; margin-top: 20px; }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
@@ -41,56 +44,54 @@
     <i class="fas fa-cog settings-btn" onclick="toggleSettings()"></i>
 
     <div class="controls-overlay">
+        <button class="btn-stop" title="Stop" onclick="stopAll()"><i class="fas fa-stop"></i></button>
         <button id="micBtn" class="btn-mic" onclick="toggleMic()"><i class="fas fa-microphone"></i></button>
     </div>
 
     <div id="settingsModal">
         <div class="settings-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <h2 style="margin:0; font-size:22px; color:white;">સેટિંગ્સ</h2>
-                <i class="fas fa-times" onclick="toggleSettings()" style="cursor:pointer; font-size:22px; color:#94a3b8;"></i>
-            </div>
-
+            <h2 style="margin:0 0 20px 0; font-size:22px; color:white; text-align:center;">સેટિંગ્સ</h2>
+            
             <div class="setting-section">
-                <h3>મોડેલ પસંદ કરો</h3>
-                <select id="modelSelect">
-                    <option value="gemini">Gemini 2.5 Flash</option>
-                    <option value="groq">Groq Llama 3 70B</option>
-                </select>
-            </div>
-
-            <div class="setting-section">
-                <h3>API Keys</h3>
-                <input type="password" id="geminiKey" placeholder="Gemini API Key">
-                <input type="password" id="groqKey" placeholder="Groq API Key">
-                <button onclick="saveAllSettings()" style="width:100%; padding:14px; background: linear-gradient(45deg, #4f46e5, #6366f1); border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer;">સેવ કરો</button>
+                <h3>Knowledge Base (RAG)</h3>
+                <input type="file" id="ragFileUpload" accept=".txt,.pdf" onchange="handleRAGUpload(event)">
             </div>
 
             <div class="setting-section">
                 <h3>Smart Lens (Back Camera)</h3>
-                <button onclick="toggleCamera()" style="width:100%; padding:12px; background:#334155; border:none; color:white; border-radius:12px; cursor:pointer;"><i class="fas fa-camera"></i> કેમેરો ઓન/ઓફ</button>
+                <button onclick="toggleCamera()" style="width:100%; padding:12px; background:#334155; border:none; color:white; border-radius:12px; cursor:pointer; margin-bottom:10px;"><i class="fas fa-camera"></i> કેમેરો ઓન/ઓફ</button>
                 <video id="cameraPreview" autoplay playsinline></video>
+                <button id="analyzeBtn" onclick="analyzeScript()" style="width:100%; padding:12px; background:#818cf8; border:none; color:white; border-radius:12px; cursor:pointer; margin-top:10px; display:none;"><i class="fas fa-search"></i> લિપી વિશ્લેષણ કરો</button>
+            </div>
+
+            <div class="setting-section">
+                <h3>API Keys</h3>
+                <input type="password" id="geminiKey" placeholder="Gemini Key">
+                <button onclick="saveAllSettings()" style="width:100%; padding:14px; background:#4f46e5; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer;">સેવ કરો</button>
+            </div>
+            
+            <p onclick="toggleSettings()" style="text-align:center; color:#94a3b8; cursor:pointer; margin-top:10px;">બંધ કરો</p>
+        </div>
+    </div>
+
+    <div id="reportModal">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0; font-size:18px; color:#818cf8;">વિદુષી લિપી રિપોર્ટ</h2>
+            <div style="display:flex; gap:10px;">
+                <button onclick="downloadReport()" style="background:#10b981; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;"><i class="fas fa-download"></i> સેવ</button>
+                <button onclick="closeReport()" style="background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;"><i class="fas fa-times"></i></button>
             </div>
         </div>
+        <div id="reportContent" class="report-body">રિપોર્ટ તૈયાર થઈ રહ્યો છે...</div>
     </div>
 
     <script>
         const videoBg = document.getElementById('video-background');
-        
-        // વિડીયો સ્ટેટ્સ લોજિક - હવે ડાયરેક્ટ ફાઈલ નેમ
-        const videoSources = {
-            'smiling': 'smiling.mp4',
-            'thinking': 'thinking.mp4',
-            'talking': 'talking.mp4',
-            'silent': 'silent.mp4'
-        };
 
         function playVideo(state) {
-            if (videoSources[state]) {
-                videoBg.src = videoSources[state];
-                videoBg.load();
-                videoBg.play().catch(e => console.log("Auto-play blocked"));
-            }
+            videoBg.src = state + '.mp4';
+            videoBg.load();
+            videoBg.play().catch(e => {});
         }
 
         function toggleSettings() {
@@ -98,65 +99,92 @@
             modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
         }
 
-        function saveAllSettings() {
-            localStorage.setItem('gemini_key', document.getElementById('geminiKey').value);
-            localStorage.setItem('groq_key', document.getElementById('groqKey').value);
-            localStorage.setItem('selected_model', document.getElementById('modelSelect').value);
-            alert("બધા સેટિંગ્સ સેવ થઈ ગયા છે!");
-            toggleSettings();
+        function stopAll() {
+            playVideo('smiling');
+            document.getElementById('micBtn').classList.remove('listening');
+            console.log("Stopped");
         }
 
         async function toggleCamera() {
             const video = document.getElementById('cameraPreview');
+            const analyzeBtn = document.getElementById('analyzeBtn');
             if (video.style.display === 'block') {
-                const stream = video.srcObject;
-                if(stream) stream.getTracks().forEach(track => track.stop());
+                video.srcObject.getTracks().forEach(track => track.stop());
                 video.style.display = 'none';
+                analyzeBtn.style.display = 'none';
             } else {
                 try {
-                    // Back Camera (facingMode: environment)
-                    const stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { facingMode: "environment" } 
-                    });
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                     video.srcObject = stream;
                     video.style.display = 'block';
-                } catch (err) {
-                    alert("કેમેરો શરૂ કરવામાં સમસ્યા: " + err.message);
-                }
+                    analyzeBtn.style.display = 'block';
+                } catch (err) { alert("કેમેરો શરૂ કરવામાં સમસ્યા આવી"); }
             }
         }
 
-        // મિક લોજિક
-        function toggleMic() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) { alert("Mic Not Supported"); return; }
-            
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'gu-IN';
+        async function analyzeScript() {
+            const video = document.getElementById('cameraPreview');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const imageData = canvas.toDataURL('image/jpeg').split(',')[1];
 
-            recognition.onstart = () => { 
-                playVideo('talking');
-                document.getElementById('micBtn').classList.add('listening'); 
-            };
-            recognition.onend = () => { 
-                playVideo('smiling');
-                document.getElementById('micBtn').classList.remove('listening'); 
-            };
-            recognition.onresult = (e) => {
-                const command = e.results[0][0].transcript;
-                // અહીં તમારું AI પ્રોસેસિંગ ફંક્શન કોલ કરો
-                console.log("Command:", command);
-            };
-            recognition.start();
+            document.getElementById('reportModal').style.display = 'block';
+            document.getElementById('reportContent').innerText = "⏳ વિદુષી લિપીનું વિશ્લેષણ કરી રહી છે...";
+            playVideo('thinking');
+
+            const key = localStorage.getItem('gemini_key');
+            if (!key) { alert("પહેલા API Key સેવ કરો"); return; }
+
+            const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+            try {
+                const response = await fetch(URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: "તમે પ્રાચીન લિપીના નિષ્ણાત છો. આ ફોટોમાં રહેલી લિપીને ઓળખો, તેનું ભાષાંતર કરો અને એક વિગતવાર ઐતિહાસિક રિપોર્ટ તૈયાર કરો. રિપોર્ટ ગુજરાતીમાં આપો." },
+                                { inline_data: { mime_type: "image/jpeg", data: imageData } }
+                            ]
+                        }]
+                    })
+                });
+                const data = await response.json();
+                const reportText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (reportText) {
+                    document.getElementById('reportContent').innerText = reportText;
+                    playVideo('smiling');
+                }
+            } catch (err) {
+                document.getElementById('reportContent').innerText = "વિશ્લેષણમાં ભૂલ આવી: " + err.message;
+                playVideo('silent');
+            }
         }
 
-        // પેજ લોડ વખતે વિડીયો શરૂ કરવો
+        function downloadReport() {
+            const content = document.getElementById('reportContent').innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'Vidushi_Lipi_Report.txt';
+            a.click();
+        }
+
+        function closeReport() { document.getElementById('reportModal').style.display = 'none'; }
+        
+        function saveAllSettings() {
+            localStorage.setItem('gemini_key', document.getElementById('geminiKey').value);
+            alert("સેટિંગ્સ સેવ થયા!");
+            toggleSettings();
+        }
+
         window.onload = () => {
             playVideo('smiling');
-            // સેવ કરેલી કીઝ સેટિંગ્સમાં બતાવવા
             document.getElementById('geminiKey').value = localStorage.getItem('gemini_key') || '';
-            document.getElementById('groqKey').value = localStorage.getItem('groq_key') || '';
-            document.getElementById('modelSelect').value = localStorage.getItem('selected_model') || 'gemini';
         };
     </script>
 </body>
