@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidushi AI - Universal Oracle</title>
+    <title>Divinity AI - Universal Oracle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --accent: #f43f5e; --glass: rgba(0, 0, 0, 0.7); }
@@ -18,17 +18,15 @@
 
         .settings-btn { position: fixed; top: 20px; right: 20px; z-index: 10; font-size: 26px; color: rgba(255,255,255,0.6); cursor: pointer; }
 
-        /* Settings Modal */
         #settingsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .settings-content { background: #1e293b; padding: 30px; border-radius: 28px; width: 85%; max-width: 380px; max-height: 85vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); }
         
-        .setting-section { margin-bottom: 25px; text-align: left; }
+        .setting-section { margin-bottom: 25px; }
         h3 { font-size: 13px; color: #818cf8; margin-bottom: 12px; text-transform: uppercase; }
         input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; color: #34d399; border-radius: 12px; margin-bottom: 12px; box-sizing: border-box; }
         
-        #cameraPreview { width: 100%; height: 180px; background: black; border-radius: 15px; margin-top: 10px; display: none; object-fit: cover; }
+        #cameraPreview { width: 100%; height: 180px; background: black; border-radius: 15px; display: none; object-fit: cover; }
 
-        /* Report View Modal */
         #reportModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 80%; background: #111827; color: white; border-radius: 24px; z-index: 200; padding: 25px; overflow-y: auto; border: 1px solid #4f46e5; }
         .report-body { line-height: 1.6; font-size: 15px; color: #e5e7eb; white-space: pre-wrap; margin-top: 20px; }
 
@@ -44,49 +42,50 @@
     <i class="fas fa-cog settings-btn" onclick="toggleSettings()"></i>
 
     <div class="controls-overlay">
-        <button class="btn-stop" title="Stop" onclick="stopAll()"><i class="fas fa-stop"></i></button>
+        <button class="btn-stop" onclick="stopAll()"><i class="fas fa-stop"></i></button>
         <button id="micBtn" class="btn-mic" onclick="toggleMic()"><i class="fas fa-microphone"></i></button>
     </div>
 
     <div id="settingsModal">
         <div class="settings-content">
-            <h2 style="margin:0 0 20px 0; font-size:22px; color:white; text-align:center;">સેટિંગ્સ</h2>
+            <h2 style="text-align:center; color:white;">Divinity Settings</h2>
             
             <div class="setting-section">
                 <h3>Knowledge Base (RAG)</h3>
-                <input type="file" id="ragFileUpload" accept=".txt,.pdf" onchange="handleRAGUpload(event)">
+                <input type="file" id="ragFileUpload" accept=".txt" onchange="handleRAGUpload(event)">
+                <p id="fileStatus" style="font-size:10px; color:#94a3b8;"></p>
             </div>
 
             <div class="setting-section">
                 <h3>Smart Lens (Back Camera)</h3>
-                <button onclick="toggleCamera()" style="width:100%; padding:12px; background:#334155; border:none; color:white; border-radius:12px; cursor:pointer; margin-bottom:10px;"><i class="fas fa-camera"></i> કેમેરો ઓન/ઓફ</button>
-                <video id="cameraPreview" autoplay playsinline></video>
-                <button id="analyzeBtn" onclick="analyzeScript()" style="width:100%; padding:12px; background:#818cf8; border:none; color:white; border-radius:12px; cursor:pointer; margin-top:10px; display:none;"><i class="fas fa-search"></i> લિપી વિશ્લેષણ કરો</button>
+                <button onclick="toggleCamera()" style="width:100%; padding:12px; background:#334155; color:white; border:none; border-radius:12px; cursor:pointer;"><i class="fas fa-camera"></i> On/Off Camera</button>
+                <video id="cameraPreview" autoplay playsinline style="margin-top:10px;"></video>
+                <button id="analyzeBtn" onclick="analyzeVision()" style="width:100%; padding:12px; background:#818cf8; color:white; border:none; border-radius:12px; margin-top:10px; display:none;"><i class="fas fa-search"></i> Analysis Everything</button>
             </div>
 
             <div class="setting-section">
-                <h3>API Keys</h3>
-                <input type="password" id="geminiKey" placeholder="Gemini Key">
-                <button onclick="saveAllSettings()" style="width:100%; padding:14px; background:#4f46e5; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer;">સેવ કરો</button>
+                <h3>Configuration</h3>
+                <input type="password" id="geminiKey" placeholder="Gemini API Key">
+                <button onclick="saveSettings()" style="width:100%; padding:14px; background:#4f46e5; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">Save All</button>
             </div>
-            
-            <p onclick="toggleSettings()" style="text-align:center; color:#94a3b8; cursor:pointer; margin-top:10px;">બંધ કરો</p>
+            <p onclick="toggleSettings()" style="text-align:center; color:#94a3b8; cursor:pointer;">Close</p>
         </div>
     </div>
 
     <div id="reportModal">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="margin:0; font-size:18px; color:#818cf8;">વિદુષી લિપી રિપોર્ટ</h2>
+            <h2 id="reportTitle" style="color:#818cf8;">Analysis Report</h2>
             <div style="display:flex; gap:10px;">
-                <button onclick="downloadReport()" style="background:#10b981; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;"><i class="fas fa-download"></i> સેવ</button>
-                <button onclick="closeReport()" style="background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;"><i class="fas fa-times"></i></button>
+                <button onclick="downloadReport()" style="background:#10b981; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">Download</button>
+                <button onclick="closeReport()" style="background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">X</button>
             </div>
         </div>
-        <div id="reportContent" class="report-body">રિપોર્ટ તૈયાર થઈ રહ્યો છે...</div>
+        <div id="reportContent" class="report-body">Generating...</div>
     </div>
 
     <script>
         const videoBg = document.getElementById('video-background');
+        let ragData = localStorage.getItem('rag_data') || "";
 
         function playVideo(state) {
             videoBg.src = state + '.mp4';
@@ -99,93 +98,97 @@
             modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
         }
 
-        function stopAll() {
-            playVideo('smiling');
-            document.getElementById('micBtn').classList.remove('listening');
-            console.log("Stopped");
+        function handleRAGUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    ragData = e.target.result;
+                    localStorage.setItem('rag_data', ragData);
+                    document.getElementById('fileStatus').innerText = "Knowledge Loaded: " + file.name;
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function saveSettings() {
+            localStorage.setItem('gemini_key', document.getElementById('geminiKey').value);
+            alert("Settings Saved Permanently!");
+            toggleSettings();
         }
 
         async function toggleCamera() {
             const video = document.getElementById('cameraPreview');
-            const analyzeBtn = document.getElementById('analyzeBtn');
+            const btn = document.getElementById('analyzeBtn');
             if (video.style.display === 'block') {
-                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject.getTracks().forEach(t => t.stop());
                 video.style.display = 'none';
-                analyzeBtn.style.display = 'none';
+                btn.style.display = 'none';
             } else {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                    video.srcObject = stream;
-                    video.style.display = 'block';
-                    analyzeBtn.style.display = 'block';
-                } catch (err) { alert("કેમેરો શરૂ કરવામાં સમસ્યા આવી"); }
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                btn.style.display = 'block';
             }
         }
 
-        async function analyzeScript() {
+        async function analyzeVision() {
             const video = document.getElementById('cameraPreview');
             const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
-            const imageData = canvas.toDataURL('image/jpeg').split(',')[1];
+            const base64Img = canvas.toDataURL('image/jpeg').split(',')[1];
 
             document.getElementById('reportModal').style.display = 'block';
-            document.getElementById('reportContent').innerText = "⏳ વિદુષી લિપીનું વિશ્લેષણ કરી રહી છે...";
             playVideo('thinking');
 
             const key = localStorage.getItem('gemini_key');
-            if (!key) { alert("પહેલા API Key સેવ કરો"); return; }
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
 
-            const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+            const prompt = `તમે Divinity છો, જેને દેવેન્દ્રભાઈએ બનાવી છે. કેમેરામાં દેખાતી લિપિ, ગણિતના દાખલા કે કોઈપણ વસ્તુનું વિશ્લેષણ કરી ગુજરાતીમાં વિગતવાર રિપોર્ટ આપો. જવાબમાં ક્યાંય પણ વિશેષ ચિન્હો જેમ કે *, ", 0 વગેરેનો ઉપયોગ બોલવા માટે કરવો નહીં.`;
 
             try {
-                const response = await fetch(URL, {
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: "તમે પ્રાચીન લિપીના નિષ્ણાત છો. આ ફોટોમાં રહેલી લિપીને ઓળખો, તેનું ભાષાંતર કરો અને એક વિગતવાર ઐતિહાસિક રિપોર્ટ તૈયાર કરો. રિપોર્ટ ગુજરાતીમાં આપો." },
-                                { inline_data: { mime_type: "image/jpeg", data: imageData } }
-                            ]
-                        }]
+                        contents: [{ parts: [{ text: prompt + "\nContext Knowledge: " + ragData }, { inline_data: { mime_type: "image/jpeg", data: base64Img } }] }]
                     })
                 });
-                const data = await response.json();
-                const reportText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                const data = await res.json();
+                const result = data.candidates[0].content.parts[0].text;
+                document.getElementById('reportContent').innerText = result;
+                playVideo('smiling');
+            } catch (e) { document.getElementById('reportContent').innerText = "Error: " + e.message; playVideo('silent'); }
+        }
 
-                if (reportText) {
-                    document.getElementById('reportContent').innerText = reportText;
-                    playVideo('smiling');
-                }
-            } catch (err) {
-                document.getElementById('reportContent').innerText = "વિશ્લેષણમાં ભૂલ આવી: " + err.message;
-                playVideo('silent');
-            }
+        function stopAll() { playVideo('smiling'); document.getElementById('micBtn').classList.remove('listening'); }
+
+        function toggleMic() {
+            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            rec.lang = 'gu-IN';
+            rec.onstart = () => { playVideo('talking'); document.getElementById('micBtn').classList.add('listening'); };
+            rec.onend = () => { document.getElementById('micBtn').classList.remove('listening'); playVideo('smiling'); };
+            rec.onresult = (e) => { processVoice(e.results[0][0].transcript); };
+            rec.start();
+        }
+
+        async function processVoice(q) {
+            // Voice processing logic with Divinity and Devenbhai context
+            console.log("Processing Query:", q);
         }
 
         function downloadReport() {
-            const content = document.getElementById('reportContent').innerText;
-            const blob = new Blob([content], { type: 'text/plain' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'Vidushi_Lipi_Report.txt';
-            a.click();
+            const blob = new Blob([document.getElementById('reportContent').innerText], { type: 'text/plain' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Divinity_Report.txt'; a.click();
         }
 
         function closeReport() { document.getElementById('reportModal').style.display = 'none'; }
-        
-        function saveAllSettings() {
-            localStorage.setItem('gemini_key', document.getElementById('geminiKey').value);
-            alert("સેટિંગ્સ સેવ થયા!");
-            toggleSettings();
-        }
 
         window.onload = () => {
-            playVideo('smiling');
-            document.getElementById('geminiKey').value = localStorage.getItem('gemini_key') || '';
+            document.getElementById('geminiKey').value = localStorage.getItem('gemini_key') || "";
+            if(ragData) document.getElementById('fileStatus').innerText = "Knowledge base is active";
         };
     </script>
 </body>
-</html>
+</htmlogicic
