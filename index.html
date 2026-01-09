@@ -16,7 +16,7 @@
             font-family: 'Segoe UI', Tahoma, sans-serif;
         }
         
-        /* VIDEO BACKGROUND */
+        /* VIDEO BACKGROUND - MUTED, LOOPING */
         #mainVideo {
             position: fixed;
             top: 0;
@@ -37,7 +37,7 @@
             z-index: 2;
             display: flex;
             flex-direction: column;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
         }
         
         /* TOP BAR */
@@ -48,11 +48,12 @@
             justify-content: space-between;
             align-items: center;
             backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .app-title {
             color: #ec4899;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
         }
         
@@ -69,57 +70,51 @@
             background: rgba(139, 92, 246, 0.3);
             color: #8b5cf6;
             border: none;
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
             border: 1px solid rgba(139, 92, 246, 0.5);
         }
         
-        /* MAIN CONTENT */
+        /* MAIN CONTENT - SIMPLE & CLEAN */
         .main-content {
             flex: 1;
-            padding: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        /* VANSHAVALI SECTION */
-        .vanshavali-box {
-            background: rgba(15, 23, 42, 0.85);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(236, 72, 153, 0.3);
-            max-height: 200px;
-            overflow-y: auto;
-            backdrop-filter: blur(5px);
-        }
-        
-        .section-title {
-            color: #14b8a6;
-            font-size: 16px;
-            margin-bottom: 10px;
-            display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
         }
         
-        .vanshavali-item {
-            padding: 8px 0;
-            border-left: 2px solid #ec4899;
-            padding-left: 10px;
-            margin: 5px 0;
-            color: #e2e8f0;
-            font-size: 14px;
+        .welcome-message {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            border: 2px solid rgba(236, 72, 153, 0.3);
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+        }
+        
+        .welcome-title {
+            color: #ec4899;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-subtitle {
+            color: #94a3b8;
+            font-size: 16px;
+            line-height: 1.5;
         }
         
         /* BOTTOM CONTROLS */
         .bottom-controls {
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.7);
+            padding: 25px 20px;
+            background: rgba(0, 0, 0, 0.8);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
         }
@@ -127,24 +122,24 @@
         .controls-row {
             display: flex;
             justify-content: center;
-            gap: 40px;
-            margin-bottom: 20px;
+            gap: 50px;
+            margin-bottom: 30px;
         }
         
         /* BIG BUTTONS */
         .control-btn {
-            width: 80px;
-            height: 80px;
+            width: 85px;
+            height: 85px;
             border-radius: 50%;
             border: none;
-            font-size: 28px;
+            font-size: 30px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 3px solid rgba(255,255,255,0.1);
         }
         
         .control-btn:active {
@@ -169,7 +164,7 @@
         /* QUICK ACTIONS */
         .quick-actions {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             justify-content: center;
             flex-wrap: wrap;
         }
@@ -178,21 +173,23 @@
             background: rgba(255, 255, 255, 0.15);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 14px;
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-size: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             backdrop-filter: blur(5px);
+            min-width: 150px;
+            justify-content: center;
         }
         
         .action-btn:active {
             background: rgba(255, 255, 255, 0.25);
         }
         
-        /* MODAL */
+        /* MODAL - SETTINGS PAGE */
         .modal {
             display: none;
             position: fixed;
@@ -202,7 +199,6 @@
             height: 100%;
             background: rgba(0,0,0,0.95);
             z-index: 1000;
-            padding: 20px;
             overflow-y: auto;
         }
         
@@ -211,9 +207,149 @@
             border-radius: 20px;
             padding: 25px;
             max-width: 500px;
-            margin: 0 auto;
+            margin: 20px auto;
             border: 2px solid #ec4899;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        
+        .modal-title {
+            color: #ec4899;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        /* TABS IN MODAL */
+        .modal-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .modal-tab {
+            flex: 1;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            min-width: 110px;
+        }
+        
+        .modal-tab.active {
+            background: #ec4899;
+            color: white;
+            border-color: #ec4899;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* VANSHAVALI TAB */
+        .vanshavali-container {
+            background: #0f172a;
+            border-radius: 15px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .vanshavali-item {
+            padding: 8px 0;
+            border-left: 2px solid #ec4899;
+            padding-left: 10px;
+            margin: 5px 0;
+            color: #e2e8f0;
+        }
+        
+        /* DIARY TAB */
+        .diary-entry {
+            background: #0f172a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #334155;
+        }
+        
+        .diary-date {
+            color: #ec4899;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        /* CAMERA TAB */
+        .camera-preview {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #videoFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* INPUT STYLES */
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .modal-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .close-modal {
+            width: 100%;
+            padding: 12px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 16px;
         }
         
         /* ANIMATIONS */
@@ -226,26 +362,32 @@
         /* RESPONSIVE */
         @media (max-width: 480px) {
             .control-btn {
-                width: 70px;
-                height: 70px;
-                font-size: 24px;
+                width: 75px;
+                height: 75px;
+                font-size: 26px;
             }
             
             .controls-row {
-                gap: 30px;
+                gap: 40px;
             }
             
             .action-btn {
-                padding: 10px 15px;
-                font-size: 13px;
+                min-width: 130px;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            
+            .welcome-message {
+                padding: 20px;
+                max-width: 90%;
             }
         }
     </style>
 </head>
 <body>
-    <!-- VIDEO BACKGROUND -->
+    <!-- VIDEO BACKGROUND - MUTED & LOOPING -->
     <video id="mainVideo" autoplay loop muted playsinline>
-        <source src="silent.mp4" type="video/mp4">
+        <source src="smiling.mp4" type="video/mp4">
     </video>
     
     <!-- APP OVERLAY -->
@@ -253,27 +395,21 @@
         <!-- Top Bar -->
         <div class="top-bar">
             <div class="app-title">Divinity AI</div>
-            <div id="status">😊 સ્માઈલિંગ</div>
-            <button class="settings-btn" onclick="toggleModal()">
+            <div id="status">😊 સ્વાગત છે</div>
+            <button class="settings-btn" onclick="openSettings()">
                 <i class="fas fa-cog"></i>
             </button>
         </div>
         
-        <!-- Main Content -->
+        <!-- Main Content - Simple & Clean -->
         <div class="main-content">
-            <!-- Vanshavali Box -->
-            <div class="vanshavali-box">
-                <div class="section-title">
-                    <i class="fas fa-tree"></i>
-                    <span>તમારી વંશાવળી</span>
-                </div>
-                <div id="vanshavaliList">
-                    <!-- Vanshavali will load here -->
+            <div class="welcome-message">
+                <div class="welcome-title">👸 જય સીયારામ</div>
+                <div class="welcome-subtitle">
+                    હું Divinity છું - તમારી વ્યક્તિગત AI સહાયક<br>
+                    મને બોલવા માટે માઇક બટન દબાવો
                 </div>
             </div>
-            
-            <!-- Empty space for video visibility -->
-            <div style="flex: 1;"></div>
         </div>
         
         <!-- Bottom Controls -->
@@ -291,60 +427,147 @@
             <!-- Quick Actions -->
             <div class="quick-actions">
                 <button class="action-btn" onclick="callNumber()">
-                    <i class="fas fa-phone"></i> કૉલ
+                    <i class="fas fa-phone"></i> કૉલ કરો
                 </button>
                 <button class="action-btn" onclick="openWhatsApp()">
                     <i class="fab fa-whatsapp"></i> WhatsApp
                 </button>
-                <button class="action-btn" onclick="showDiary()">
-                    <i class="fas fa-book"></i> ડાયરી
-                </button>
-                <button class="action-btn" onclick="openCamera()">
-                    <i class="fas fa-camera"></i> કૅમેરા
+                <button class="action-btn" onclick="openSettings()">
+                    <i class="fas fa-cog"></i> સેટિંગ્સ
                 </button>
             </div>
         </div>
     </div>
     
-    <!-- Settings Modal -->
+    <!-- SETTINGS MODAL (Everything moved here) -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
-            <h3 style="color: #ec4899; text-align: center; margin-bottom: 20px;">
-                <i class="fas fa-cog"></i> Divinity સેટિંગ્સ
-            </h3>
-            
-            <div style="margin-bottom: 15px;">
-                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
-                    કૉલ માટે નંબર
-                </label>
-                <input type="text" id="phoneNumber" placeholder="+91 1234567890" 
-                       style="width: 100%; padding: 12px; background: #0f172a; color: white; border: 1px solid #334155; border-radius: 10px;">
+            <!-- Modal Title -->
+            <div class="modal-title">
+                <i class="fas fa-cog"></i>
+                Divinity સેટિંગ્સ
             </div>
             
-            <div style="margin-bottom: 15px;">
-                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
-                    WhatsApp નંબર
-                </label>
-                <input type="text" id="whatsappNumber" placeholder="+91 1234567890" 
-                       style="width: 100%; padding: 12px; background: #0f172a; color: white; border: 1px solid #334155; border-radius: 10px;">
+            <!-- Tabs -->
+            <div class="modal-tabs">
+                <div class="modal-tab active" onclick="switchTab('generalTab')">
+                    <i class="fas fa-sliders-h"></i> સામાન્ય
+                </div>
+                <div class="modal-tab" onclick="switchTab('vanshavaliTab')">
+                    <i class="fas fa-tree"></i> વંશાવળી
+                </div>
+                <div class="modal-tab" onclick="switchTab('diaryTab')">
+                    <i class="fas fa-book"></i> ડાયરી
+                </div>
+                <div class="modal-tab" onclick="switchTab('cameraTab')">
+                    <i class="fas fa-camera"></i> કૅમેરા
+                </div>
             </div>
             
-            <button onclick="saveSettings()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #ec4899, #8b5cf6); color: white; border: none; border-radius: 10px; margin-top: 10px; font-weight: bold;">
-                <i class="fas fa-save"></i> સેટિંગ્સ સેવ કરો
-            </button>
+            <!-- GENERAL TAB -->
+            <div id="generalTab" class="tab-content active">
+                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
+                    <i class="fas fa-phone"></i> કૉલ માટે નંબર
+                </label>
+                <input type="text" id="phoneNumber" placeholder="+91 1234567890">
+                
+                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
+                    <i class="fab fa-whatsapp"></i> WhatsApp નંબર
+                </label>
+                <input type="text" id="whatsappNumber" placeholder="+91 1234567890">
+                
+                <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
+                    <i class="fas fa-microphone"></i> AI મોડલ
+                </label>
+                <select id="aiModel">
+                    <option value="local">લોકલ (ઓફલાઈન)</option>
+                    <option value="groq">Groq Llama 3</option>
+                    <option value="gemini">Gemini Flash</option>
+                </select>
+                
+                <button class="modal-button" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> બધું સંગ્રહો
+                </button>
+            </div>
             
-            <button onclick="toggleModal()" style="width: 100%; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 10px; margin-top: 15px;">
+            <!-- VANSHAVALI TAB -->
+            <div id="vanshavaliTab" class="tab-content">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <div style="color: #14b8a6; font-size: 18px; margin-bottom: 5px;">
+                        <i class="fas fa-tree"></i> તમારી વંશાવળી
+                    </div>
+                    <div style="color: #94a3b8; font-size: 14px;">
+                        કુલ સભ્યો: <span id="memberCount">0</span>
+                    </div>
+                </div>
+                
+                <div class="vanshavali-container" id="vanshavaliList">
+                    લોડ થઈ રહ્યું છે...
+                </div>
+                
+                <button class="modal-button" onclick="speakVanshavali()" style="background: linear-gradient(135deg, #14b8a6, #0d9488);">
+                    <i class="fas fa-volume-up"></i> વંશાવળી સંભળાવો
+                </button>
+            </div>
+            
+            <!-- DIARY TAB -->
+            <div id="diaryTab" class="tab-content">
+                <div style="margin-bottom: 20px;">
+                    <label style="color: #cbd5e1; display: block; margin-bottom: 5px;">
+                        <i class="fas fa-plus"></i> નવી નોંધ ઉમેરો
+                    </label>
+                    <textarea id="newDiaryEntry" placeholder="આજે મેં શું કર્યું?"></textarea>
+                    <button class="modal-button" onclick="addDiaryEntry()" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-plus-circle"></i> નોંધ ઉમેરો
+                    </button>
+                </div>
+                
+                <div style="color: #cbd5e1; margin-bottom: 10px;">
+                    તમારી ડાયરીમાં <span id="diaryCount">0</span> નોંધ છે
+                </div>
+                
+                <div id="diaryEntries" style="max-height: 200px; overflow-y: auto;">
+                    <!-- Diary entries will appear here -->
+                </div>
+            </div>
+            
+            <!-- CAMERA TAB -->
+            <div id="cameraTab" class="tab-content">
+                <div class="camera-preview">
+                    <video id="videoFeed" autoplay playsinline></video>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="modal-button" onclick="startCamera()" style="flex: 1; background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                        <i class="fas fa-video"></i> કૅમેરા ચાલુ
+                    </button>
+                    <button class="modal-button" onclick="stopCamera()" style="flex: 1; background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-stop"></i> કૅમેરા બંધ
+                    </button>
+                </div>
+                
+                <button class="modal-button" onclick="capturePhoto()" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                    <i class="fas fa-camera-retro"></i> ફોટો કાઢો
+                </button>
+                
+                <div style="color: #94a3b8; font-size: 14px; text-align: center; margin-top: 15px;">
+                    <i class="fas fa-info-circle"></i> પહેલા "કૅમેરા ચાલુ" બટન દબાવો
+                </div>
+            </div>
+            
+            <!-- Close Button -->
+            <button class="close-modal" onclick="closeSettings()">
                 <i class="fas fa-times"></i> બંધ કરો
             </button>
         </div>
     </div>
 
-    <!-- Vanshavali External File -->
+    <!-- External Vanshavali File -->
     <script src="vanshavali_data.js"></script>
 
     <!-- Main App Script -->
     <script>
-        // VIDEO STATES - 4 VIDEOS
+        // VIDEO STATES - LIP SYNC FIXED
         const videoStates = {
             'silent': 'silent.mp4',
             'talking': 'talking.mp4', 
@@ -357,35 +580,51 @@
         let isListening = false;
         let isSpeaking = false;
         let currentVideo = 'smiling';
+        let cameraStream = null;
+        let currentTab = 'generalTab';
         
         // Initialize App
         function initApp() {
-            console.log("🚀 Divinity AI with 4 Videos Started");
+            console.log("🚀 Divinity AI Started");
             updateStatus("😊 સ્વાગત છે");
             setVideo('smiling');
             
-            // Load diary
+            // Load data
             loadDiary();
-            
-            // Load vanshavali
-            setTimeout(loadVanshavali, 500);
-            
-            // Load settings
             loadSettings();
             
-            // Welcome message after 1 second
+            // Welcome message
             setTimeout(() => {
-                speak("જય સીયારામ. હું Divinity છું, તમારી AI સહાયક. બોલવા માટે માઇક બટન દબાવો.");
+                speak("જય સીયારામ. હું Divinity છું. બોલવા માટે માઇક બટન દબાવો.");
             }, 1000);
         }
         
-        // Set Video Function
+        // Set Video with LIP SYNC FIX
         function setVideo(state) {
             const video = document.getElementById('mainVideo');
-            if (videoStates[state]) {
+            if (videoStates[state] && currentVideo !== state) {
                 video.src = videoStates[state];
                 video.play().catch(e => console.log("Video play error:", e));
                 currentVideo = state;
+                
+                // Mute the video for lip sync
+                video.muted = true;
+                
+                // Update status based on video
+                switch(state) {
+                    case 'talking':
+                        updateStatus("🎤 બોલું છું...");
+                        break;
+                    case 'thinking':
+                        updateStatus("🤔 વિચારું છું...");
+                        break;
+                    case 'smiling':
+                        updateStatus("😊 સ્વાગત છે");
+                        break;
+                    case 'silent':
+                        updateStatus("👸 તૈયાર છું");
+                        break;
+                }
             }
         }
         
@@ -394,7 +633,7 @@
             document.getElementById('status').textContent = text;
         }
         
-        // Speak Function with Video Change
+        // Speak Function with LIP SYNC
         function speak(text) {
             if (isSpeaking) {
                 window.speechSynthesis.cancel();
@@ -403,24 +642,39 @@
             const speech = new SpeechSynthesisUtterance();
             speech.text = text;
             speech.lang = 'gu-IN';
-            speech.rate = 1.0;
-            speech.pitch = 1.2;
+            speech.rate = 0.9; // Slower for better lip sync
+            speech.pitch = 1.1;
+            speech.volume = 1;
             
             isSpeaking = true;
             setVideo('talking');
-            updateStatus("🎤 બોલું છું...");
+            
+            // Sync video with speech timing
+            const video = document.getElementById('mainVideo');
+            video.currentTime = 0; // Start from beginning
             
             speech.onstart = () => {
                 console.log("Speaking:", text);
+                video.play();
             };
             
-            speech.onend = speech.onerror = () => {
+            speech.onend = () => {
+                isSpeaking = false;
+                setVideo('silent');
+                // Small delay before showing ready status
+                setTimeout(() => updateStatus("👸 તૈયાર છું"), 500);
+            };
+            
+            speech.onerror = () => {
                 isSpeaking = false;
                 setVideo('silent');
                 updateStatus("👸 તૈયાર છું");
             };
             
-            window.speechSynthesis.speak(speech);
+            // Start speech after video is ready
+            setTimeout(() => {
+                window.speechSynthesis.speak(speech);
+            }, 100);
         }
         
         // Start Listening
@@ -428,7 +682,6 @@
             if (isListening || isSpeaking) return;
             
             setVideo('thinking');
-            updateStatus("🎤 સાંભળું છું...");
             document.getElementById('micButton').classList.add('listening');
             
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -467,12 +720,58 @@
             isListening = false;
             document.getElementById('micButton').classList.remove('listening');
             setVideo('silent');
-            updateStatus("👸 તૈયાર છું");
         }
         
         // Handle Voice Commands
         function handleVoiceCommand(text) {
             const lowerText = text.toLowerCase();
+            
+            // Open settings
+            if (lowerText.includes('સેટિંગ્સ') || lowerText.includes('ગોઠવણી')) {
+                openSettings();
+                speak("સેટિંગ્સ ખોલું છું");
+                return;
+            }
+            
+            // Call
+            if (lowerText.includes('કૉલ') || lowerText.includes('ફોન')) {
+                callNumber();
+                return;
+            }
+            
+            // WhatsApp
+            if (lowerText.includes('વોટ્સએપ') || lowerText.includes('મેસેજ')) {
+                openWhatsApp();
+                return;
+            }
+            
+            // Diary
+            if (lowerText.includes('નોંધ કરો')) {
+                const note = text.replace('નોંધ કરો', '').trim();
+                if (note) {
+                    addDiaryEntry(note);
+                    speak("ડાયરીમાં નોંધ કરી: " + note);
+                } else {
+                    speak("ડાયરીમાં શું લખવું છે?");
+                }
+                return;
+            }
+            
+            // Vanshavali
+            if (lowerText.includes('વંશાવળી') || lowerText.includes('પરિવાર')) {
+                speak("સેટિંગ્સમાં વંશાવળી ટેબમાં જુઓ");
+                openSettings();
+                setTimeout(() => switchTab('vanshavaliTab'), 300);
+                return;
+            }
+            
+            // Camera
+            if (lowerText.includes('કૅમેરા') || lowerText.includes('ફોટો')) {
+                speak("સેટિંગ્સમાં કૅમેરા ટેબમાં જુઓ");
+                openSettings();
+                setTimeout(() => switchTab('cameraTab'), 300);
+                return;
+            }
             
             // Greetings
             if (lowerText.includes('નમસ્તે') || lowerText.includes('હેલો')) {
@@ -482,39 +781,6 @@
             
             if (lowerText.includes('જય સીયારામ')) {
                 speak("જય સીયારામ! ભગવાન રામ તમારું કલ્યાણ કરે!");
-                return;
-            }
-            
-            // Call Command
-            if (lowerText.includes('કૉલ કરો') || lowerText.includes('ફોન કરો')) {
-                callNumber();
-                return;
-            }
-            
-            // WhatsApp Command
-            if (lowerText.includes('વોટ્સએપ') || lowerText.includes('મેસેજ')) {
-                openWhatsApp();
-                return;
-            }
-            
-            // Diary Command
-            if (lowerText.includes('નોંધ કરો')) {
-                const note = text.replace('નોંધ કરો', '').trim();
-                if (note) {
-                    addDiaryEntry(note);
-                    speak("ડાયરીમાં નોંધ કરી: " + note);
-                }
-                return;
-            }
-            
-            // Vanshavali Command
-            if (lowerText.includes('વંશાવળી') || lowerText.includes('પરિવાર')) {
-                if (window.vanshavaliData) {
-                    const count = countVanshavaliMembers();
-                    speak(`તમારી વંશાવળીમાં ${count} સભ્યો છે. મૂળ પુરુષ છે ${window.vanshavaliData.name}`);
-                } else {
-                    speak("વંશાવળી ડેટા લોડ થયો નથી.");
-                }
                 return;
             }
             
@@ -535,18 +801,52 @@
             speak(`તમે કહ્યું: ${text}. હું હજુ શીખી રહી છું.`);
         }
         
-        // Load Vanshavali from external file
+        // SETTINGS FUNCTIONS
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'block';
+            loadVanshavali();
+            loadDiaryEntries();
+        }
+        
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+            stopCamera();
+        }
+        
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active from all tab buttons
+            document.querySelectorAll('.modal-tab').forEach(tabBtn => {
+                tabBtn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Activate tab button
+            event.target.classList.add('active');
+            
+            currentTab = tabId;
+        }
+        
+        // VANSHAVALI FUNCTIONS
         function loadVanshavali() {
             const container = document.getElementById('vanshavaliList');
             
             if (typeof window.vanshavaliData !== 'undefined') {
                 let html = '';
+                let memberCount = 0;
                 
                 function addMembers(node, level = 0) {
-                    const indent = '&nbsp;&nbsp;'.repeat(level);
+                    memberCount++;
+                    const indent = '&nbsp;&nbsp;&nbsp;'.repeat(level);
                     const prefix = level === 0 ? '👑 ' : '├─ ';
                     
-                    html += `<div class="vanshavali-item" style="margin-left: ${level * 15}px;">
+                    html += `<div class="vanshavali-item" style="margin-left: ${level * 20}px;">
                         ${indent}${prefix}<strong>${node.name}</strong>
                         ${node.info ? `<br><small style="color: #94a3b8;">${node.info}</small>` : ''}
                     </div>`;
@@ -558,9 +858,19 @@
                 
                 addMembers(window.vanshavaliData);
                 container.innerHTML = html;
+                document.getElementById('memberCount').textContent = memberCount;
                 
             } else {
-                container.innerHTML = '<div style="color: #ef4444;">વંશાવળી ડેટા લોડ થયો નથી</div>';
+                container.innerHTML = '<div style="color: #ef4444; text-align: center;">વંશાવળી ડેટા લોડ થયો નથી</div>';
+            }
+        }
+        
+        function speakVanshavali() {
+            if (typeof window.vanshavaliData !== 'undefined') {
+                const count = countVanshavaliMembers();
+                speak(`તમારી વંશાવળીમાં ${count} સભ્યો છે. મૂળ પુરુષ છે ${window.vanshavaliData.name}`);
+            } else {
+                speak("વંશાવળી ડેટા લોડ થયો નથી");
             }
         }
         
@@ -577,125 +887,193 @@
             return count(window.vanshavaliData);
         }
         
-        // CALL FUNCTION
-        function callNumber() {
-            const phoneNumber = document.getElementById('phoneNumber').value || '+91';
-            
-            if (phoneNumber && phoneNumber !== '+91') {
-                speak(`કૉલ કરું છું: ${phoneNumber}`);
-                window.location.href = `tel:${phoneNumber}`;
-            } else {
-                speak("કૃપા કરીને સેટિંગ્સમાં ફોન નંબર ઉમેરો.");
-                toggleModal();
-            }
-        }
-        
-        // WHATSAPP FUNCTION
-        function openWhatsApp() {
-            const whatsappNumber = document.getElementById('whatsappNumber').value || '+91';
-            
-            if (whatsappNumber && whatsappNumber !== '+91') {
-                speak(`WhatsApp ખોલું છું: ${whatsappNumber}`);
-                window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank');
-            } else {
-                speak("કૃપા કરીને સેટિંગ્સમાં WhatsApp નંબર ઉમેરો.");
-                toggleModal();
-            }
-        }
-        
-        // Diary Functions
+        // DIARY FUNCTIONS
         function loadDiary() {
             const saved = localStorage.getItem('divinity_diary');
-            if (saved) diaryEntries = JSON.parse(saved);
+            if (saved) {
+                try {
+                    diaryEntries = JSON.parse(saved);
+                } catch(e) {
+                    diaryEntries = [];
+                }
+            }
         }
         
-        function addDiaryEntry(text) {
+        function loadDiaryEntries() {
+            const container = document.getElementById('diaryEntries');
+            const countElement = document.getElementById('diaryCount');
+            
+            countElement.textContent = diaryEntries.length;
+            
+            if (diaryEntries.length === 0) {
+                container.innerHTML = '<div style="color: #94a3b8; text-align: center; padding: 20px;">હજી કોઈ નોંધ નથી</div>';
+                return;
+            }
+            
+            let html = '';
+            diaryEntries.slice().reverse().forEach(entry => {
+                html += `
+                    <div class="diary-entry">
+                        <div class="diary-date">📅 ${entry.date} ⏰ ${entry.time}</div>
+                        <div style="color: #e2e8f0;">${entry.content}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function addDiaryEntry() {
+            const textarea = document.getElementById('newDiaryEntry');
+            const text = textarea.value.trim();
+            
+            if (!text) {
+                speak("કૃપા કરીને કંઈક લખો");
+                return;
+            }
+            
             const entry = {
                 id: Date.now(),
                 date: new Date().toLocaleDateString('gu-IN'),
-                time: new Date().toLocaleTimeString('gu-IN'),
+                time: new Date().toLocaleTimeString('gu-IN', {hour: '2-digit', minute: '2-digit'}),
                 content: text
             };
             
             diaryEntries.push(entry);
             localStorage.setItem('divinity_diary', JSON.stringify(diaryEntries));
+            textarea.value = '';
+            
+            loadDiaryEntries();
+            speak("ડાયરીમાં નોંધ ઉમેરી ગઈ છું");
         }
         
-        function showDiary() {
-            speak(`તમારી ડાયરીમાં ${diaryEntries.length} નોંધ છે. નવી નોંધ ઉમેરવા 'નોંધ કરો' કહો.`);
+        // CAMERA FUNCTIONS
+        function startCamera() {
+            const video = document.getElementById('videoFeed');
+            
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+            
+            navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' }
+            })
+            .then(stream => {
+                cameraStream = stream;
+                video.srcObject = stream;
+                speak("કૅમેરા ચાલુ થઈ ગઈ");
+            })
+            .catch(error => {
+                console.error("Camera error:", error);
+                speak("કૅમેરા માટે પરવાનગી આપો");
+            });
         }
         
-        // Camera
-        function openCamera() {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                speak("કૅમેરા ચાલુ કરું છું. પરવાનગી આપો.");
-                
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(stream => {
-                        speak("કૅમેરા ચાલુ થઈ ગઈ!");
-                        // You can add camera preview here
-                    })
-                    .catch(error => {
-                        console.error("Camera error:", error);
-                        speak("કૅમેરા માટે પરવાનગી નથી આપેલી.");
-                    });
-            } else {
-                speak("કૅમેરા સપોર્ટ નથી.");
+        function stopCamera() {
+            const video = document.getElementById('videoFeed');
+            
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+                video.srcObject = null;
+                speak("કૅમેરા બંધ કરી ગઈ છું");
             }
         }
         
-        // Stop Everything
+        function capturePhoto() {
+            const video = document.getElementById('videoFeed');
+            
+            if (!video.srcObject) {
+                speak("પહેલા કૅમેરા ચાલુ કરો");
+                return;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Create download link
+            const link = document.createElement('a');
+            link.download = 'divinity_photo_' + Date.now() + '.jpg';
+            link.href = canvas.toDataURL('image/jpeg');
+            link.click();
+            
+            speak("ફોટો સેવ થઈ ગયો");
+        }
+        
+        // CALL & WHATSAPP
+        function callNumber() {
+            const phoneNumber = document.getElementById('phoneNumber').value || localStorage.getItem('divinity_phone');
+            
+            if (phoneNumber && phoneNumber.length > 5) {
+                speak(`${phoneNumber} પર કૉલ કરું છું`);
+                window.location.href = `tel:${phoneNumber}`;
+            } else {
+                speak("કૃપા કરીને સેટિંગ્સમાં ફોન નંબર ઉમેરો");
+                openSettings();
+            }
+        }
+        
+        function openWhatsApp() {
+            const whatsappNumber = document.getElementById('whatsappNumber').value || localStorage.getItem('divinity_whatsapp');
+            
+            if (whatsappNumber && whatsappNumber.length > 5) {
+                speak(`WhatsApp ખોલું છું`);
+                window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`, '_blank');
+            } else {
+                speak("કૃપા કરીને સેટિંગ્સમાં WhatsApp નંબર ઉમેરો");
+                openSettings();
+            }
+        }
+        
+        // SETTINGS MANAGEMENT
+        function loadSettings() {
+            document.getElementById('phoneNumber').value = localStorage.getItem('divinity_phone') || '';
+            document.getElementById('whatsappNumber').value = localStorage.getItem('divinity_whatsapp') || '';
+            document.getElementById('aiModel').value = localStorage.getItem('divinity_aimodel') || 'local';
+        }
+        
+        function saveSettings() {
+            localStorage.setItem('divinity_phone', document.getElementById('phoneNumber').value);
+            localStorage.setItem('divinity_whatsapp', document.getElementById('whatsappNumber').value);
+            localStorage.setItem('divinity_aimodel', document.getElementById('aiModel').value);
+            
+            speak("સેટિંગ્સ સેવ થઈ ગયા");
+        }
+        
+        // STOP EVERYTHING
         function stopEverything() {
             window.speechSynthesis.cancel();
             isListening = false;
             isSpeaking = false;
             setVideo('silent');
-            updateStatus("⏹️ બંધ કર્યું");
+            
+            stopCamera();
+            closeSettings();
             
             // Visual feedback
-            document.querySelector('.stop-btn').style.background = "#10b981";
+            const stopBtn = document.querySelector('.stop-btn');
+            stopBtn.style.background = "#10b981";
             setTimeout(() => {
-                document.querySelector('.stop-btn').style.background = "#ef4444";
+                stopBtn.style.background = "#ef4444";
             }, 300);
             
             speak("બધું બંધ કર્યું");
         }
         
-        // Settings Functions
-        function loadSettings() {
-            const savedPhone = localStorage.getItem('divinity_phone');
-            const savedWhatsApp = localStorage.getItem('divinity_whatsapp');
-            
-            if (savedPhone) document.getElementById('phoneNumber').value = savedPhone;
-            if (savedWhatsApp) document.getElementById('whatsappNumber').value = savedWhatsApp;
-        }
-        
-        function saveSettings() {
-            const phone = document.getElementById('phoneNumber').value;
-            const whatsapp = document.getElementById('whatsappNumber').value;
-            
-            localStorage.setItem('divinity_phone', phone);
-            localStorage.setItem('divinity_whatsapp', whatsapp);
-            
-            speak("સેટિંગ્સ સેવ થઈ ગયા");
-            toggleModal();
-        }
-        
-        function toggleModal() {
-            const modal = document.getElementById('settingsModal');
-            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
-        }
+        // Initialize on load
+        window.onload = initApp;
         
         // Close modal on outside click
         window.onclick = function(event) {
             const modal = document.getElementById('settingsModal');
             if (event.target === modal) {
-                modal.style.display = 'none';
+                closeSettings();
             }
         };
-        
-        // Initialize on load
-        window.onload = initApp;
     </script>
 </body>
 </html>
