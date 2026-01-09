@@ -6,150 +6,158 @@
     <title>Vidushi AI - Universal Oracle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --accent: #f43f5e; --glass: rgba(0, 0, 0, 0.6); }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Poppins', sans-serif; background: black; }
+        :root { --accent: #f43f5e; --glass: rgba(0, 0, 0, 0.7); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Poppins', sans-serif; background: black; color: white; }
 
         /* Full Background Video */
         #video-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
 
         /* Minimal Home Controls */
         .controls-overlay { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 20px; z-index: 10; }
-        .btn-mic { width: 70px; height: 70px; background: white; color: black; border: none; border-radius: 50%; font-size: 28px; cursor: pointer; box-shadow: 0 0 30px rgba(255,255,255,0.2); transition: 0.3s; }
+        .btn-mic { width: 75px; height: 75px; background: white; color: black; border: none; border-radius: 50%; font-size: 30px; cursor: pointer; box-shadow: 0 0 30px rgba(255,255,255,0.2); transition: 0.3s; }
         .btn-mic.listening { background: var(--accent); color: white; animation: pulse 1.5s infinite; }
-        .btn-stop { background: rgba(255,255,255,0.1); border: none; color: white; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; backdrop-filter: blur(10px); }
+        
+        .settings-btn { position: fixed; top: 20px; right: 20px; z-index: 10; font-size: 26px; color: rgba(255,255,255,0.6); cursor: pointer; padding: 10px; }
 
-        .settings-btn { position: fixed; top: 30px; right: 30px; z-index: 10; font-size: 28px; color: rgba(255,255,255,0.5); cursor: pointer; transition: 0.3s; }
-        .settings-btn:hover { color: white; transform: rotate(90deg); }
+        /* Centered Settings Modal for Mobile */
+        #settingsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .settings-content { background: #1e293b; padding: 30px; border-radius: 28px; width: 85%; max-width: 380px; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        
+        .setting-section { margin-bottom: 25px; text-align: left; }
+        h3 { font-size: 13px; color: #818cf8; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        input, select { width: 100%; padding: 14px; background: #0f172a; border: 1px solid #334155; color: #34d399; border-radius: 12px; margin-bottom: 12px; box-sizing: border-box; outline: none; }
+        
+        #cameraPreview { width: 100%; height: 200px; background: black; border-radius: 15px; margin-top: 10px; display: none; object-fit: cover; }
 
-        /* Powerful Settings Sidebar */
-        #settingsSidebar { position: fixed; top: 0; right: -400px; width: 350px; height: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); z-index: 100; transition: 0.4s; padding: 30px; border-left: 1px solid rgba(255,255,255,0.1); overflow-y: auto; color: white; }
-        #settingsSidebar.open { right: 0; }
-        .setting-section { margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
-        h3 { font-size: 16px; color: #818cf8; margin-bottom: 15px; }
-        input, select { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #34d399; border-radius: 8px; margin-bottom: 10px; }
-
-        /* Smart Lens Preview in Settings */
-        #cameraPreview { width: 100%; height: 180px; background: black; border-radius: 12px; margin-top: 10px; display: none; object-fit: cover; }
-
-        /* Output Window */
-        #outputModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 75%; background: white; border-radius: 20px; z-index: 50; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.7); }
-        .modal-header { background: #1e293b; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; color: white; }
-        iframe { width: 100%; height: calc(100% - 50px); border: none; }
-
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(244, 63, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
     <video autoplay loop muted playsinline id="video-background">
-        <source src="videos/smiling.mp4" type="video/mp4">
+        <source src="smiling.mp4" type="video/mp4">
     </video>
 
-    <i class="fas fa-sliders-h settings-btn" onclick="toggleSettings()"></i>
+    <i class="fas fa-cog settings-btn" onclick="toggleSettings()"></i>
 
     <div class="controls-overlay">
-        <button class="btn-stop" onclick="location.reload()"><i class="fas fa-redo"></i></button>
         <button id="micBtn" class="btn-mic" onclick="toggleMic()"><i class="fas fa-microphone"></i></button>
     </div>
 
-    <div id="settingsSidebar">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="margin:0;">વિદુષી સેટિંગ્સ</h2>
-            <i class="fas fa-times" onclick="toggleSettings()" style="cursor:pointer;"></i>
-        </div>
+    <div id="settingsModal">
+        <div class="settings-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                <h2 style="margin:0; font-size:22px; color:white;">સેટિંગ્સ</h2>
+                <i class="fas fa-times" onclick="toggleSettings()" style="cursor:pointer; font-size:22px; color:#94a3b8;"></i>
+            </div>
 
-        <div class="setting-section" style="margin-top:30px;">
-            <h3><i class="fas fa-brain"></i> મોડેલ સિલેક્શન</h3>
-            <select id="modelSelect">
-                <option value="gemini">Gemini 2.5 Flash</option>
-                <option value="groq">Groq Llama 3 70B</option>
-            </select>
-        </div>
+            <div class="setting-section">
+                <h3>મોડેલ પસંદ કરો</h3>
+                <select id="modelSelect">
+                    <option value="gemini">Gemini 2.5 Flash</option>
+                    <option value="groq">Groq Llama 3 70B</option>
+                </select>
+            </div>
 
-        <div class="setting-section">
-            <h3><i class="fas fa-key"></i> API કી</h3>
-            <input type="password" id="geminiKey" placeholder="Gemini API Key">
-            <input type="password" id="groqKey" placeholder="Groq API Key">
-            <button onclick="saveAllSettings()" style="width:100%; padding:10px; background:#4f46e5; border:none; border-radius:8px; color:white; cursor:pointer;">સેવ કરો</button>
-        </div>
+            <div class="setting-section">
+                <h3>API Keys</h3>
+                <input type="password" id="geminiKey" placeholder="Gemini API Key">
+                <input type="password" id="groqKey" placeholder="Groq API Key">
+                <button onclick="saveAllSettings()" style="width:100%; padding:14px; background: linear-gradient(45deg, #4f46e5, #6366f1); border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer;">સેવ કરો</button>
+            </div>
 
-        <div class="setting-section">
-            <h3><i class="fas fa-camera"></i> Smart Lens (Camera)</h3>
-            <button onclick="toggleCamera()" style="width:100%; padding:10px; background:#1e293b; border:1px solid #334155; color:white; cursor:pointer; border-radius:8px;">કેમેરો ઓન/ઓફ</button>
-            <video id="cameraPreview" autoplay playsinline></video>
-        </div>
-
-        <div class="setting-section">
-            <h3><i class="fas fa-book"></i> RAG Knowledge (PDF/Txt)</h3>
-            <input type="file" id="ragFile" accept=".pdf,.txt" style="font-size:12px;">
-            <p style="font-size:10px; color:#94a3b8;">અહીં અપલોડ કરેલી ફાઈલો વિદુષીના જ્ઞાનમાં ઉમેરાશે.</p>
-        </div>
-    </div>
-
-    <div id="outputModal">
-        <div class="modal-header">
-            <span id="outputTitle">વિદુષી આઉટપુટ</span>
-            <div style="display:flex; gap:15px;">
-                <i class="fas fa-expand-alt" onclick="toggleMax()" style="cursor:pointer;"></i>
-                <i class="fas fa-times" onclick="closeOutput()" style="cursor:pointer;"></i>
+            <div class="setting-section">
+                <h3>Smart Lens (Back Camera)</h3>
+                <button onclick="toggleCamera()" style="width:100%; padding:12px; background:#334155; border:none; color:white; border-radius:12px; cursor:pointer;"><i class="fas fa-camera"></i> કેમેરો ઓન/ઓફ</button>
+                <video id="cameraPreview" autoplay playsinline></video>
             </div>
         </div>
-        <iframe id="appFrame"></iframe>
     </div>
 
     <script>
-        function toggleSettings() { document.getElementById('settingsSidebar').classList.toggle('open'); }
+        const videoBg = document.getElementById('video-background');
         
+        // વિડીયો સ્ટેટ્સ લોજિક - હવે ડાયરેક્ટ ફાઈલ નેમ
+        const videoSources = {
+            'smiling': 'smiling.mp4',
+            'thinking': 'thinking.mp4',
+            'talking': 'talking.mp4',
+            'silent': 'silent.mp4'
+        };
+
+        function playVideo(state) {
+            if (videoSources[state]) {
+                videoBg.src = videoSources[state];
+                videoBg.load();
+                videoBg.play().catch(e => console.log("Auto-play blocked"));
+            }
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+        }
+
         function saveAllSettings() {
             localStorage.setItem('gemini_key', document.getElementById('geminiKey').value);
             localStorage.setItem('groq_key', document.getElementById('groqKey').value);
             localStorage.setItem('selected_model', document.getElementById('modelSelect').value);
             alert("બધા સેટિંગ્સ સેવ થઈ ગયા છે!");
+            toggleSettings();
         }
 
-        // Camera / Smart Lens Logic
         async function toggleCamera() {
             const video = document.getElementById('cameraPreview');
             if (video.style.display === 'block') {
                 const stream = video.srcObject;
-                const tracks = stream.getTracks();
-                tracks.forEach(track => track.stop());
+                if(stream) stream.getTracks().forEach(track => track.stop());
                 video.style.display = 'none';
             } else {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                video.style.display = 'block';
+                try {
+                    // Back Camera (facingMode: environment)
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: "environment" } 
+                    });
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                } catch (err) {
+                    alert("કેમેરો શરૂ કરવામાં સમસ્યા: " + err.message);
+                }
             }
         }
 
-        // Main Interaction Logic
-        async function toggleMic() {
+        // મિક લોજિક
+        function toggleMic() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const rec = new SpeechRecognition();
-            rec.lang = 'gu-IN';
+            if (!SpeechRecognition) { alert("Mic Not Supported"); return; }
             
-            rec.onstart = () => { 
-                document.getElementById('micBtn').classList.add('listening');
-                // વિડીયો ચેન્જ લોજિક અહીં ઉમેરવું (playVideo('talking'))
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'gu-IN';
+
+            recognition.onstart = () => { 
+                playVideo('talking');
+                document.getElementById('micBtn').classList.add('listening'); 
             };
-            
-            rec.onresult = (e) => {
-                const query = e.results[0][0].transcript;
-                processQuery(query);
+            recognition.onend = () => { 
+                playVideo('smiling');
+                document.getElementById('micBtn').classList.remove('listening'); 
             };
-            
-            rec.onend = () => { document.getElementById('micBtn').classList.remove('listening'); };
-            rec.start();
+            recognition.onresult = (e) => {
+                const command = e.results[0][0].transcript;
+                // અહીં તમારું AI પ્રોસેસિંગ ફંક્શન કોલ કરો
+                console.log("Command:", command);
+            };
+            recognition.start();
         }
 
-        async function processQuery(query) {
-            // અહીં તમારી API લોજિક આવશે જે Gemini અથવા Groq નો ઉપયોગ કરશે
-            // અને પરિણામને #outputModal માં બતાવશે.
-            console.log("User asked:", query);
-            document.getElementById('outputModal').style.display = 'block';
-        }
-
-        function closeOutput() { document.getElementById('outputModal').style.display = 'none'; }
+        // પેજ લોડ વખતે વિડીયો શરૂ કરવો
+        window.onload = () => {
+            playVideo('smiling');
+            // સેવ કરેલી કીઝ સેટિંગ્સમાં બતાવવા
+            document.getElementById('geminiKey').value = localStorage.getItem('gemini_key') || '';
+            document.getElementById('groqKey').value = localStorage.getItem('groq_key') || '';
+            document.getElementById('modelSelect').value = localStorage.getItem('selected_model') || 'gemini';
+        };
     </script>
 </body>
 </html>
