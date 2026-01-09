@@ -170,35 +170,6 @@
             background: #dc2626;
         }
         
-        /* Quick Actions */
-        .quick-actions {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-        
-        .quick-btn {
-            background: rgba(0,0,0,0.7);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .quick-btn:active {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
-        }
-        
         /* Modal Styles */
         #settingsModal { 
             display: none; 
@@ -371,6 +342,8 @@
             padding: 15px;
             margin-bottom: 10px;
             overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
         }
         
         .tree-node {
@@ -500,15 +473,6 @@
             .modal-title {
                 font-size: 20px;
             }
-            
-            .quick-btn {
-                padding: 10px 16px;
-                font-size: 13px;
-            }
-            
-            .welcome-text {
-                font-size: 28px;
-            }
         }
         
         @media (max-width: 360px) {
@@ -527,37 +491,6 @@
                 width: 45px;
                 height: 45px;
                 font-size: 16px;
-            }
-            
-            .quick-actions {
-                gap: 10px;
-            }
-        }
-        
-        /* Landscape Mode */
-        @media (orientation: landscape) and (max-height: 500px) {
-            .bottom-controls {
-                padding: 10px 20px;
-                gap: 10px;
-            }
-            
-            .controls {
-                padding: 10px 20px;
-            }
-            
-            .btn-mic, .btn-stop {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-            }
-            
-            #status {
-                font-size: 14px;
-                padding: 6px 12px;
-            }
-            
-            .quick-actions {
-                display: none;
             }
         }
     </style>
@@ -584,19 +517,6 @@
             </div>
         </div>
         
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <button class="quick-btn" onclick="quickAction('diary')">
-                <i class="fas fa-book"></i> ડાયરી
-            </button>
-            <button class="quick-btn" onclick="quickAction('vanshavali')">
-                <i class="fas fa-tree"></i> વંશાવળી
-            </button>
-            <button class="quick-btn" onclick="quickAction('camera')">
-                <i class="fas fa-camera"></i> કૅમેરા
-            </button>
-        </div>
-        
         <!-- Bottom Controls -->
         <div class="bottom-controls">
             <div class="controls">
@@ -617,8 +537,9 @@
             
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('aiTab')">AI સેટિંગ્સ</button>
-                <button class="tab-btn" onclick="switchTab('diaryTab')">ડાયરી</button>
-                <button class="tab-btn" onclick="switchTab('vanshavaliTab')">વંશાવળી</button>
+                <button class="tab-btn" onclick="switchTab('diaryTab')">📖 ડાયરી</button>
+                <button class="tab-btn" onclick="switchTab('vanshavaliTab')">🌳 વંશાવળી</button>
+                <button class="tab-btn" onclick="switchTab('cameraTab')">📷 કૅમેરા</button>
             </div>
             
             <!-- AI Settings Tab -->
@@ -634,17 +555,6 @@
                 
                 <label for="groqKey">Groq API કી</label>
                 <input type="password" id="groqKey" placeholder="gsk_...">
-                
-                <button class="modal-button" onclick="toggleCamera()">
-                    <i class="fas fa-camera"></i> કૅમેરા ચાલુ/બંધ
-                </button>
-                
-                <div id="camBox">
-                    <video id="videoFeed" autoplay playsinline></video>
-                    <button class="modal-button" onclick="runVision()" style="position:absolute; bottom:10px; left:5%; width:90%; background: linear-gradient(135deg, var(--green), #3b82f6);">
-                        <i class="fas fa-eye"></i> ફોટો જુઓ અને વિશ્લેષણ કરો
-                    </button>
-                </div>
                 
                 <button class="modal-button" onclick="saveConfig()">
                     <i class="fas fa-save"></i> બધું સંગ્રહો
@@ -676,9 +586,33 @@
                     <!-- Family tree will be loaded here -->
                 </div>
                 
-                <button class="modal-button" onclick="exportVanshavali()" style="background: linear-gradient(135deg, #8b5cf6, var(--saffron));">
+                <button class="modal-button" onclick="exportVanshavali()" style="background: linear-gradient(135deg, #8b5cf6, var(--saffron)); margin-top: 10px;">
                     <i class="fas fa-download"></i> વંશાવળી એક્સપોર્ટ કરો
                 </button>
+                
+                <button class="modal-button" onclick="speakVanshavali()" style="background: linear-gradient(135deg, var(--purple), #3b82f6); margin-top: 10px;">
+                    <i class="fas fa-volume-up"></i> વંશાવળી સંભળાવો
+                </button>
+            </div>
+            
+            <!-- Camera Tab -->
+            <div id="cameraTab" class="tab-content">
+                <h3 style="color: var(--pink); margin-bottom: 15px; text-align: center;">📷 કૅમેરા</h3>
+                
+                <button class="modal-button" onclick="toggleCamera()">
+                    <i class="fas fa-camera"></i> કૅમેરા ચાલુ/બંધ કરો
+                </button>
+                
+                <div id="camBox">
+                    <video id="videoFeed" autoplay playsinline></video>
+                    <button class="modal-button" onclick="runVision()" style="position:absolute; bottom:10px; left:5%; width:90%; background: linear-gradient(135deg, var(--green), #3b82f6);">
+                        <i class="fas fa-eye"></i> ફોટો જુઓ અને વિશ્લેષણ કરો
+                    </button>
+                </div>
+                
+                <p style="color: #94a3b8; font-size: 14px; text-align: center; margin-top: 15px;">
+                    📸 કૅમેરા ચાલુ કરી ફોટો લો, પછી "ફોટો જુઓ" બટન દબાવો
+                </p>
             </div>
             
             <div class="close-btn" onclick="toggleModal('settingsModal')">
@@ -687,23 +621,126 @@
         </div>
     </div>
 
-    <!-- External Vanshavali Data -->
-    <script src="vanshavali_data.js"></script>
-
     <script>
         // વિડિઓ સ્ટેટ્સ
         const videoStates = {
             'silent': 'silent.mp4',
             'talking': 'talking.mp4', 
             'thinking': 'thinking.mp4',
-            'smiling': 'smiling.mp4'  // પ્રણામને બદલે સ્માઇલિંગ
+            'smiling': 'smiling.mp4'
         };
         
         // ડાયરી એન્ટ્રીઝ
         let diaryEntries = [];
         
-        // વંશાવળી ડેટા
-        let vanshavaliData = null;
+        // વંશાવળી ડેટા - હવે અંદર રાખ્યો
+        const vanshavaliData = {
+            name: "જગદગુરુ રામાનંદાચાર્યજી", 
+            info: "વિ. સં. ૧૩૫૬",
+            children: [{
+                name: "અનંતાનંદજી", 
+                children: [{
+                    name: "ગેંડાજી", 
+                    children: [{
+                        name: "લક્ષ્મીદાસજી", 
+                        children: [{
+                            name: "માધવદાસજી", 
+                            children: [{
+                                name: "ખોજીજી", 
+                                children: [{
+                                    name: "મહેન્દ્રદાસજી", 
+                                    info: "પાલડી-મારવાડ (૧૪૯૫)", 
+                                    children: [{
+                                        name: "પુરણદાસજી બાપુ", 
+                                        info: "ઝીંઝર સમાધિ (૧૯૩૧)", 
+                                        children: [
+                                            {
+                                                name: "ગંગારામજી", 
+                                                children: [
+                                                    { 
+                                                        name: "આશારામજી", 
+                                                        children: [
+                                                            { 
+                                                                name: "ગિરધરદાસજી", 
+                                                                children: [
+                                                                    { name: "હરીરામજી" }
+                                                                ] 
+                                                            }, 
+                                                            { 
+                                                                name: "મોજીરમજી", 
+                                                                children: [
+                                                                    { 
+                                                                        name: "જેજેરામ", 
+                                                                        children: [
+                                                                            { name: "ગૌતમ" }
+                                                                        ] 
+                                                                    }
+                                                                ] 
+                                                            }, 
+                                                            { 
+                                                                name: "સીતારામજી", 
+                                                                children: [
+                                                                    { name: "પ્રભુદાસ" }, 
+                                                                    { name: "રાજુભાઈ" }
+                                                                ] 
+                                                            }
+                                                        ]
+                                                    },
+                                                    { 
+                                                        name: "વ્રજેશરામજી", 
+                                                        children: [
+                                                            { 
+                                                                name: "ભગવાનદાસજી", 
+                                                                info: "ગાંગોદ", 
+                                                                children: [
+                                                                    { name: "બાબુરામજી" }, 
+                                                                    { name: "ઈશ્વરદાસજી" }
+                                                                ] 
+                                                            }, 
+                                                            { 
+                                                                name: "તુલસીદાસજી", 
+                                                                info: "રોજકા", 
+                                                                children: [
+                                                                    { name: "મનસુખભાઈ" }, 
+                                                                    { name: "વિમુભાઈ" }, 
+                                                                    { name: "પરશુરામ" }
+                                                                ] 
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                name: "રઘુરામજી", 
+                                                children: [{
+                                                    name: "દયારામજી", 
+                                                    info: "દિવાળીબેન (ઝમરાળા)", 
+                                                    children: [
+                                                        { name: "કાશીરામજી", info: "રામપુર" }, 
+                                                        { name: "વશરામજી", info: "સંખેજ" }, 
+                                                        { 
+                                                            name: "જાનકીદાસજી", 
+                                                            info: "ઝીંઝર", 
+                                                            children: [
+                                                                { name: "મનહરલાલ" }, 
+                                                                { name: "પ્રતાપભાઈ" }, 
+                                                                { name: "વૈકુંઠભાઈ" }, 
+                                                                { name: "સતીષભાઈ" }, 
+                                                                { name: "દેવેન્દ્રભાઈ" }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }]
+                                            }
+                                        ]
+                                    }]
+                                }]
+                            }]
+                        }]
+                    }]
+                }]
+            }]
+        };
 
         // વિડિઓ બદલવાનું ફંક્શન
         function setVideo(state) {
@@ -714,7 +751,6 @@
                 video.src = videoStates[state];
                 video.play().catch(e => console.log("વિડિઓ ચલાવવામાં ભૂલ:", e));
                 
-                // સ્ટેટસ અપડેટ
                 switch(state) {
                     case 'talking':
                         status.textContent = "🎤 Divinity બોલે છે...";
@@ -741,6 +777,12 @@
             const modal = document.getElementById(id);
             if (modal.style.display === 'flex') {
                 modal.style.display = 'none';
+                // કૅમેરા બંધ કરો જ્યારે મોડલ બંધ કરો
+                const feed = document.getElementById('videoFeed');
+                if (feed.srcObject) {
+                    feed.srcObject.getTracks().forEach(track => track.stop());
+                    document.getElementById('camBox').style.display = 'none';
+                }
             } else {
                 modal.style.display = 'flex';
                 if (id === 'settingsModal') {
@@ -759,23 +801,62 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        // કૅમેરા ટોગલ
+        // કૅમેરા ટોગલ - FIXED VERSION
         async function toggleCamera() {
             const box = document.getElementById('camBox');
             const feed = document.getElementById('videoFeed');
             
             if(box.style.display === 'block') {
-                if(feed.srcObject) feed.srcObject.getTracks().forEach(track => track.stop());
+                // કૅમેરા બંધ કરો
+                if(feed.srcObject) {
+                    feed.srcObject.getTracks().forEach(track => track.stop());
+                }
                 box.style.display = 'none';
+                speak("કૅમેરા બંધ કરી ગઈ છું");
             } else {
+                // કૅમેરા ચાલુ કરો
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: "environment" }
-                    });
+                    // પહેલા camera tab પર જાઓ
+                    document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    
+                    document.querySelector('.tab-btn[onclick*="cameraTab"]').classList.add('active');
+                    document.getElementById('cameraTab').classList.add('active');
+                    
+                    // હવે કૅમેરા ઍક્સેસ કરો
+                    const constraints = {
+                        video: {
+                            facingMode: "environment",
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        },
+                        audio: false
+                    };
+                    
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
                     feed.srcObject = stream;
                     box.style.display = 'block';
+                    
+                    // Wait for video to load
+                    feed.onloadedmetadata = () => {
+                        feed.play();
+                        speak("કૅમેરા ચાલુ થઈ ગઈ છે. હવે તમે ફોટો લઈ શકો છો");
+                    };
+                    
                 } catch (error) {
-                    alert("કૅમેરા માટે પરવાનગી આપો: " + error.message);
+                    console.error("કૅમેરા ભૂલ:", error);
+                    let errorMessage = "કૅમેરા ઍક્સેસ માટે પરવાનગી આપો.";
+                    
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage = "કૅમેરા માટે પરવાનગી નથી આપેલી. કૃપા કરીને બ્રાઉઝર સેટિંગ્સમાં પરવાનગી આપો.";
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage = "કોઈ કૅમેરા મળ્યો નથી.";
+                    } else if (error.name === 'NotReadableError') {
+                        errorMessage = "કૅમેરા વપરાશમાં છે. બીજા એપ્લિકેશન બંધ કરો.";
+                    }
+                    
+                    alert(errorMessage);
+                    speak("કૅમેરા ચાલુ કરવામાં ભૂલ આવી છે");
                 }
             }
         }
@@ -788,7 +869,7 @@
             speech.text = cleanGujaratiText(text);
             speech.lang = 'gu-IN';
             speech.rate = 1.0;
-            speech.pitch = 1.2; // સ્ત્રી સ્વર માટે થોડી ઉંચી પિચ
+            speech.pitch = 1.2;
             speech.volume = 1.0;
             
             speech.onstart = function() {
@@ -809,7 +890,7 @@
             return text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s.,!?ક્રમ]/g, ' ');
         }
 
-        // AI સાથે કનેક્ટ કરો (Divinity સ્ત્રી AI)
+        // AI સાથે કનેક્ટ કરો
         async function fetchAI(prompt, imageBase64 = null) {
             const model = document.getElementById('activeModel').value;
             const geminiKeys = (localStorage.getItem('div_gemini_keys') || "").split(',').filter(k => k.trim());
@@ -954,7 +1035,7 @@
             const treeContainer = document.getElementById('familyTreeDisplay');
             treeContainer.innerHTML = '';
             
-            if (!vanshavaliData || !vanshavaliData.children) {
+            if (!vanshavaliData) {
                 treeContainer.innerHTML = '<p style="text-align:center; color:#94a3b8;">વંશાવળી ડેટા મળ્યો નથી</p>';
                 return;
             }
@@ -1004,6 +1085,18 @@
             speak("વંશાવળી એક્સપોર્ટ કરી ગઈ છું");
         }
 
+        // વંશાવળી સંભળાવવી
+        function speakVanshavali() {
+            const summary = generateVanshavaliSummary(vanshavaliData);
+            speak(summary);
+        }
+
+        // વંશાવળી સારાંશ જનરેટ
+        function generateVanshavaliSummary(node) {
+            let count = countTreeMembers(node);
+            return `તમારી વંશાવળીમાં કુલ ${count} સભ્યો છે. મૂળ પુરુષ છે ${node.name}. ${node.info ? node.info + ". " : ""}`;
+        }
+
         // ઇન્ટરેક્શન શરૂ કરો
         function startInteraction() {
             const micBtn = document.getElementById('micBtn');
@@ -1047,19 +1140,17 @@
                 
                 // વંશાવળી કમાન્ડ
                 if (speechText.includes("વંશાવળી") || speechText.includes("પરિવાર") || speechText.includes("વંશ")) {
-                    if (vanshavaliData) {
-                        speak(`તમારી વંશાવળીમાં ${countTreeMembers(vanshavaliData)} સભ્યો છે. સેટિંગ્સમાં જઈને જોઈ શકો છો.`);
-                    } else {
-                        speak("વંશાવળી ડેટા મળ્યો નથી. કૃપા કરીને vanshavali_data.js ફાઈલ તપાસો.");
-                    }
+                    const summary = generateVanshavaliSummary(vanshavaliData);
+                    speak(summary + " સેટિંગ્સમાં વંશાવળી ટેબમાં સંપૂર્ણ વંશાવળી જોઈ શકો છો.");
                     return;
                 }
                 
-                // કેલ્ક્યુલેટર
-                if (speechText.includes("કેલ્ક્યુલેટર")) {
-                    speak("કેલ્ક્યુલેટર ખોલું છું.");
+                // કૅમેરા કમાન્ડ
+                if (speechText.includes("કૅમેરા") || speechText.includes("ફોટો") || speechText.includes("કેમેરા")) {
+                    speak("કૅમેરા ખોલું છું. સેટિંગ્સમાં કૅમેરા ટેબમાં જાઓ.");
                     setTimeout(() => {
-                        window.location.href = "intent://com.android.calculator2/#Intent;scheme=android-app;end";
+                        toggleModal('settingsModal');
+                        setTimeout(() => switchTab('cameraTab'), 100);
                     }, 1000);
                     return;
                 }
@@ -1067,12 +1158,6 @@
                 // તારું નામ શું છે?
                 if (speechText.includes("તારું નામ શું") || speechText.includes("નામ શું છે")) {
                     speak("મારું નામ Divinity છે. હું તમારી AI સહાયક છું.");
-                    return;
-                }
-                
-                // જય સીયારામ
-                if (speechText.includes("જય સીયારામ")) {
-                    speak("જય સીયારામ! મને તમારી સેવા કરવાની ખુશી છે.");
                     return;
                 }
                 
@@ -1106,23 +1191,6 @@
             return count;
         }
 
-        // ક્વિક એક્શન્સ
-        function quickAction(action) {
-            switch(action) {
-                case 'diary':
-                    toggleModal('settingsModal');
-                    setTimeout(() => switchTab('diaryTab'), 100);
-                    break;
-                case 'vanshavali':
-                    toggleModal('settingsModal');
-                    setTimeout(() => switchTab('vanshavaliTab'), 100);
-                    break;
-                case 'camera':
-                    toggleCamera();
-                    break;
-            }
-        }
-
         // વિઝન એનાલિસિસ
         async function runVision() {
             const video = document.getElementById('videoFeed');
@@ -1134,7 +1202,6 @@
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
             const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
-            toggleModal('settingsModal');
             
             const analysis = await fetchAI("આ ફોટામાં શું છે? વિગતવાર વર્ણન કરો.", imageBase64);
             speak(analysis);
@@ -1169,6 +1236,8 @@
 
         // પેજ લોડ થાય ત્યારે
         window.onload = function() {
+            console.log("✅ Vanshavali Data Loaded:", vanshavaliData.name);
+            
             // Load saved data
             loadSavedDiaryEntries();
             
@@ -1177,32 +1246,22 @@
             document.getElementById('groqKey').value = localStorage.getItem('div_groq_key') || "";
             document.getElementById('activeModel').value = localStorage.getItem('div_active_model') || "groq";
             
-            // Load vanshavali data from external file
-            if (typeof window.vanshavaliData !== 'undefined') {
-                vanshavaliData = window.vanshavaliData;
-                console.log("✅ Vanshavali data loaded:", vanshavaliData.name);
-            } else {
-                console.error("❌ Vanshavali data not found in external file");
-            }
-            
             // Show welcome
             setTimeout(() => {
                 document.getElementById('welcomeOverlay').style.display = 'none';
                 setVideo('smiling');
                 
                 setTimeout(() => {
-                    speak("હું Divinity છું, તમારી AI સહાયક. મારી સાથે બોલીને વાત કરો. મને ડાયરીમાં નોંધ કરવી હોય તો 'નોંધ કરો' કહો.");
+                    speak("હું Divinity છું, તમારી AI સહાયક. મારી સાથે બોલીને વાત કરો. ડાયરી, વંશાવળી અને કૅમેરા માટે સેટિંગ્સમાં જાઓ.");
                     setVideo('silent');
                 }, 1000);
             }, 2000);
         };
 
-        // પેજ અનલોડ થાય ત્યારે
         window.onbeforeunload = function() {
             stopEverything();
         };
         
-        // Touch event for better mobile
         document.addEventListener('touchstart', function() {}, {passive: true});
     </script>
 </body>
