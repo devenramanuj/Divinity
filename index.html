@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Divinity AI - Universal Master</title>
+    <title>Divinity AI - 70B Master</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --accent: #f43f5e; --glass: rgba(0, 0, 0, 0.85); }
@@ -18,10 +18,8 @@
         .settings-trigger { position: fixed; top: 25px; right: 25px; z-index: 20; font-size: 26px; color: rgba(255,255,255,0.6); cursor: pointer; }
         #settingsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .modal-card { background: #1e293b; width: 90%; max-width: 420px; padding: 25px; border-radius: 30px; border: 1px solid #4f46e5; max-height: 85vh; overflow-y: auto; }
-        .section { margin-bottom: 15px; }
-        label { display: block; font-size: 11px; color: #818cf8; margin-bottom: 5px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #34d399; border-radius: 10px; font-family: inherit; margin-bottom: 8px; box-sizing: border-box;}
-        #cameraView { width: 100%; height: 180px; background: #000; border-radius: 15px; display: none; object-fit: cover; border: 2px solid #4f46e5; margin-top: 10px; }
+        input, select, textarea { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #34d399; border-radius: 10px; margin-bottom: 8px; box-sizing: border-box;}
+        #cameraView { width: 100%; height: 180px; background: #000; border-radius: 15px; display: none; border: 2px solid #4f46e5; margin-top: 10px; }
         #reportModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 65%; background: #0f172a; border-radius: 25px; z-index: 200; padding: 20px; border: 2px solid #818cf8; overflow-y: auto; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(244, 63, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); } }
     </style>
@@ -32,7 +30,7 @@
     <i class="fas fa-cog settings-trigger" onclick="toggleM('settingsModal')"></i>
 
     <div class="ui-layer">
-        <div id="status" style="margin-bottom: 12px; font-size: 13px; color: #94a3b8;">Divinity Online</div>
+        <div id="status" style="margin-bottom: 12px; font-size: 13px; color: #94a3b8;">Divinity 70B Active</div>
         <div class="controls">
             <button class="btn btn-stop" onclick="stopEverything()"><i class="fas fa-stop"></i></button>
             <button id="micBtn" class="btn btn-mic" onclick="startInteraction()"><i class="fas fa-microphone"></i></button>
@@ -41,54 +39,33 @@
 
     <div id="settingsModal">
         <div class="modal-card">
-            <h3 style="text-align:center; margin-top:0;">System Configuration</h3>
-            <div class="section">
-                <label>Active Engine</label>
-                <select id="activeModel">
-                    <option value="gemini">Google Gemini 2.5</option>
-                    <option value="groq">Groq Llama 3</option>
-                </select>
-            </div>
-            <div class="section">
-                <label>Gemini API Keys (Comma Separated)</label>
-                <textarea id="geminiKeys" rows="2" placeholder="Key1, Key2..."></textarea>
-            </div>
-            <div class="section">
-                <label>Groq API Key</label>
-                <input type="password" id="groqKey" placeholder="Enter Groq Key">
-            </div>
-            <div class="section">
-                <label>RAG Knowledge Base (Text File)</label>
-                <input type="file" id="ragFile" accept=".txt" onchange="loadRAG(event)">
-            </div>
-            <div class="section">
-                <label>Vision Lens</label>
-                <button onclick="toggleLens()" style="width:100%; padding:8px; background:#334155; border:none; color:#fff; border-radius:8px;">Camera On/Off</button>
-                <video id="cameraView" autoplay playsinline></video>
-                <button id="lensBtn" onclick="runVision()" style="width:100%; padding:12px; background:#4f46e5; color:#fff; display:none; border-radius:10px; margin-top:10px; font-weight:bold;">Analyze Image</button>
-            </div>
-            <button onclick="saveConfig()" style="width:100%; padding:15px; background:linear-gradient(to right, #4f46e5, #818cf8); border:none; border-radius:12px; color:#fff; font-weight:bold; cursor:pointer;">Update & Save</button>
-            <p onclick="toggleM('settingsModal')" style="text-align:center; color:#f43f5e; cursor:pointer; margin-top:10px; font-weight:bold;">Cancel</p>
+            <h3 style="text-align:center;">System Config</h3>
+            <select id="activeModel">
+                <option value="gemini">Gemini 2.5 Flash</option>
+                <option value="groq">Groq Llama 3 (70B)</option>
+            </select>
+            <textarea id="geminiKeys" rows="2" placeholder="Gemini Keys (Comma Separated)"></textarea>
+            <input type="password" id="groqKey" placeholder="Groq API Key">
+            <button onclick="toggleLens()" style="width:100%; padding:8px; background:#334155; color:#fff; border-radius:8px;">Camera On/Off</button>
+            <video id="cameraView" autoplay playsinline></video>
+            <button id="lensBtn" onclick="runVision()" style="width:100%; padding:12px; background:#4f46e5; color:#fff; display:none; border-radius:10px; margin-top:10px;">Analyze Image</button>
+            <button onclick="saveConfig()" style="width:100%; padding:15px; background:#4f46e5; color:#fff; border-radius:12px; font-weight:bold; margin-top:10px;">Save & Update</button>
+            <p onclick="toggleM('settingsModal')" style="text-align:center; color:#f43f5e; cursor:pointer;">Close</p>
         </div>
     </div>
 
     <div id="reportModal">
         <div id="reportBox" style="white-space: pre-wrap; color: #e5e7eb;"></div>
-        <button onclick="toggleM('reportModal')" style="width:100%; margin-top:20px; padding:12px; background:#334155; color:#fff; border:none; border-radius:10px;">Close Oracle</button>
+        <button onclick="toggleM('reportModal')" style="width:100%; margin-top:20px; padding:10px;">Close</button>
     </div>
 
     <script>
         const video = document.getElementById('video-background');
         let ragData = localStorage.getItem('div_rag') || "";
-        let currentKeyIdx = 0;
 
         function playV(s) { video.src = s + '.mp4'; video.load(); video.play().catch(e=>{}); }
-        function toggleM(id) { 
-            const m = document.getElementById(id); 
-            m.style.display = (m.style.display === 'flex' || m.style.display === 'block') ? 'none' : 'flex'; 
-        }
+        function toggleM(id) { const m = document.getElementById(id); m.style.display = (m.style.display === 'flex' || m.style.display === 'block') ? 'none' : 'flex'; }
 
-        // --- BRAHMASTRA VOICE ---
         function speak(text) {
             window.speechSynthesis.cancel();
             const cleanText = text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s]/g, ' ');
@@ -107,53 +84,46 @@
             setInterval(() => { if(window.speechSynthesis.speaking) window.speechSynthesis.resume(); }, 500);
         }
 
-        // --- API ENGINE WITH KEY ROTATION & GROQ SUPPORT ---
-        async function fetchAI(prompt, imageData = null) {
+        async function fetchAI(prompt, img = null) {
             const model = document.getElementById('activeModel').value;
-            const geminiKeys = document.getElementById('geminiKeys').value.split(',').map(k => k.trim()).filter(k=>k);
-            const groqKey = document.getElementById('groqKey').value;
+            const gKeys = document.getElementById('geminiKeys').value.split(',').map(k => k.trim()).filter(k=>k);
+            const grKey = document.getElementById('groqKey').value;
 
             if (model === "gemini") {
-                const callGemini = async (idx) => {
-                    if (idx >= geminiKeys.length) return "બધી કીની લિમિટ પૂરી થઈ ગઈ છે.";
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKeys[idx]}`;
-                    const parts = [{ text: `તમે Divinity છો. દેવેન્દ્રભાઈએ બનાવ્યા છે. શરૂઆત જય શ્રી કૃષ્ણથી કરો. RAG Knowledge: ${ragData} \n પ્રશ્ન: ${prompt}` }];
-                    if (imageData) parts.push({ inline_data: { mime_type: "image/jpeg", data: imageData } });
-
+                const callG = async (i) => {
+                    if (i >= gKeys.length) return "Keys Expired";
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gKeys[i]}`;
+                    const parts = [{ text: "તમે Divinity છો દેવેન્દ્રભાઈએ બનાવી છે ગુજરાતીમાં જવાબ આપો શરૂઆત જય શ્રી કૃષ્ણથી કરો ચિન્હો ન વાપરવા પ્રશ્ન: " + prompt }];
+                    if (img) parts.push({ inline_data: { mime_type: "image/jpeg", data: img } });
                     try {
                         const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts }] }) });
-                        if (res.status === 429) return callGemini(idx + 1);
                         const d = await res.json();
                         return d.candidates[0].content.parts[0].text;
-                    } catch (e) { return callGemini(idx + 1); }
+                    } catch (e) { return callG(i + 1); }
                 };
-                return await callGemini(0);
+                return await callG(0);
             } else {
-                // Groq Implementation
                 try {
                     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                        method: 'POST', headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ model: "llama3-8b-8192", messages: [{ role: "user", content: `તમે Divinity છો. જવાબ ગુજરાતીમાં આપો. પ્રશ્ન: ${prompt}` }] })
+                        method: 'POST', headers: { 'Authorization': `Bearer ${grKey}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model: "llama3-70b-8192", messages: [{ role: "user", content: "તમે Divinity છો દેવેન્દ્રભાઈએ બનાવી છે ગુજરાતીમાં જવાબ આપો શરૂઆત જય શ્રી કૃષ્ણથી કરો ચિન્હો ન વાપરવા પ્રશ્ન: " + prompt }] })
                     });
                     const d = await res.json();
                     return d.choices[0].message.content;
-                } catch (e) { return "Groq Error!"; }
+                } catch (e) { return "Groq Error"; }
             }
         }
 
         function startInteraction() {
             window.speechSynthesis.resume();
-            window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
             const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             rec.lang = 'gu-IN';
-            rec.onstart = () => { document.getElementById('micBtn').classList.add('listening'); document.getElementById('status').innerText = "Divinity સાંભળે છે..."; playV('talking'); };
+            rec.onstart = () => { document.getElementById('micBtn').classList.add('listening'); document.getElementById('status').innerText = "Listening..."; playV('talking'); };
             rec.onresult = async (e) => {
                 const speech = e.results[0][0].transcript;
-                document.getElementById('status').innerText = "વિચારી રહી છું...";
                 playV('thinking');
                 const reply = await fetchAI(speech);
                 speak(reply);
-                document.getElementById('status').innerText = "તમે પૂછ્યું: " + speech;
             };
             rec.onend = () => { document.getElementById('micBtn').classList.remove('listening'); playV('smiling'); };
             rec.start();
@@ -164,13 +134,12 @@
             const c = document.createElement('canvas');
             c.width = v.videoWidth; c.height = v.videoHeight;
             c.getContext('2d').drawImage(v, 0, 0);
-            const img = c.toDataURL('image/jpeg').split(',')[1];
+            const imgBase = c.toDataURL('image/jpeg').split(',')[1];
             toggleM('reportModal');
-            document.getElementById('reportBox').innerText = "વિઝ્યુઅલ એનાલિસિસ ચાલુ છે...";
-            playV('thinking');
-            const reply = await fetchAI("કેમેરામાં જે છે તેનું વર્ણન કરો.", img);
-            document.getElementById('reportBox').innerText = reply;
-            speak(reply);
+            document.getElementById('reportBox').innerText = "Analyzing...";
+            const out = await fetchAI("કેમેરામાં જે છે તે સમજાવો", imgBase);
+            document.getElementById('reportBox').innerText = out;
+            speak(out);
         }
 
         async function toggleLens() {
@@ -180,20 +149,13 @@
             else { const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); v.srcObject = s; v.style.display = 'block'; b.style.display = 'block'; }
         }
 
-        function stopEverything() { window.speechSynthesis.cancel(); playV('smiling'); document.getElementById('status').innerText = "Divinity Stopped."; }
-        
+        function stopEverything() { window.speechSynthesis.cancel(); playV('smiling'); }
         function saveConfig() {
             localStorage.setItem('div_gemini_keys', document.getElementById('geminiKeys').value);
             localStorage.setItem('div_groq_key', document.getElementById('groqKey').value);
             localStorage.setItem('div_active_model', document.getElementById('activeModel').value);
-            speak("જય શ્રી કૃષ્ણ સેટિંગ્સ સફળતાપૂર્વક સેવ થઈ ગયા છે");
+            speak("જય શ્રી કૃષ્ણ સિસ્ટમ અપડેટ થઈ ગઈ છે");
             toggleM('settingsModal');
-        }
-
-        function loadRAG(e) {
-            const reader = new FileReader();
-            reader.onload = (ev) => { ragData = ev.target.result; localStorage.setItem('div_rag', ragData); alert("Knowledge Loaded!"); };
-            reader.readAsText(e.target.files[0]);
         }
 
         window.onload = () => {
