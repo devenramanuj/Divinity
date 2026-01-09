@@ -3,35 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidushi AI - Secure Builder</title>
+    <title>Vidushi AI Builder - 2.5 Flash</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #6366f1; --accent: #f43f5e; --bg: #0f172a; }
-        body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; position: relative; overflow: hidden; }
+        :root { --primary: #6366f1; --accent: #f43f5e; --bg: #0f172a; --glass: rgba(30, 41, 59, 0.7); }
         
-        #video-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: 0.2; }
+        body { background: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; position: relative; overflow-x: hidden; }
 
-        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 25px; width: 100%; max-width: 700px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 1; }
-        
-        /* Settings Icon */
-        .settings-icon { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #94a3b8; transition: 0.3s; z-index: 10; }
+        /* વિડીયો બેકગ્રાઉન્ડ સ્ટાઈલિંગ */
+        #video-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: 0.25; pointer-events: none; }
+
+        /* મેઈન કાર્ડ UI */
+        .glass-card { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; padding: 25px; width: 100%; max-width: 750px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); z-index: 1; }
+
+        .settings-icon { position: absolute; top: 25px; right: 25px; font-size: 26px; cursor: pointer; color: #94a3b8; transition: 0.4s; z-index: 10; }
         .settings-icon:hover { color: white; transform: rotate(90deg); }
 
-        /* Settings Modal */
-        #settingsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
-        .modal-content { background: #1e293b; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--primary); }
-        .modal-content input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: #34d399; outline: none; box-sizing: border-box; }
+        h1 { font-size: 2.2rem; margin: 0; background: linear-gradient(to right, #a5b4fc, #fb7185); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+        p { color: #94a3b8; margin-top: 5px; font-size: 14px; letter-spacing: 1px; }
 
-        textarea { width: 100%; height: 80px; background: rgba(15, 23, 42, 0.5); border: 2px solid #334155; border-radius: 16px; padding: 15px; color: #34d399; font-size: 16px; resize: none; outline: none; box-sizing: border-box; }
-        .controls { display: flex; gap: 10px; margin-top: 10px; }
-        .btn { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-build { background: var(--primary); color: white; }
-        .btn-mic { background: #334155; color: white; width: 60px; flex: 0; }
+        .input-box { width: 100%; height: 90px; background: rgba(15, 23, 42, 0.6); border: 2px solid #334155; border-radius: 18px; padding: 15px; color: #34d399; font-size: 16px; margin-top: 20px; outline: none; transition: 0.3s; box-sizing: border-box; resize: none; }
+        .input-box:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.2); }
+
+        .controls { display: flex; gap: 12px; margin-top: 15px; }
+        .btn { flex: 1; padding: 16px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; }
+        .btn-build { background: linear-gradient(45deg, #4f46e5, #6366f1); color: white; }
+        .btn-build:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4); }
+        .btn-mic { background: #1e293b; color: white; width: 65px; flex: 0; font-size: 20px; }
         .btn-mic.listening { background: var(--accent); animation: pulse 1.5s infinite; }
-        
-        #renderArea { width: 100%; height: 400px; background: white; border-radius: 20px; margin-top: 20px; border: 5px solid #1e293b; overflow: hidden; }
+
+        #status { margin: 15px 0; font-size: 14px; color: #cbd5e1; height: 20px; }
+
+        /* રિંગર એરિયા જ્યાં એપ દેખાશે */
+        #renderArea { width: 100%; height: 500px; background: white; border-radius: 20px; margin-top: 20px; border: 6px solid #1e293b; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
         iframe { width: 100%; height: 100%; border: none; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* સેટિંગ્સ મોડલ */
+        #settingsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: #1e293b; padding: 35px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--primary); }
+        .modal-content input { width: 100%; padding: 14px; margin: 15px 0; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: #34d399; outline: none; box-sizing: border-box; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -44,33 +56,40 @@
 
     <div class="glass-card">
         <center>
-            <h1 style="background: linear-gradient(to right, #818cf8, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin:0;">વિદુષી AI બિલ્ડર</h1>
-            <p style="color: #64748b; margin-bottom: 15px;">Gemini 2.5 Flash + Security Mode</p>
+            <h1>વિદુષી AI બિલ્ડર 🤖</h1>
+            <p>GEMINI 2.5 FLASH POWERED</p>
         </center>
 
-        <textarea id="userCommand" placeholder="તમારો આદેશ બોલો અથવા લખો..."></textarea>
+        <textarea id="userCommand" class="input-box" placeholder="તમારો આદેશ આપો... (દા.ત. 'એક કેલ્ક્યુલેટર બનાવો')"></textarea>
         
         <div class="controls">
-            <button id="micBtn" class="btn btn-mic" onclick="toggleMic()"><i class="fas fa-microphone"></i></button>
-            <button class="btn btn-build" onclick="buildApp()">બનાવો <i class="fas fa-magic"></i></button>
+            <button id="micBtn" class="btn btn-mic" onclick="toggleMic()">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="btn btn-build" onclick="buildApp()">
+                એપ બનાવો <i class="fas fa-magic"></i>
+            </button>
         </div>
 
-        <div id="status" style="margin: 10px 0; font-size: 14px; color: #94a3b8;">રેડી ટુ હેલ્પ...</div>
+        <div id="status">Ready to build your ideas...</div>
         
-        <div id="renderArea"><iframe id="appFrame"></iframe></div>
+        <div id="renderArea">
+            <iframe id="appFrame"></iframe>
+        </div>
     </div>
 
     <div id="settingsModal">
         <div class="modal-content">
-            <h3><i class="fas fa-key"></i> API સેટિંગ્સ</h3>
-            <p style="font-size: 12px; color: #94a3b8;">તમારી Gemini API Key અહીં સુરક્ષિત રીતે સેવ કરો</p>
-            <input type="password" id="apiKeyInput" placeholder="અહીં તમારી API Key પેસ્ટ કરો">
+            <h3 style="margin-top:0;"><i class="fas fa-key"></i> API સેટિંગ્સ</h3>
+            <p style="font-size: 12px; color: #94a3b8;">Gemini 2.5 Flash API Key અહીં સેવ કરો</p>
+            <input type="password" id="apiKeyInput" placeholder="API Key અહીં પેસ્ટ કરો...">
             <button class="btn btn-build" onclick="saveSettings()">સેવ કરો</button>
-            <button style="background:none; border:none; color:#f43f5e; margin-top:10px; cursor:pointer;" onclick="closeSettings()">બંધ કરો</button>
+            <button style="background:none; border:none; color:#f43f5e; margin-top:15px; cursor:pointer; font-weight:bold;" onclick="closeSettings()">બંધ કરો</button>
         </div>
     </div>
 
     <script>
+        // ૧. વિડીયો સોર્સ કોન્ફિગરેશન
         const videoBg = document.getElementById('video-background');
         const videoSources = {
             'smiling': 'videos/smiling_video.mp4',
@@ -83,38 +102,61 @@
             if (videoSources[state]) {
                 videoBg.src = videoSources[state];
                 videoBg.load();
-                videoBg.play();
+                videoBg.play().catch(e => console.log("Video wait..."));
             }
         }
 
-        // --- Settings Logic ---
+        // ૨. સેટિંગ્સ મેનેજમેન્ટ
         function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
         function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
         
         function saveSettings() {
-            const key = document.getElementById('apiKeyInput').value;
+            const key = document.getElementById('apiKeyInput').value.trim();
             if (key) {
                 localStorage.setItem('gemini_api_key', key);
-                alert("API Key સફળતાપૂર્વક સેવ થઈ ગઈ છે");
+                alert("API Key સુરક્ષિત રીતે સેવ થઈ ગઈ છે!");
                 closeSettings();
             }
         }
 
-        // --- Gemini logic with LocalStorage ---
+        // ૩. વોઈસ રેકગ્નિશન (Mic)
+        function toggleMic() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) { alert("Mic સપોર્ટ ઉપલબ્ધ નથી"); return; }
+            
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'gu-IN';
+
+            recognition.onstart = () => { 
+                playVideo('talking'); 
+                document.getElementById('micBtn').classList.add('listening'); 
+            };
+            recognition.onend = () => { 
+                playVideo('smiling'); 
+                document.getElementById('micBtn').classList.remove('listening'); 
+            };
+            recognition.onresult = (e) => { 
+                document.getElementById('userCommand').value = e.results[0][0].transcript; 
+            };
+            recognition.start();
+        }
+
+        // ૪. Gemini 2.5 Flash API કોલ
         async function buildApp() {
             const savedKey = localStorage.getItem('gemini_api_key');
             if (!savedKey) {
-                alert("પહેલા સેટિંગ્સમાં જઈને API Key સેવ કરો");
+                alert("પહેલા સેટિંગ્સમાં API Key નાખો");
                 openSettings();
                 return;
             }
 
-            const command = document.getElementById('userCommand').value;
+            const command = document.getElementById('userCommand').value.trim();
             const status = document.getElementById('status');
             const frame = document.getElementById('appFrame');
+
             if (!command) return;
 
-            status.innerHTML = "⏳ પ્રોસેસિંગ...";
+            status.innerHTML = "⏳ <span style='color: #fbbf24;'>વિદુષી ૨.૫ ફ્લેશ કોડિંગ કરી રહી છે...</span>";
             playVideo('thinking');
 
             const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${savedKey}`;
@@ -124,38 +166,40 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Create a single-file HTML/CSS/JS tool for: ${command}. ONLY code.` }] }]
+                        contents: [{ parts: [{ text: `Act as a senior developer. Build a single-file professional HTML/CSS/JS solution for: ${command}. Provide ONLY the final code code starting with <!DOCTYPE html>. No explanation text.` }] }]
                     })
                 });
 
                 const data = await response.json();
+                
+                if (data.error) {
+                    status.innerHTML = "❌ ભૂલ: " + data.error.message;
+                    playVideo('silent');
+                    return;
+                }
+
                 let aiCode = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (aiCode) {
-                    aiCode = aiCode.replace(/```html/g, "").replace(/```/g, "");
-                    status.innerHTML = "✅ એપ તૈયાર છે!";
+                    aiCode = aiCode.replace(/```html/g, "").replace(/```javascript/g, "").replace(/```css/g, "").replace(/```/g, "").trim();
+                    status.innerHTML = "✅ તમારી એપ તૈયાર છે!";
                     playVideo('smiling');
+                    
                     const doc = frame.contentWindow.document;
-                    doc.open(); doc.write(aiCode); doc.close();
+                    doc.open();
+                    doc.write(aiCode);
+                    doc.close();
                 } else {
-                    status.innerHTML = "❌ કી ખોટી છે અથવા ક્વોટા પૂરો થયો છે";
+                    status.innerHTML = "❌ રિસ્પોન્સમાં કોડ મળ્યો નથી";
                     playVideo('silent');
                 }
             } catch (err) {
-                status.innerHTML = "❌ ભૂલ આવી";
+                status.innerHTML = "❌ નેટવર્ક એરર આવી છે";
                 playVideo('silent');
             }
         }
 
-        // Voice logic (as per previous instructions)
-        function toggleMic() {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'gu-IN';
-            recognition.onstart = () => { playVideo('talking'); document.getElementById('micBtn').classList.add('listening'); };
-            recognition.onend = () => { playVideo('smiling'); document.getElementById('micBtn').classList.remove('listening'); };
-            recognition.onresult = (e) => { document.getElementById('userCommand').value = e.results[0][0].transcript; };
-            recognition.start();
-        }
+        window.onload = () => playVideo('smiling');
     </script>
 </body>
 </html>
