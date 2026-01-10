@@ -117,6 +117,7 @@
             <select id="pSel" onchange="updateModels()">
                 <option value="gemini">Google Gemini (ફોટો/વિઝન)</option>
                 <option value="groq">Groq (ટેક્સ્ટ ચેટ)</option>
+                <option value="huggingface">Hugging Face (ઓપન સોર્સ)</option>
             </select>
 
             <!-- Model Selection -->
@@ -128,11 +129,14 @@
             <!-- Keys Section -->
             <div style="border-top: 1px solid #444; margin: 15px 0;"></div>
             
-            <label class="label">🔑 Gemini Key (જરૂરી)</label>
-            <input type="password" id="geminiKeyInput" placeholder="Gemini API Key">
+            <label class="label">🔑 Gemini Key</label>
+            <input type="password" id="geminiKeyInput" placeholder="API Key">
             
-            <label class="label">🔑 Groq Key (Optional)</label>
-            <input type="password" id="groqKeyInput" placeholder="Groq API Key">
+            <label class="label">🔑 Groq Key</label>
+            <input type="password" id="groqKeyInput" placeholder="API Key">
+            
+            <label class="label">🤗 Hugging Face Token (Free)</label>
+            <input type="password" id="hfTokenInput" placeholder="hf_... Token">
 
             <div style="margin: 20px 0; border-top: 1px solid #333; padding-top: 10px;">
                 <div style="text-align: center; font-size: 12px; color: #777; margin-bottom: 10px;">TOOLS</div>
@@ -198,7 +202,7 @@
         let facingMode = 'environment';
         let notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
         let contacts = JSON.parse(localStorage.getItem('phoneBook') || '[]');
-        let memories = JSON.parse(localStorage.getItem('userMemories') || '[]'); // NEW: Long Term Memory
+        let memories = JSON.parse(localStorage.getItem('userMemories') || '[]');
         let myIdentity = "તમારું નામ Divinity છે અને તમને Devendrabhai એ બનાવ્યો છે. તમે એક દયાળુ AI છો.";
 
         const MODEL_OPTS = {
@@ -210,6 +214,11 @@
             groq: [
                 { id: "llama-3.1-8b-instant", name: "Groq Llama 3.1 8B" },
                 { id: "llama-3.3-70b-versatile", name: "Groq Llama 70B" }
+            ],
+            huggingface: [
+                { id: "mistralai/Mistral-7B-Instruct-v0.3", name: "Mistral 7B (Best for Free)" },
+                { id: "meta-llama/Meta-Llama-3-8B-Instruct", name: "Llama 3 8B" },
+                { id: "Qwen/Qwen2.5-7B-Instruct", name: "Qwen 2.5 7B" }
             ]
         };
 
@@ -218,28 +227,26 @@
         // ==========================================
         function getKey() {
             if(currentProvider === 'gemini') return localStorage.getItem('gemini_key');
-            return localStorage.getItem('groq_key');
+            if(currentProvider === 'groq') return localStorage.getItem('groq_key');
+            if(currentProvider === 'huggingface') return localStorage.getItem('hf_token');
+            return null;
         }
 
         // ==========================================
-        // 🗣️ SPEECH CLEANUP (FIXED ISSUE 1)
+        // 🗣️ SPEECH CLEANUP
         // ==========================================
         function cleanTextForSpeech(text) {
             if(!text) return "";
-            // Remove content inside brackets (like punctuation descriptions)
             let clean = text.replace(/\([^)]*\)|\[[^\]]*\]/g, '');
-            // Remove special characters that cause TTS to read symbols
             clean = clean.replace(/[.*#-:;,`'"_]/g, '');
-            // Remove extra spaces
             return clean.replace(/\s+/g, ' ').trim();
         }
 
         // ==========================================
-        // 🧠 MEMORY MANAGEMENT (FIXED ISSUE 2)
+        // 🧠 MEMORY MANAGEMENT
         // ==========================================
         function addMemory(fact) {
             memories.push(fact);
-            // Keep only last 5 memories to save context space
             if(memories.length > 5) memories.shift();
             localStorage.setItem('userMemories', JSON.stringify(memories));
         }
@@ -287,6 +294,7 @@
                 updateModels(); 
                 document.getElementById('geminiKeyInput').value = localStorage.getItem('gemini_key') || '';
                 document.getElementById('groqKeyInput').value = localStorage.getItem('groq_key') || '';
+                document.getElementById('hfTokenInput').value = localStorage.getItem('hf_token') || '';
             }
         }
 
@@ -310,9 +318,11 @@
         function saveSettings() {
             const gKey = document.getElementById('geminiKeyInput').value.trim();
             const grKey = document.getElementById('groqKeyInput').value.trim();
+            const hfToken = document.getElementById('hfTokenInput').value.trim();
             
             if(gKey) localStorage.setItem('gemini_key', gKey);
             if(grKey) localStorage.setItem('groq_key', grKey);
+            if(hfToken) localStorage.setItem('hf_token', hfToken);
             
             currentModel = document.getElementById('mSel').value;
             currentProvider = document.getElementById('pSel').value;
@@ -410,7 +420,7 @@
         }
 
         // ==========================================
-        // 🧠 AI LOGIC (WITH MEMORY)
+        // 🧠 AI LOGIC (WITH HUGGING FACE)
         // ==========================================
         async function callAI(text, imageBase64 = null) {
             const key = getKey();
@@ -418,8 +428,10 @@
             try {
                 if(currentProvider === 'gemini') {
                     return await (imageBase64 ? callGeminiVision(text, imageBase64, key) : callGeminiText(text, key));
-                } else {
+                } else if (currentProvider === 'groq') {
                     return await callGroq(text, key);
+                } else if (currentProvider === 'huggingface') {
+                    return await callHuggingFace(text, key);
                 }
             } catch(e) { console.error(e); speak("Error thayu"); }
         }
@@ -476,6 +488,53 @@
         }
 
         // ==========================================
+        // 🤗 HUGGING FACE LOGIC
+        // ==========================================
+        async function callHuggingFace(text, key) {
+            const memoryContext = getMemoriesContext();
+            // HF Inference API uses a simpler text prompt format often
+            const prompt = `System: ${myIdentity}. Answer in Gujarati.${memoryContext}\n\nUser: ${text}`;
+            
+            const url = `https://api-inference.huggingface.co/models/${currentModel}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    inputs: prompt,
+                    parameters: {
+                        max_new_tokens: 500,
+                        temperature: 0.7,
+                        return_full_text: false
+                    }
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.text();
+                console.error("HF Error:", err);
+                throw new Error("HF Error");
+            }
+            
+            const data = await res.json();
+            // HF response structure varies. Often [{generated_text: "..."}] or just text.
+            let output = "";
+            if (Array.isArray(data) && data.length > 0 && data[0].generated_text) {
+                output = data[0].generated_text;
+                // Sometimes model returns the prompt, try to extract only the answer
+                if(output.includes("User:")) {
+                    const parts = output.split("User:");
+                    output = parts[parts.length - 1].trim();
+                }
+            } else {
+                output = JSON.stringify(data);
+            }
+            return output || "Response nathi malyo";
+        }
+
+        // ==========================================
         // 🗣️ VOICE & COMMANDS
         // ==========================================
         function startVoice() {
@@ -498,7 +557,6 @@
 
         function speak(text) {
             window.speechSynthesis.cancel();
-            // APPLY CLEANUP HERE
             const cleanText = cleanTextForSpeech(text); 
             console.log("Speaking:", cleanText);
             
@@ -516,25 +574,21 @@
         async function processCommand(text) {
             const lower = text.toLowerCase();
 
-            // 1. MEMORY LOGIC (NEW)
+            // 1. MEMORY LOGIC
             if (lower.includes('યાદ') && lower.includes('રાખ')) {
                 const fact = text.replace(/યાદ.*?રાખ/g, '').trim();
                 if(fact.length > 2) {
                     addMemory(fact);
                     speak("મને યાદ રહી ગયું: " + fact);
-                } else {
-                    speak("યાદ રાખવા માટે કંઈક કહો.");
-                }
+                } else speak("યાદ રાખવા માટે કંઈક કહો.");
                 return;
             }
 
             // 2. MAPS LOGIC
             if (lower.includes('નજીક') || lower.includes('near') || lower.includes('maps') || lower.includes('શોધો')) {
                 let searchQuery = text.replace(/નજીક|near|મારી|મારા|શોધો|find/g, '').trim();
-                if(searchQuery.length > 0) {
-                    speak(`${searchQuery} શોધી રહ્યો છું`);
-                    openMapSearch(searchQuery);
-                } else speak("શું શોધવું છે કહો.");
+                if(searchQuery.length > 0) { speak(`${searchQuery} શોધી રહ્યો છું`); openMapSearch(searchQuery); }
+                else speak("શું શોધવું છે કહો.");
                 return;
             }
 
