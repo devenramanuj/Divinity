@@ -2,159 +2,136 @@
 <html lang="gu">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidushi AI - The Ultimate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vidushi AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #ff6d00; --accent: #ffd600; --bg-dark: #000; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg-dark); font-family: 'Segoe UI', sans-serif; }
+        :root { --primary: #ff6d00; --bg: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg); font-family: sans-serif; }
+        #mainVideo { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
         
-        /* બેકગ્રાઉન્ડ વિડિયો એન્જિન */
-        #mainVideo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.9; }
+        .ui-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 100px; } /* માઈક ઉપર લીધું */
         
-        /* પ્રીમિયમ ગ્લાસ મોર્ફિઝમ UI */
-        .ui-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 40px; }
-        .controls { display: flex; align-items: center; gap: 25px; background: rgba(0,0,0,0.85); padding: 20px 40px; border-radius: 100px; backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,1); }
+        .controls { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.7); padding: 12px 25px; border-radius: 50px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         
-        .btn-mic { width: 85px; height: 85px; background: radial-gradient(circle, #fff, #e0e0e0); border: none; border-radius: 50%; font-size: 38px; cursor: pointer; color: #000; box-shadow: 0 0 30px rgba(255,255,255,0.3); transition: 0.3s; }
-        .btn-mic.listening { animation: glow 1.5s infinite; background: var(--primary); color: #fff; }
-        .btn-action { width: 55px; height: 55px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; color: #fff; cursor: pointer; font-size: 20px; transition: 0.3s; }
+        .btn-mic { width: 60px; height: 60px; background: #fff; border: none; border-radius: 50%; font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-stop { width: 45px; height: 45px; background: #ef4444; border: none; border-radius: 50%; color: #fff; cursor: pointer; font-size: 18px; }
         
-        #statusLabel { margin-bottom: 20px; font-size: 16px; letter-spacing: 1px; color: var(--accent); font-weight: bold; text-transform: uppercase; }
+        #status { color: #ffd600; font-weight: bold; margin-bottom: 10px; font-size: 14px; text-shadow: 0 1px 3px #000; }
 
-        /* સેટિંગ્સ - ઈમાનદારી અને પ્રોફેશનલ લુક */
-        #settingsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
-        .modal-card { background: #121212; width: 90%; max-width: 440px; padding: 35px; border-radius: 40px; border: 1px solid var(--primary); box-shadow: 0 0 50px rgba(255,109,0,0.2); }
-        input, select, textarea { width: 100%; padding: 15px; margin-top: 12px; background: #1e1e1e; border: 1px solid #333; color: #00e676; border-radius: 15px; box-sizing: border-box; font-size: 16px; }
+        #settingsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-card { background: #1a1a1a; width: 85%; max-width: 380px; padding: 25px; border-radius: 30px; border: 1px solid var(--primary); color: #fff; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; background: #000; border: 1px solid #333; color: #4ade80; border-radius: 12px; box-sizing: border-box; }
+        .save-btn { background: var(--primary); color: #fff; border: none; padding: 15px; width: 100%; border-radius: 12px; margin-top: 15px; font-weight: bold; }
         
-        #camBox { width: 100%; height: 250px; border-radius: 20px; margin-top: 20px; display: none; border: 2px solid var(--primary); overflow: hidden; position: relative; }
+        #camBox { width: 100%; height: 200px; margin-top: 15px; display: none; border: 1px solid var(--primary); position: relative; border-radius: 15px; overflow: hidden; }
         #videoFeed { width: 100%; height: 100%; object-fit: cover; }
-
-        @keyframes glow { 0% { box-shadow: 0 0 0 0 rgba(255,109,0,0.7); } 70% { box-shadow: 0 0 0 25px rgba(255,109,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,109,0,0); } }
     </style>
 </head>
 <body>
 
     <video id="mainVideo" autoplay loop muted playsinline><source src="silent.mp4" type="video/mp4"></video>
-    <i class="fas fa-crown" style="position:fixed; top:35px; right:35px; z-index:100; font-size:30px; color:var(--primary); cursor:pointer;" onclick="toggleM('settingsModal')"></i>
+    <i class="fas fa-cog" style="position:fixed; top:40px; right:30px; z-index:100; font-size:28px; color:#fff;" onclick="toggleM('settingsModal')"></i>
 
     <div class="ui-layer">
-        <div id="statusLabel">વિદુષી રેડી - જય સીયારામ</div>
+        <div id="status">જય શ્રી કૃષ્ણ</div>
         <div class="controls">
-            <button class="btn-action" style="color:#ff5252;" onclick="stopSpeech()"><i class="fas fa-power-off"></i></button>
             <button id="micBtn" class="btn-mic" onclick="startVoice()"><i class="fas fa-microphone"></i></button>
-            <button class="btn-action" style="color:var(--accent);" onclick="toggleM('settingsModal')"><i class="fas fa-sliders-h"></i></button>
+            <button class="btn-stop" onclick="stopSpeech()"><i class="fas fa-stop"></i></button>
         </div>
     </div>
 
     <div id="settingsModal">
         <div class="modal-card">
-            <h2 style="text-align:center; color:var(--primary); margin:0 0 20px 0;">Vidushi Config</h2>
-            
-            <select id="modelSelect">
-                <option value="gemini">Gemini 2.5 Flash (Vision)</option>
-                <option value="groq">Groq Llama 3 (70B Speed)</option>
+            <h3 style="text-align:center;">સેટિંગ્સ</h3>
+            <select id="selMod">
+                <option value="gemini">Gemini 2.5 Flash</option>
+                <option value="groq">Groq 70B</option>
             </select>
-            
-            <textarea id="gemKeys" rows="2" placeholder="Gemini Keys (Comma Separated)"></textarea>
-            <input type="password" id="groqKey" placeholder="Groq API Key">
-            
-            <button onclick="toggleCam()" style="width:100%; padding:15px; margin-top:15px; border-radius:15px; background:#333; color:#fff; border:none; font-weight:bold;"><i class="fas fa-eye"></i> લાઈવ વિઝન</button>
-            
+            <textarea id="gKeys" rows="2" placeholder="Gemini Keys"></textarea>
+            <input type="password" id="rKey" placeholder="Groq API Key">
+            <button onclick="toggleCam()" style="width:100%; margin-top:10px; padding:10px;">કેમેરા</button>
             <div id="camBox">
                 <video id="videoFeed" autoplay playsinline></video>
-                <button onclick="runAnalysis()" style="position:absolute; bottom:15px; left:10%; width:80%; padding:12px; background:var(--primary); color:#fff; border:none; border-radius:10px; font-weight:bold;">વિશ્લેષણ કરો</button>
+                <button onclick="runVis()" style="position:absolute; bottom:10px; left:10%; width:80%;">Analyze</button>
             </div>
-
-            <button onclick="saveAll()" style="width:100%; padding:18px; margin-top:25px; background:linear-gradient(to right, #ff6d00, #ffab00); color:#fff; border:none; border-radius:15px; font-weight:bold; font-size:18px;">બધું સુરક્ષિત કરો</button>
-            <p onclick="toggleM('settingsModal')" style="text-align:center; color:#666; cursor:pointer; margin-top:15px;">પાછા જાઓ</p>
+            <button class="save-btn" onclick="saveAll()">સેવ કરો</button>
+            <p onclick="toggleM('settingsModal')" style="text-align:center; color:red; margin-top:15px;">Close</p>
         </div>
     </div>
 
     <script>
         const v = document.getElementById('mainVideo');
-        function setV(s) { v.src = s + ".mp4"; v.play().catch(e=>{}); }
-        function toggleM(id) { const m = document.getElementById(id); m.style.display = (m.style.display==='flex')?'none':'flex'; }
+        function setV(s) { v.src = s + ".mp4"; v.play().catch(()=>{}); }
+        function toggleM(id) { document.getElementById(id).style.display = (document.getElementById(id).style.display==='flex')?'none':'flex'; }
 
         async function toggleCam() {
-            const box = document.getElementById('camBox');
-            const feed = document.getElementById('videoFeed');
-            if(box.style.display === 'block') {
-                if(feed.srcObject) feed.srcObject.getTracks().forEach(t => t.stop());
-                box.style.display = 'none';
-            } else {
-                const s = await navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}});
-                feed.srcObject = s; box.style.display = 'block';
-            }
+            const b = document.getElementById('camBox');
+            const f = document.getElementById('videoFeed');
+            if(b.style.display==='block') { f.srcObject.getTracks().forEach(t=>t.stop()); b.style.display='none'; }
+            else { const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); f.srcObject=s; b.style.display='block'; }
         }
 
-        function speak(text) {
+        function speak(t) {
             window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance("જય સીયારામ " + text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s]/g, ' '));
-            msg.lang = 'gu-IN';
-            msg.onstart = () => { setV("talking"); document.getElementById('statusLabel').innerText = "વિદુષી બોલી રહી છે..."; };
-            msg.onend = () => { setV("silent"); document.getElementById('statusLabel').innerText = "વિદુષી રેડી - જય સીયારામ"; };
-            window.speechSynthesis.speak(msg);
+            const m = new SpeechSynthesisUtterance("જય શ્રી કૃષ્ણ " + t.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s]/g, ' '));
+            m.lang = 'gu-IN';
+            m.onstart = () => { setV("talking"); document.getElementById('status').innerText = "બોલી રહી છું..."; };
+            m.onend = () => { setV("silent"); document.getElementById('status').innerText = "જય શ્રી કૃષ્ણ"; };
+            window.speechSynthesis.speak(m);
         }
 
-        async function callAI(prompt, img = null) {
-            const mod = document.getElementById('modelSelect').value;
-            const gK = (localStorage.getItem('vid_gkeys') || "").split(',')[0].trim();
-            const rK = localStorage.getItem('vid_rkey');
-
+        async function callAI(p, i=null) {
+            const mod = document.getElementById('selMod').value;
+            const gk = (localStorage.getItem('v_gk')||"").split(',')[0].trim();
+            const rk = localStorage.getItem('v_rk');
+            if(!gk && !rk) return "મહેરબાની કરી સેટિંગ્સમાં API કી નાખો";
             try {
-                if (mod === "groq") {
-                    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                        method: 'POST', headers: { 'Authorization': `Bearer ${rK}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ model: "llama3-70b-8192", messages: [{ role: "user", content: "જવાબ ગુજરાતીમાં આપો: " + prompt }] })
-                    });
-                    const d = await res.json(); return d.choices[0].message.content;
+                if(mod==="groq") {
+                    const r = await fetch("https://api.groq.com/openai/v1/chat/completions",{method:'POST',headers:{'Authorization':`Bearer ${rk}`,'Content-Type':'application/json'},body:JSON.stringify({model:"llama3-70b-8192",messages:[{role:"user",content:"ગુજરાતીમાં જવાબ આપો: "+p}]})});
+                    const d = await r.json(); return d.choices[0].message.content;
                 } else {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gK}`, {
-                        method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: "ગુજરાતીમાં જવાબ આપો: " + prompt }, ...(img ? [{ inline_data: { mime_type: "image/jpeg", data: img } }] : [])] }] })
-                    });
-                    const d = await res.json(); return d.candidates[0].content.parts[0].text;
+                    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gk}`,{method:'POST',body:JSON.stringify({contents:[{parts:[{text:"ગુજરાતીમાં જવાબ આપો: "+p},...(i?[{inline_data:{mime_type:"image/jpeg",data:i}}]:[])]}]})});
+                    const d = await r.json(); return d.candidates[0].content.parts[0].text;
                 }
-            } catch (e) { return "ભૂલ: સેટિંગ્સ તપાસો."; }
+            } catch(e) { return "સેટિંગ્સ તપાસો"; }
         }
 
         function startVoice() {
             const rec = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
             rec.lang = 'gu-IN';
-            rec.onstart = () => { document.getElementById('micBtn').classList.add('listening'); document.getElementById('statusLabel').innerText = "સાંભળી રહી છું..."; };
+            rec.onstart = () => { document.getElementById('status').innerText = "સાંભળું છું..."; };
             rec.onresult = async (e) => {
-                const query = e.results[0][0].transcript;
-                if(query.includes("કેલ્ક્યુલેટર")) { speak("ચોક્કસ, કેલ્ક્યુલેટર ખોલું છું."); window.location.href = "intent://com.android.calculator2/#Intent;scheme=android-app;end"; return; }
-                setV("thinking"); document.getElementById('statusLabel').innerText = "વિચારી રહી છું...";
-                const res = await callAI(query); speak(res);
+                const q = e.results[0][0].transcript;
+                if(q.includes("કેલ્ક્યુલેટર")) { speak("કેલ્ક્યુલેટર ખોલું છું"); window.location.href="intent://com.android.calculator2/#Intent;scheme=android-app;end"; return; }
+                setV("thinking"); document.getElementById('status').innerText = "વિચારી રહી છું...";
+                const res = await callAI(q); speak(res);
             };
-            rec.onend = () => { document.getElementById('micBtn').classList.remove('listening'); };
             rec.start();
         }
 
-        async function runAnalysis() {
-            const feed = document.getElementById('videoFeed');
-            const canvas = document.createElement('canvas');
-            canvas.width = feed.videoWidth; canvas.height = feed.videoHeight;
-            canvas.getContext('2d').drawImage(feed, 0, 0);
-            const imgBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
+        async function runVis() {
+            const f = document.getElementById('videoFeed');
+            const c = document.createElement('canvas');
+            c.width = f.videoWidth; c.height = f.videoHeight;
+            c.getContext('2d').drawImage(f, 0, 0);
+            const img = c.toDataURL('image/jpeg').split(',')[1];
             toggleM('settingsModal'); setV("thinking");
-            const reply = await callAI("આ ફોટામાં શું છે?", imgBase64); speak(reply);
+            const r = await callAI("આ શું છે?", img); speak(r);
         }
 
         function stopSpeech() { window.speechSynthesis.cancel(); setV("silent"); }
         function saveAll() {
-            localStorage.setItem('vid_mod', document.getElementById('modelSelect').value);
-            localStorage.setItem('vid_gkeys', document.getElementById('gemKeys').value);
-            localStorage.setItem('vid_rkey', document.getElementById('groqKey').value);
-            speak("તમામ સેટિંગ્સ ઈમાનદારીથી સેવ થઈ ગયા છે."); toggleM('settingsModal');
+            localStorage.setItem('v_gk', document.getElementById('gKeys').value);
+            localStorage.setItem('v_rk', document.getElementById('rKey').value);
+            localStorage.setItem('v_md', document.getElementById('selMod').value);
+            speak("સેટિંગ્સ સેવ થયા છે"); toggleM('settingsModal');
         }
 
         window.onload = () => {
-            document.getElementById('gemKeys').value = localStorage.getItem('vid_gkeys') || "";
-            document.getElementById('groqKey').value = localStorage.getItem('vid_rkey') || "";
-            document.getElementById('modelSelect').value = localStorage.getItem('vid_mod') || "gemini";
-            setV("silent");
+            document.getElementById('gKeys').value = localStorage.getItem('v_gk')||"";
+            document.getElementById('rKey').value = localStorage.getItem('v_rk')||"";
+            document.getElementById('selMod').value = localStorage.getItem('v_md')||"gemini";
         };
     </script>
 </body>
