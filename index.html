@@ -51,7 +51,7 @@
         input[type="password"] { letter-spacing: 2px; }
 
         /* Settings Tools Grid */
-        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .tools-grid { display: grid; grid-template-columns:1fr 1fr; gap: 10px; margin: 15px 0; }
         .tool-btn { background: #2f3542; padding: 15px; border-radius: 12px; border: none; color: #fff; cursor: pointer; font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
         .tool-btn i { font-size: 20px; }
         .tool-btn:hover { background: #404040; }
@@ -216,7 +216,7 @@
                 { id: "llama-3.3-70b-versatile", name: "Groq Llama 70B" }
             ],
             huggingface: [
-                { id: "mistralai/Mistral-7B-Instruct-v0.3", name: "Mistral 7B (Best for Free)" },
+                { id: "mistralai/Mistral-7B-Instruct-v0.3", name: "Mistral 7B (Best)" },
                 { id: "meta-llama/Meta-Llama-3-8B-Instruct", name: "Llama 3 8B" },
                 { id: "Qwen/Qwen2.5-7B-Instruct", name: "Qwen 2.5 7B" }
             ]
@@ -420,7 +420,7 @@
         }
 
         // ==========================================
-        // 🧠 AI LOGIC (WITH HUGGING FACE)
+        // 🧠 AI LOGIC (FIXED HF)
         // ==========================================
         async function callAI(text, imageBase64 = null) {
             const key = getKey();
@@ -488,50 +488,74 @@
         }
 
         // ==========================================
-        // 🤗 HUGGING FACE LOGIC
+        // 🤗 FIXED HUGGING FACE LOGIC
         // ==========================================
         async function callHuggingFace(text, key) {
             const memoryContext = getMemoriesContext();
-            // HF Inference API uses a simpler text prompt format often
-            const prompt = `System: ${myIdentity}. Answer in Gujarati.${memoryContext}\n\nUser: ${text}`;
+            // HF works best with simple prompt
+            const prompt = `System: ${myIdentity}. Answer in Gujarati.${memoryContext}\nUser: ${text}\nAnswer:`;
             
             const url = `https://api-inference.huggingface.co/models/${currentModel}`;
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${key}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    inputs: prompt,
-                    parameters: {
-                        max_new_tokens: 500,
-                        temperature: 0.7,
-                        return_full_text: false
-                    }
-                })
-            });
-
-            if (!res.ok) {
-                const err = await res.text();
-                console.error("HF Error:", err);
-                throw new Error("HF Error");
-            }
             
-            const data = await res.json();
-            // HF response structure varies. Often [{generated_text: "..."}] or just text.
-            let output = "";
-            if (Array.isArray(data) && data.length > 0 && data[0].generated_text) {
-                output = data[0].generated_text;
-                // Sometimes model returns the prompt, try to extract only the answer
-                if(output.includes("User:")) {
-                    const parts = output.split("User:");
-                    output = parts[parts.length - 1].trim();
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        inputs: prompt,
+                        parameters: {
+                            max_new_tokens: 512,
+                            return_full_text: false, // Get only the answer part
+                            temperature: 0.7,
+                            top_p: 0.95
+                        }
+                    })
+                });
+
+                // HANDLE LOADING ERROR (Status 503)
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    if (res.status === 503 && errorData.error && (errorData.error.includes("loading") || errorData.error.includes("estimates"))) {
+                        // Model is waking up
+                        return "મોડેલ લોડ થઈ રહ્યું છે (Waking up). કૃપા કરીને 20 સેકન્ડ પછી ફરી પ્રયાસ કરો.";
+                    } else {
+                        console.error("HF Error:", errorData);
+                        return "API ભૂળ: " + (errorData.error || "Unknown");
+                    }
                 }
-            } else {
-                output = JSON.stringify(data);
+                
+                const data = await res.json();
+                
+                // Parse Response
+                let answer = "";
+                
+                // Standard HF response: [{ generated_text: "..." }]
+                if (Array.isArray(data) && data.length > 0 && data[0].generated_text) {
+                    answer = data[0].generated_text;
+                } else if (data.generated_text) {
+                    answer = data.generated_text;
+                } else {
+                    return "જવાબ મળ્યો નથી.";
+                }
+
+                // Cleanup if model repeated the prompt
+                if(answer.includes("Answer:")) {
+                    const parts = answer.split("Answer:");
+                    answer = parts[parts.length-1].trim();
+                } else if(answer.includes("User:")) {
+                    const parts = answer.split("User:");
+                    answer = parts[parts.length-1].trim();
+                }
+
+                return answer || "જવાબ ખાલી છે.";
+
+            } catch (e) {
+                console.error("HF Fetch Error:", e);
+                return "નેટવર્ક ભૂળ.";
             }
-            return output || "Response nathi malyo";
         }
 
         // ==========================================
@@ -574,7 +598,7 @@
         async function processCommand(text) {
             const lower = text.toLowerCase();
 
-            // 1. MEMORY LOGIC
+            //1. MEMORY LOGIC
             if (lower.includes('યાદ') && lower.includes('રાખ')) {
                 const fact = text.replace(/યાદ.*?રાખ/g, '').trim();
                 if(fact.length > 2) {
