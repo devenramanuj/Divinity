@@ -371,6 +371,7 @@
             padding: 15px;
             margin-bottom: 10px;
             overflow-x: auto;
+            min-height: 200px;
         }
         
         .tree-node {
@@ -586,14 +587,11 @@
         
         <!-- Quick Actions -->
         <div class="quick-actions">
-            <button class="quick-btn" onclick="quickAction('diary')">
-                <i class="fas fa-book"></i> ડાયરી
+            <button class="quick-btn" onclick="quickAction('openSettings')">
+                <i class="fas fa-cog"></i> સેટિંગ્સ
             </button>
-            <button class="quick-btn" onclick="quickAction('vanshavali')">
-                <i class="fas fa-tree"></i> વંશાવળી
-            </button>
-            <button class="quick-btn" onclick="quickAction('camera')">
-                <i class="fas fa-camera"></i> કૅમેરા
+            <button class="quick-btn" onclick="startInteraction()">
+                <i class="fas fa-microphone"></i> બોલો
             </button>
         </div>
         
@@ -619,6 +617,7 @@
                 <button class="tab-btn active" onclick="switchTab('aiTab')">AI સેટિંગ્સ</button>
                 <button class="tab-btn" onclick="switchTab('diaryTab')">ડાયરી</button>
                 <button class="tab-btn" onclick="switchTab('vanshavaliTab')">વંશાવળી</button>
+                <button class="tab-btn" onclick="switchTab('cameraTab')">કૅમેરા</button>
             </div>
             
             <!-- AI Settings Tab -->
@@ -635,15 +634,12 @@
                 <label for="groqKey">Groq API કી</label>
                 <input type="password" id="groqKey" placeholder="gsk_...">
                 
-                <button class="modal-button" onclick="toggleCamera()">
-                    <i class="fas fa-camera"></i> કૅમેરા ચાલુ/બંધ
-                </button>
-                
-                <div id="camBox">
-                    <video id="videoFeed" autoplay playsinline></video>
-                    <button class="modal-button" onclick="runVision()" style="position:absolute; bottom:10px; left:5%; width:90%; background: linear-gradient(135deg, var(--green), #3b82f6);">
-                        <i class="fas fa-eye"></i> ફોટો જુઓ અને વિશ્લેષણ કરો
-                    </button>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                    <h4 style="color: var(--pink); margin-bottom: 10px;">📝 API કી મેળવો</h4>
+                    <p style="color: #94a3b8; font-size: 13px; line-height: 1.4;">
+                        1. <a href="https://makersuite.google.com/app/apikey" target="_blank" style="color: #60a5fa;">Google AI Studio</a> થી Gemini API કી<br>
+                        2. <a href="https://console.groq.com/keys" target="_blank" style="color: #60a5fa;">Groq Console</a> થી Groq API કી
+                    </p>
                 </div>
                 
                 <button class="modal-button" onclick="saveConfig()">
@@ -676,9 +672,49 @@
                     <!-- Family tree will be loaded here -->
                 </div>
                 
-                <button class="modal-button" onclick="exportVanshavali()" style="background: linear-gradient(135deg, #8b5cf6, var(--saffron));">
+                <div style="margin-top: 20px;">
+                    <label for="newMemberName">નવા સભ્યનું નામ</label>
+                    <input type="text" id="newMemberName" placeholder="સભ્યનું નામ">
+                    
+                    <label for="newMemberInfo">વિગતો</label>
+                    <input type="text" id="newMemberInfo" placeholder="જન્મ, સંબંધ, વગેરે">
+                    
+                    <label for="parentMember">માતા-પિતા/સંબંધિત સભ્ય</label>
+                    <select id="parentMember">
+                        <option value="root">મુખ્ય (રુટ)</option>
+                    </select>
+                    
+                    <button class="modal-button" onclick="addFamilyMember()" style="background: linear-gradient(135deg, #8b5cf6, var(--saffron)); margin-top: 15px;">
+                        <i class="fas fa-user-plus"></i> સભ્ય ઉમેરો
+                    </button>
+                </div>
+                
+                <button class="modal-button" onclick="exportVanshavali()" style="background: linear-gradient(135deg, #10b981, #3b82f6); margin-top: 10px;">
                     <i class="fas fa-download"></i> વંશાવળી એક્સપોર્ટ કરો
                 </button>
+            </div>
+            
+            <!-- Camera Tab -->
+            <div id="cameraTab" class="tab-content">
+                <h3 style="color: var(--pink); margin-bottom: 15px; text-align: center;">📷 કૅમેરા</h3>
+                
+                <button class="modal-button" onclick="toggleCamera()" style="margin-bottom: 15px;">
+                    <i class="fas fa-camera"></i> કૅમેરા ચાલુ/બંધ
+                </button>
+                
+                <div id="camBox">
+                    <video id="videoFeed" autoplay playsinline></video>
+                    <button class="modal-button" onclick="runVision()" 
+                            style="position:absolute; bottom:10px; left:5%; width:90%; background: linear-gradient(135deg, var(--green), #3b82f6);">
+                        <i class="fas fa-eye"></i> ફોટો જુઓ અને વિશ્લેષણ કરો
+                    </button>
+                </div>
+                
+                <div style="margin-top: 20px; color: #94a3b8; font-size: 14px; text-align: center;">
+                    <p>કૅમેરાનો ઉપયોગ કરીને:</p>
+                    <p>1. પહેલા 'કૅમેરા ચાલુ' કરો</p>
+                    <p>2. પછી 'ફોટો જુઓ' બટન દબાવો</p>
+                </div>
             </div>
             
             <div class="close-btn" onclick="toggleModal('settingsModal')">
@@ -687,23 +723,42 @@
         </div>
     </div>
 
-    <!-- External Vanshavali Data -->
-    <script src="vanshavali_data.js"></script>
-
     <script>
         // વિડિઓ સ્ટેટ્સ
         const videoStates = {
             'silent': 'silent.mp4',
             'talking': 'talking.mp4', 
             'thinking': 'thinking.mp4',
-            'smiling': 'smiling.mp4'  // પ્રણામને બદલે સ્માઇલિંગ
+            'smiling': 'smiling.mp4'
         };
         
         // ડાયરી એન્ટ્રીઝ
         let diaryEntries = [];
         
-        // વંશાવળી ડેટા
-        let vanshavaliData = null;
+        // વંશાવળી ડેટા - ડિફૉલ્ટ ડેટા
+        let vanshavaliData = {
+            name: "મારો પરિવાર",
+            info: "મુખ્ય કુટુંબ",
+            children: [
+                {
+                    name: "દાદાજી",
+                    info: "જન્મ: 1940",
+                    children: [
+                        {
+                            name: "પિતાજી",
+                            info: "જન્મ: 1965",
+                            children: [
+                                { 
+                                    name: "તમે", 
+                                    info: "અહીં!",
+                                    children: []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
 
         // વિડિઓ બદલવાનું ફંક્શન
         function setVideo(state) {
@@ -746,6 +801,7 @@
                 if (id === 'settingsModal') {
                     loadDiaryEntries();
                     loadVanshavaliTree();
+                    updateParentSelect();
                 }
             }
         }
@@ -780,7 +836,7 @@
             }
         }
 
-        // Divinity બોલવાનું ફંક્શન (સ્ત્રી લિંગ)
+        // Divinity બોલવાનું ફંક્શન
         function speak(text) {
             window.speechSynthesis.cancel();
             
@@ -788,7 +844,7 @@
             speech.text = cleanGujaratiText(text);
             speech.lang = 'gu-IN';
             speech.rate = 1.0;
-            speech.pitch = 1.2; // સ્ત્રી સ્વર માટે થોડી ઉંચી પિચ
+            speech.pitch = 1.2;
             speech.volume = 1.0;
             
             speech.onstart = function() {
@@ -809,8 +865,10 @@
             return text.replace(/[^\u0A80-\u0AFFa-zA-Z0-9\s.,!?ક્રમ]/g, ' ');
         }
 
-        // AI સાથે કનેક્ટ કરો (Divinity સ્ત્રી AI)
+        // AI સાથે કનેક્ટ કરો
         async function fetchAI(prompt, imageBase64 = null) {
+            console.log("🔍 AI કૉલ થાય છે:", { prompt, model: document.getElementById('activeModel').value });
+            
             const model = document.getElementById('activeModel').value;
             const geminiKeys = (localStorage.getItem('div_gemini_keys') || "").split(',').filter(k => k.trim());
             const groqKey = localStorage.getItem('div_groq_key');
@@ -840,7 +898,9 @@
                     
                     if (!response.ok) throw new Error(`Groq error: ${response.status}`);
                     const data = await response.json();
-                    return data.choices[0].message.content;
+                    const responseText = data.choices[0].message.content;
+                    console.log("✅ AI પ્રતિભાવ:", responseText);
+                    return responseText;
                     
                 } else {
                     if (!geminiKeys.length) throw new Error("Gemini API કી મૂકો");
@@ -875,11 +935,13 @@
                     
                     if (!response.ok) throw new Error(`Gemini error: ${response.status}`);
                     const data = await response.json();
-                    return data.candidates[0].content.parts[0].text;
+                    const responseText = data.candidates[0].content.parts[0].text;
+                    console.log("✅ AI પ્રતિભાવ:", responseText);
+                    return responseText;
                 }
             } catch (error) {
-                console.error("AI ભૂલ:", error);
-                return `માફ કરજો, મને સમજાયું નથી. શું તમે ફરી પ્રયાસ કરશો?`;
+                console.error("❌ AI ભૂલ:", error.message);
+                return `માફ કરજો, AI સાથે જોડાણમાં સમસ્યા છે: ${error.message}`;
             }
         }
 
@@ -949,6 +1011,17 @@
             if (saved) diaryEntries = JSON.parse(saved);
         }
 
+        // વંશાવળી ડેટા સેવ કરવો
+        function saveVanshavaliData() {
+            localStorage.setItem('div_vanshavali_data', JSON.stringify(vanshavaliData));
+        }
+
+        // વંશાવળી ડેટા લોડ કરવો
+        function loadSavedVanshavaliData() {
+            const saved = localStorage.getItem('div_vanshavali_data');
+            if (saved) vanshavaliData = JSON.parse(saved);
+        }
+
         // વંશાવળી ટ્રી ડિસ્પ્લે
         function loadVanshavaliTree() {
             const treeContainer = document.getElementById('familyTreeDisplay');
@@ -988,6 +1061,79 @@
             }
             
             return html;
+        }
+
+        // પેરન્ટ સિલેક્ટ અપડેટ
+        function updateParentSelect() {
+            const select = document.getElementById('parentMember');
+            select.innerHTML = '<option value="root">મુખ્ય (રુટ)</option>';
+            
+            function addMembers(node, depth = 0) {
+                if (node.name !== "મારો પરિવાર") {
+                    const prefix = '─ '.repeat(depth);
+                    select.innerHTML += `<option value="${node.name}">${prefix}${node.name}</option>`;
+                }
+                
+                if (node.children) {
+                    node.children.forEach(child => {
+                        addMembers(child, depth + 1);
+                    });
+                }
+            }
+            
+            addMembers(vanshavaliData);
+        }
+
+        // સભ્ય ઉમેરો
+        function addFamilyMember() {
+            const name = document.getElementById('newMemberName').value.trim();
+            const info = document.getElementById('newMemberInfo').value.trim();
+            const parentName = document.getElementById('parentMember').value;
+            
+            if (!name) {
+                alert("કૃપા કરીને સભ્યનું નામ લખો");
+                return;
+            }
+            
+            const newMember = {
+                name: name,
+                info: info || "નવો સભ્ય",
+                children: []
+            };
+            
+            if (parentName === "root") {
+                vanshavaliData.children.push(newMember);
+            } else {
+                function findParent(node, targetName) {
+                    if (node.name === targetName) {
+                        if (!node.children) node.children = [];
+                        node.children.push(newMember);
+                        return true;
+                    }
+                    
+                    if (node.children) {
+                        for (let child of node.children) {
+                            if (findParent(child, targetName)) return true;
+                        }
+                    }
+                    return false;
+                }
+                
+                const found = findParent(vanshavaliData, parentName);
+                if (!found) {
+                    alert("પેરન્ટ સભ્ય મળ્યો નથી");
+                    return;
+                }
+            }
+            
+            saveVanshavaliData();
+            loadVanshavaliTree();
+            updateParentSelect();
+            
+            document.getElementById('newMemberName').value = '';
+            document.getElementById('newMemberInfo').value = '';
+            
+            speak(`${name} વંશાવળીમાં ઉમેરી ગયા છીએ`);
         }
 
         // વંશાવળી એક્સપોર્ટ
@@ -1047,11 +1193,8 @@
                 
                 // વંશાવળી કમાન્ડ
                 if (speechText.includes("વંશાવળી") || speechText.includes("પરિવાર") || speechText.includes("વંશ")) {
-                    if (vanshavaliData) {
-                        speak(`તમારી વંશાવળીમાં ${countTreeMembers(vanshavaliData)} સભ્યો છે. સેટિંગ્સમાં જઈને જોઈ શકો છો.`);
-                    } else {
-                        speak("વંશાવળી ડેટા મળ્યો નથી. કૃપા કરીને vanshavali_data.js ફાઈલ તપાસો.");
-                    }
+                    const count = countTreeMembers(vanshavaliData);
+                    speak(`તમારી વંશાવળીમાં ${count} સભ્યો છે. સેટિંગ્સમાં જઈને જોઈ શકો છો.`);
                     return;
                 }
                 
@@ -1059,7 +1202,10 @@
                 if (speechText.includes("કેલ્ક્યુલેટર")) {
                     speak("કેલ્ક્યુલેટર ખોલું છું.");
                     setTimeout(() => {
-                        window.location.href = "intent://com.android.calculator2/#Intent;scheme=android-app;end";
+                        // Try to open calculator app
+                        if (navigator.userAgent.includes('Android')) {
+                            window.location.href = "intent://com.android.calculator2/#Intent;scheme=android-app;end";
+                        }
                     }, 1000);
                     return;
                 }
@@ -1073,6 +1219,12 @@
                 // જય સીયારામ
                 if (speechText.includes("જય સીયારામ")) {
                     speak("જય સીયારામ! મને તમારી સેવા કરવાની ખુશી છે.");
+                    return;
+                }
+                
+                // હેલો / હાય
+                if (speechText.includes("હેલો") || speechText.includes("હાય") || speechText.includes("નમસ્તે")) {
+                    speak("હેલો! હું Divinity છું. તમને કેવી રીતે મદદ કરી શકું?");
                     return;
                 }
                 
@@ -1109,6 +1261,9 @@
         // ક્વિક એક્શન્સ
         function quickAction(action) {
             switch(action) {
+                case 'openSettings':
+                    toggleModal('settingsModal');
+                    break;
                 case 'diary':
                     toggleModal('settingsModal');
                     setTimeout(() => switchTab('diaryTab'), 100);
@@ -1118,7 +1273,8 @@
                     setTimeout(() => switchTab('vanshavaliTab'), 100);
                     break;
                 case 'camera':
-                    toggleCamera();
+                    toggleModal('settingsModal');
+                    setTimeout(() => switchTab('cameraTab'), 100);
                     break;
             }
         }
@@ -1171,19 +1327,12 @@
         window.onload = function() {
             // Load saved data
             loadSavedDiaryEntries();
+            loadSavedVanshavaliData();
             
             // Load settings
             document.getElementById('geminiKeys').value = localStorage.getItem('div_gemini_keys') || "";
             document.getElementById('groqKey').value = localStorage.getItem('div_groq_key') || "";
             document.getElementById('activeModel').value = localStorage.getItem('div_active_model') || "groq";
-            
-            // Load vanshavali data from external file
-            if (typeof window.vanshavaliData !== 'undefined') {
-                vanshavaliData = window.vanshavaliData;
-                console.log("✅ Vanshavali data loaded:", vanshavaliData.name);
-            } else {
-                console.error("❌ Vanshavali data not found in external file");
-            }
             
             // Show welcome
             setTimeout(() => {
@@ -1204,6 +1353,12 @@
         
         // Touch event for better mobile
         document.addEventListener('touchstart', function() {}, {passive: true});
+        
+        // Console helper for testing
+        console.log("🔧 Divinity AI Loaded!");
+        console.log("ટેસ્ટ કરવા માટે:");
+        console.log("1. localStorage.setItem('div_gemini_keys', 'AIzaSy...')");
+        console.log("2. speak('હેલો ટેસ્ટ')");
     </script>
 </body>
 </html>
