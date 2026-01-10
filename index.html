@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vidushi AI Pro</title>
+    <title>Divinity AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; }
@@ -12,139 +12,168 @@
         #mainVideo { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.7; }
         
         /* UI Overlay */
-        .ui-layer { position: absolute; bottom: 20px; left: 0; right: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+        .ui-layer { position: absolute; bottom: 60px; left: 0; right: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
         .ui-layer > * { pointer-events: auto; }
         
-        /* Status Bar */
-        .status-bar { background: rgba(0,0,0,0.6); padding: 8px 20px; border-radius: 20px; margin-bottom: 15px; backdrop-filter: blur(5px); border: 1px solid #333; font-size: 14px; text-align: center; min-width: 200px; }
+        /* Controls (Side by Side) */
+        .controls { display: flex; flex-direction: row; gap: 60px; align-items: center; }
         
-        /* Controls */
-        .controls { display: flex; gap: 15px; background: rgba(20,20,20,0.8); padding: 15px 25px; border-radius: 40px; backdrop-filter: blur(15px); border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        .btn { width: 55px; height: 55px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: #333; color: #fff; position: relative; }
+        .btn { border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .btn:active { transform: scale(0.9); }
         .btn i { pointer-events: none; }
         
-        .mic { background: linear-gradient(135deg, #00c6ff, #0072ff); width: 70px; height: 70px; font-size: 26px; box-shadow: 0 0 15px rgba(0, 198, 255, 0.5); }
-        .mic.listening { animation: pulse-mic 1.5s infinite; }
+        .mic { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); font-size: 35px; border: 3px solid #fff; }
+        .mic.listening { animation: pulse-mic 1.5s infinite; border-color: #ffd700; }
         
-        .stop { background: #ff4757; }
-        
-        .camera-btn { background: #2ed573; }
-        .notes-btn { background: #ffa502; }
-        .settings-btn { background: #57606f; }
+        .stop { width: 60px; height: 60px; border-radius: 50%; background: #ff4757; font-size: 24px; }
+
+        /* Settings Modal Button (Floating) */
+        .settings-float { position: fixed; top: 20px; right: 20px; z-index: 100; font-size: 24px; cursor: pointer; background: rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.3); transition: 0.3s; }
+        .settings-float:hover { background: rgba(255,255,255,0.2); transform: rotate(90deg); }
 
         @keyframes pulse-mic {
-            0% { box-shadow: 0 0 0 0 rgba(0, 198, 255, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(0, 198, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 198, 255, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
         }
-
-        /* Top Settings Icon */
-        .top-icon { position: fixed; top: 20px; right: 20px; z-index: 100; font-size: 28px; cursor: pointer; background: rgba(0,0,0,0.5); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); border: 1px solid #444; }
 
         /* Modals */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px); opacity: 0; transition: opacity 0.3s; }
         .modal.active { display: flex; opacity: 1; }
         
-        .card { background: #1e1e1e; width: 90%; max-width: 500px; padding: 25px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 20px 50px rgba(0,0,0,0.5); max-height: 80vh; overflow-y: auto; }
+        .card { background: #1a1a1a; width: 90%; max-width: 450px; padding: 25px; border-radius: 25px; border: 1px solid #333; box-shadow: 0 20px 50px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; }
         
-        h3 { margin-top: 0; color: #ff6b6b; text-align: center; }
-        .label { font-size: 13px; color: #888; margin-top: 10px; margin-bottom: 5px; display: block; }
+        h3 { margin-top: 0; color: #ff9a9e; text-align: center; margin-bottom: 20px; }
+        .label { font-size: 13px; color: #aaa; margin-top: 10px; margin-bottom: 5px; display: block; }
         
-        select, input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2f3542; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
-        select:focus, input:focus { outline: none; border-color: #70a1ff; }
-        
-        .action-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; transition: 0.2s; }
-        .save-btn { background: #70a1ff; color: #fff; }
-        .save-btn:hover { background: #1e90ff; }
-        .close-btn { background: #ff4757; color: #fff; margin-top: 15px; }
+        select, input, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2f3542; border: 1px solid #444; color: #fff; border-radius: 10px; box-sizing: border-box; font-family: inherit; }
+        input:focus, textarea:focus { outline: none; border-color: #ff9a9e; }
+        input[type="password"] { letter-spacing: 2px; }
 
-        /* Camera Specific */
-        #cameraVideo { width: 100%; max-height: 60vh; object-fit: cover; border-radius: 10px; background: #000; display: none; }
+        /* Settings Tools Grid */
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .tool-btn { background: #2f3542; padding: 15px; border-radius: 12px; border: none; color: #fff; cursor: pointer; font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
+        .tool-btn i { font-size: 20px; }
+        .tool-btn:hover { background: #404040; }
+        .tool-btn.cam { color: #2ed573; }
+        .tool-btn.book { color: #9c88ff; }
+        .tool-btn.note { color: #ffa502; }
+
+        .action-btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; transition: 0.2s; }
+        .save-btn { background: linear-gradient(45deg, #ff9a9e, #fad0c4); color: #1a1a1a; }
+        .close-btn { background: #ff4757; color: #fff; margin-top: 20px; }
+
+        /* Camera, Contacts, Notes Styling */
+        #cameraVideo { width: 100%; max-height: 50vh; object-fit: cover; border-radius: 15px; background: #000; display: none; }
         #cameraVideo.active { display: block; }
-        
-        .capture-controls { margin-top: 15px; display: none; justify-content: center; gap: 20px; }
+        .capture-controls { display: none; justify-content: center; gap: 20px; margin-top: 15px; }
         .capture-controls.active { display: flex; }
+        .shutter { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #fff; background: transparent; cursor: pointer; }
         
-        .shutter { width: 70px; height: 70px; border-radius: 50%; border: 4px solid #fff; background: transparent; cursor: pointer; }
-        .shutter:active { background: rgba(255,255,255,0.5); }
+        .list-item { background: #2f3542; padding: 12px; margin-bottom: 8px; border-radius: 10px; font-size: 14px; border-left: 3px solid #ff9a9e; }
+        .contact-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .mini-btn-group { display: flex; gap: 8px; justify-content: flex-end; margin-top: 5px; }
+        .mini-btn { width: 30px; height: 30px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; font-size: 12px; }
+        .btn-del { background: #ff4757; }
+        .btn-wa { background: #25d366; }
+        .btn-call { background: #2ed573; }
 
-        /* Notes Specific */
-        .note-item { background: #2f3542; padding: 10px; margin-bottom: 8px; border-radius: 8px; border-left: 3px solid #ffa502; font-size: 14px; }
-        .note-date { font-size: 10px; color: #777; display: block; margin-bottom: 3px; }
-        .empty-notes { text-align: center; color: #777; padding: 20px; }
-
-        /* Status Indicator */
-        .status-dot { width: 8px; height: 8px; background: #777; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .status-listening { background: #2ed573; box-shadow: 0 0 8px #2ed573; animation: blink 1s infinite; }
-        .status-processing { background: #ffa502; animation: blink 0.5s infinite; }
-        .status-speaking { background: #1e90ff; }
+        /* Status (Minimal) */
+        .status-dot { width: 10px; height: 10px; background: #777; border-radius: 50%; display: inline-block; margin-right: 8px; position: absolute; top: 20px; left: 20px; }
+        .status-listening { background: #ffd700; box-shadow: 0 0 10px #ffd700; animation: blink 1s infinite; }
+        .status-processing { background: #ff9a9e; animation: blink 0.5s infinite; }
+        .status-speaking { background: #2ed573; }
 
         @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* Toast Message */
-        #toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(30,30,30,0.9); padding: 10px 20px; border-radius: 20px; z-index: 300; border: 1px solid #444; display: none; font-size: 14px; }
+        /* Toast */
+        #toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(30,30,30,0.9); padding: 10px 20px; border-radius: 20px; z-index: 300; border: 1px solid #444; display: none; font-size: 14px; max-width: 80%; text-align: center; }
     </style>
 </head>
 <body>
 
     <video id="mainVideo" autoplay loop muted playsinline><source src="silent.mp4" type="video/mp4"></video>
     
-    <i class="fas fa-cog top-icon" onclick="toggleSettings()"></i>
+    <!-- Minimal Status Dot (Top Left) -->
+    <div class="status-dot" id="statusDot"></div>
+    <i class="fas fa-cog settings-float" onclick="toggleSettings()"></i>
     <div id="toast"></div>
 
     <div class="ui-layer">
-        <div class="status-bar" id="statusText">
-            <span class="status-dot" id="statusDot"></span> <span id="msg">જય શ્રી કૃષ્ણ</span>
-        </div>
+        <!-- Mic and Stop Side by Side -->
         <div class="controls">
-            <button class="btn notes-btn" onclick="openNotes()" title="નોંધ ડાયરી"><i class="fas fa-book"></i></button>
-            <button class="btn camera-btn" onclick="openCamera()" title="કૅમેરા / લિપિ વાંચન"><i class="fas fa-camera"></i></button>
-            <button class="btn mic" id="micBtn" onclick="startVoice()" title="બોલો"><i class="fas fa-microphone"></i></button>
-            <button class="btn stop" onclick="stopAll()" title="બંધ કરો"><i class="fas fa-stop"></i></button>
+            <button class="btn mic" id="micBtn" onclick="startVoice()"><i class="fas fa-microphone"></i></button>
+            <button class="btn stop" onclick="stopAll()"><i class="fas fa-stop"></i></button>
         </div>
     </div>
 
-    <!-- SETTINGS MODAL -->
+    <!-- SETTINGS & TOOLS MODAL -->
     <div id="settingsModal" class="modal">
         <div class="card">
             <h3>⚙️ સેટિંગ્સ</h3>
             
+            <!-- Provider Selection -->
             <label class="label">🤖 AI Provider</label>
             <select id="pSel" onchange="updateModels()">
-                <option value="gemini">Google Gemini (લિપિ વાંચન માટે Best)</option>
-                <option value="groq">Groq Llama (ફક્ત વાતચીત માટે)</option>
+                <option value="gemini">Google Gemini (ફોટો/વિઝન)</option>
+                <option value="groq">Groq (ટેક્સ્ટ ચેટ)</option>
             </select>
-            
+
+            <!-- Model Selection -->
             <label class="label">📊 Model</label>
-            <select id="mSel"></select>
+            <select id="mSel">
+                <!-- Options loaded by JS -->
+            </select>
+
+            <!-- Keys Section -->
+            <div style="border-top: 1px solid #444; margin: 15px 0;"></div>
             
-            <div id="keyInfo" class="label" style="text-align: center; color: #7bed9f; margin-top: 10px;"></div>
+            <label class="label">🔑 Gemini Key (જરૂરી)</label>
+            <input type="password" id="geminiKeyInput" placeholder="Gemini API Key">
             
-            <button class="action-btn save-btn" onclick="saveSettings()">💾 સેવ કરો</button>
+            <label class="label">🔑 Groq Key (Optional)</label>
+            <input type="password" id="groqKeyInput" placeholder="Groq API Key">
+
+            <div style="margin: 20px 0; border-top: 1px solid #333; padding-top: 10px;">
+                <div style="text-align: center; font-size: 12px; color: #777; margin-bottom: 10px;">TOOLS</div>
+                <div class="tools-grid">
+                    <button class="tool-btn cam" onclick="openCamera()"><i class="fas fa-camera"></i> કૅમેરા</button>
+                    <button class="tool-btn book" onclick="openContacts()"><i class="fas fa-address-book"></i> ફોનબુક</button>
+                    <button class="tool-btn note" onclick="openNotes()"><i class="fas fa-book"></i> નોંધ ડાયરી</button>
+                    <button class="tool-btn" onclick="saveSettings()"><i class="fas fa-save"></i> Save Keys</button>
+                </div>
+            </div>
+
             <button class="action-btn close-btn" onclick="toggleSettings()">બંધ કરો</button>
         </div>
     </div>
 
     <!-- CAMERA MODAL -->
     <div id="cameraModal" class="modal">
-        <div class="card" style="width: 95%; max-width: 600px; padding: 15px;">
-            <h3>📷 શિલાલેખ / લિપિ સ્કેન કરો</h3>
+        <div class="card" style="width: 95%; padding: 15px;">
+            <h3>📷 શિલાલેખ સ્કેન</h3>
             <video id="cameraVideo" autoplay playsinline></video>
             <canvas id="canvas" style="display:none;"></canvas>
-            
-            <div id="camPlaceholder" style="padding: 40px; text-align: center; color: #777;">
-                કૅમેરા ચાલુ કરવા માટે નીચેના બટન પર ક્લિક કરો.
-            </div>
-
+            <div id="camPlaceholder" style="padding: 30px; text-align: center; color: #777;">Start Camera</div>
             <div class="capture-controls" id="camControls">
-                <button class="btn" onclick="closeCamera()" style="background:#ff4757"><i class="fas fa-times"></i></button>
+                <button class="btn" onclick="closeCamera()" style="background:#ff4757; width:40px; height:40px;"><i class="fas fa-times"></i></button>
                 <button class="shutter" onclick="captureAndAnalyze()"></button>
-                <button class="btn" onclick="switchCamera()" style="background:#fff; color:#000"><i class="fas fa-sync-alt"></i></button>
             </div>
-            
-            <button class="action-btn" id="startCamBtn" onclick="initCamera()" style="background:#2ed573; margin-top: 10px;">🎥 કૅમેરા શરૂ કરો</button>
+            <button class="action-btn" id="startCamBtn" onclick="initCamera()" style="background:#2ed573;">Start Camera</button>
+        </div>
+    </div>
+
+    <!-- PHONEBOOK MODAL -->
+    <div id="contactsModal" class="modal">
+        <div class="card">
+            <h3>📒 ફોનબુક</h3>
+            <div style="background: #2f3542; padding: 10px; border-radius: 10px; margin-bottom: 10px;">
+                <input type="text" id="cName" placeholder="Name (નામ)">
+                <input type="tel" id="cNum" placeholder="Number (નંબર)" onkeypress="return isNumber(event)">
+                <button class="action-btn save-btn" onclick="addContact()" style="background:#9c88ff; font-size: 13px;">Add Contact</button>
+            </div>
+            <div id="contactsList" style="max-height: 40vh; overflow-y: auto;"></div>
+            <button class="action-btn close-btn" onclick="toggleContacts()">Close</button>
         </div>
     </div>
 
@@ -152,82 +181,63 @@
     <div id="notesModal" class="modal">
         <div class="card">
             <h3>📒 નોંધ ડાયરી</h3>
-            <div id="notesList" style="max-height: 40vh; overflow-y: auto;">
-                <!-- Notes will appear here -->
-            </div>
-            <div style="border-top: 1px solid #444; margin-top: 15px; padding-top: 15px;">
-                <label class="label">નવી નોંધ ઉમેરો</label>
-                <textarea id="manualNote" rows="3" placeholder="અહીં લખો..."></textarea>
-                <button class="action-btn save-btn" onclick="addManualNote()">ઉમેરો</button>
-            </div>
-            <button class="action-btn close-btn" onclick="toggleNotes()">બંધ કરો</button>
+            <div id="notesList" style="max-height: 40vh; overflow-y: auto;"></div>
+            <textarea id="manualNote" rows="2" placeholder="New Note..." style="margin-top:10px;"></textarea>
+            <button class="action-btn save-btn" onclick="addManualNote()">Add Note</button>
+            <button class="action-btn close-btn" onclick="toggleNotes()">Close</button>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // 🔑 CONFIGURATION
+        // 🌍 CONFIG & MODELS
         // ==========================================
-        const API_KEYS = {
-            // Please put your API keys here
-            gemini: "YOUR_GEMINI_KEY_HERE", // Required for Camera Analysis
-            groq: "YOUR_GROQ_KEY_HERE"
-        };
+        let currentProvider = localStorage.getItem('p') || 'gemini';
+        let currentModel = localStorage.getItem('m') || 'gemini-1.5-flash-latest';
+        let mediaStream = null;
+        let facingMode = 'environment';
+        let notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+        let contacts = JSON.parse(localStorage.getItem('phoneBook') || '[]');
+        let myIdentity = "તમારું નામ Divinity છે અને તમને Devendrabhai એ બનાવ્યો છે. તમે એક દયાળુ AI છો. જ્યારે પણ કોઈ વાત કરો, ત્યારે વાતચીત જય સીયારામ થી શરૂ કરવી.";
 
         const MODEL_OPTS = {
             gemini: [
-                { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash (ફાસ્ટ & વિઝન સપોર્ટ)" },
-                { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro (હાઈ ક્વોલિટી)" }
+                { id: "gemini-2.0-flash-exp", name: "Gemini 2.5 Flash (Exp)" },
+                { id: "gemini-1.5-flash-latest", name: "Gemini 1.5 Flash (Latest)" },
+                { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" }
             ],
             groq: [
-                { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B Instant" },
-                { id: "llama3-70b-8192", name: "Llama 3 70B" }
+                { id: "llama-3.1-8b-instant", name: "Groq Llama 3.1 8B" },
+                { id: "llama-3.3-70b-versatile", name: "Groq Llama 70B" }
             ]
         };
 
         // ==========================================
-        // 🌍 GLOBAL STATE
+        // 🔑 API KEYS
         // ==========================================
-        let currentProvider = localStorage.getItem('p') || 'gemini';
-        let currentModel = localStorage.getItem('m') || 'gemini-1.5-flash';
-        let mediaStream = null;
-        let facingMode = 'environment'; // Rear camera default
-        let notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+        function getKey() {
+            if(currentProvider === 'gemini') return localStorage.getItem('gemini_key');
+            return localStorage.getItem('groq_key');
+        }
 
         // ==========================================
-        // 🎮 UI LOGIC
+        // 🎮 UI HELPERS
         // ==========================================
         const v = document.getElementById('mainVideo');
-        const msgEl = document.getElementById('msg');
         const dotEl = document.getElementById('statusDot');
         const micBtn = document.getElementById('micBtn');
 
         function setVideo(state) {
-            // Assuming you have videos like silent.mp4, talking.mp4, thinking.mp4
-            // If files are missing, it gracefully fails
             const src = state + ".mp4";
-            if(v.src !== src) {
-                v.src = src;
-                v.play().catch(e => console.log("Video play error:", e));
-            }
+            if(v.src !== src) { v.src = src; v.play().catch(e => {}); }
         }
 
         function updateStatus(text, type = 'idle') {
-            msgEl.textContent = text;
             dotEl.className = 'status-dot';
-            
-            if(type === 'listening') {
-                dotEl.classList.add('status-listening');
-                setVideo('thinking'); // Use a subtle video if available
-            } else if (type === 'processing') {
-                dotEl.classList.add('status-processing');
-                setVideo('thinking');
-            } else if (type === 'speaking') {
-                dotEl.classList.add('status-speaking');
-                setVideo('talking');
-            } else {
-                setVideo('silent');
-            }
+            if(type === 'listening') { dotEl.classList.add('status-listening'); setVideo('thinking'); }
+            else if (type === 'processing') { dotEl.classList.add('status-processing'); setVideo('thinking'); }
+            else if (type === 'speaking') { dotEl.classList.add('status-speaking'); setVideo('talking'); }
+            else setVideo('silent');
         }
 
         function showToast(text) {
@@ -245,117 +255,131 @@
             m.classList.toggle('active');
             if(m.classList.contains('active')) {
                 document.getElementById('pSel').value = currentProvider;
-                updateModels();
+                updateModels(); 
+                document.getElementById('geminiKeyInput').value = localStorage.getItem('gemini_key') || '';
+                document.getElementById('groqKeyInput').value = localStorage.getItem('groq_key') || '';
             }
         }
 
         function updateModels() {
             const p = document.getElementById('pSel').value;
+            currentProvider = p;
             const mSel = document.getElementById('mSel');
             mSel.innerHTML = '';
+            
             MODEL_OPTS[p].forEach(mod => {
                 const opt = document.createElement('option');
                 opt.value = mod.id;
                 opt.text = mod.name;
                 mSel.appendChild(opt);
             });
-            mSel.value = currentModel;
             
-            // Update Key Info
-            const kDiv = document.getElementById('keyInfo');
-            if(API_KEYS[p].includes('YOUR_')) {
-                kDiv.textContent = "⚠️ API Key હજી સેટ થઈ નથી (કોડમાં નાખો)";
-                kDiv.style.color = "#ff6b6b";
-            } else {
-                kDiv.textContent = "✅ API Key Active";
-                kDiv.style.color = "#2ed573";
-            }
+            mSel.value = currentModel; 
+            if(mSel.selectedIndex === -1) mSel.value = MODEL_OPTS[p][0].id;
         }
 
         function saveSettings() {
-            currentProvider = document.getElementById('pSel').value;
+            const gKey = document.getElementById('geminiKeyInput').value.trim();
+            const grKey = document.getElementById('groqKeyInput').value.trim();
+            
+            if(gKey) localStorage.setItem('gemini_key', gKey);
+            if(grKey) localStorage.setItem('groq_key', grKey);
+            
             currentModel = document.getElementById('mSel').value;
-            localStorage.setItem('p', currentProvider);
+            currentProvider = document.getElementById('pSel').value;
+            
             localStorage.setItem('m', currentModel);
-            toggleSettings();
-            showToast("સેટિંગ્સ સેવ થઈ ગઈ!");
+            localStorage.setItem('p', currentProvider);
+            
+            showToast("Saved!");
         }
 
         // ==========================================
-        // 📷 CAMERA & ANALYSIS LOGIC
+        // 📒 PHONEBOOK LOGIC
         // ==========================================
-        function openCamera() {
-            document.getElementById('cameraModal').classList.add('active');
+        function openContacts() { toggleSettings(); renderContacts(); document.getElementById('contactsModal').classList.add('active'); }
+        function toggleContacts() { document.getElementById('contactsModal').classList.remove('active'); }
+        function isNumber(evt) { evt = (evt) ? evt : window.event; var charCode = (evt.which) ? evt.which : evt.keyCode; if (charCode > 31 && (charCode < 48 || charCode > 57)) return false; return true; }
+        
+        function addContact() {
+            const name = document.getElementById('cName').value.trim();
+            const num = document.getElementById('cNum').value.trim();
+            if(!name || !num) return showToast("Name & Number thalo");
+            contacts.push({ name, number: num });
+            localStorage.setItem('phoneBook', JSON.stringify(contacts));
+            document.getElementById('cName').value = '';
+            document.getElementById('cNum').value = '';
+            renderContacts();
+            showToast("Contact Saved");
+        }
+        function deleteContact(index) { contacts.splice(index, 1); localStorage.setItem('phoneBook', JSON.stringify(contacts)); renderContacts(); }
+        
+        function findContact(query) {
+            const q = query.toLowerCase().trim();
+            // 1. Exact Match
+            let match = contacts.find(c => c.name.toLowerCase() === q);
+            if(match) return match;
+
+            // 2. Partial Match (User says "Raju", contact is "Rajubhai")
+            match = contacts.find(c => c.name.toLowerCase().includes(q) || q.includes(c.name.toLowerCase()));
+            return match;
+        }
+        
+        function renderContacts() {
+            const list = document.getElementById('contactsList');
+            list.innerHTML = '';
+            if(contacts.length === 0) list.innerHTML = '<div style="text-align:center; color:#777;">No Contacts</div>';
+            else contacts.forEach((c, i) => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div class="contact-header"><strong>${c.name}</strong> <span style="color:#aaa">${c.number}</span></div>
+                    <div class="mini-btn-group">
+                        <button class="mini-btn btn-wa" onclick="openWa('${c.number}')"><i class="fab fa-whatsapp"></i></button>
+                        <button class="mini-btn btn-call" onclick="openCall('${c.number}')"><i class="fas fa-phone"></i></button>
+                        <button class="mini-btn btn-del" onclick="deleteContact(${i})"><i class="fas fa-trash"></i></button>
+                    </div>`;
+                list.appendChild(div);
+            });
         }
 
-        function closeCamera() {
-            stopCamera();
-            document.getElementById('cameraModal').classList.remove('active');
-        }
-
+        // ==========================================
+        // 📷 CAMERA
+        // ==========================================
+        function openCamera() { toggleSettings(); document.getElementById('cameraModal').classList.add('active'); }
+        function closeCamera() { stopCamera(); document.getElementById('cameraModal').classList.remove('active'); }
         async function initCamera() {
             try {
                 if(mediaStream) stopCamera();
-                
                 const video = document.getElementById('cameraVideo');
-                mediaStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facingMode },
-                    audio: false
-                });
-                
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode }, audio: false });
                 video.srcObject = mediaStream;
                 video.classList.add('active');
                 document.getElementById('camPlaceholder').style.display = 'none';
                 document.getElementById('camControls').classList.add('active');
                 document.getElementById('startCamBtn').style.display = 'none';
-                
-            } catch (err) {
-                alert("કૅમેરા એક્સેસ મળ્યું નથી: " + err.message);
-            }
+            } catch(e) { alert("Camera Error"); }
         }
-
         function stopCamera() {
-            if(mediaStream) {
-                mediaStream.getTracks().forEach(track => track.stop());
-                mediaStream = null;
-            }
+            if(mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
             const vid = document.getElementById('cameraVideo');
             vid.srcObject = null;
             vid.classList.remove('active');
         }
-
-        function switchCamera() {
-            facingMode = facingMode === 'user' ? 'environment' : 'user';
-            initCamera();
-        }
-
         async function captureAndAnalyze() {
             const video = document.getElementById('cameraVideo');
             const canvas = document.getElementById('canvas');
-            
-            // Draw video frame to canvas
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Convert to Base64
             const base64Image = canvas.toDataURL('image/jpeg').split(',')[1];
-            
-            closeCamera(); // Close camera UI
-            updateStatus("વિશ્લેષણ થઈ રહ્યું છે...", "processing");
-            
-            // Call AI with Image
-            // Note: Only Gemini supports image inline data in this simple setup
-            if(currentProvider !== 'gemini') {
-                speak("માફ કરજો, ફોટો વિશ્લેષણ માટે કૃપા કરીને Gemini મોડેલ સિલેક્ટ કરો.");
-                return;
-            }
-
-            const prompt = "આ છબીમાં શું છે? જો તેમાં પ્રાચીન લિપિ, શિલાલેખ અથવા દસ્તાવેજ છે, તો તેને વાંચો, ગુજરાતીમાં ભાષાંતર કરો અને સમજાવો. જો સામાન્ય વસ્તુ છે તો તેની વિગતો આપો.";
-            
-            const response = await callGeminiVision(prompt, base64Image);
-            
+            closeCamera();
+            updateStatus("Analyzing...", "processing");
+            const key = getKey();
+            if(!key) { speak("API Key set karo"); return; }
+            if(currentProvider !== 'gemini') { speak("Camera mate Gemini select karo"); return; }
+            const prompt = "A chabi ma shu che? Jo prachin lipi hoy to vachjo ane Gujarati ma anuvad karo.";
+            const response = await callGeminiVision(prompt, base64Image, key);
             speak(response);
         }
 
@@ -363,28 +387,15 @@
         // 🧠 AI LOGIC
         // ==========================================
         async function callAI(text, imageBase64 = null) {
-            const key = API_KEYS[currentProvider];
-            
-            if(!key || key.includes('YOUR_')) {
-                const err = "API Key કોડમાં સેટ થઈ નથી. કૃપા કરીને સેટિંગ્સ ચેક કરો.";
-                speak(err);
-                return err;
-            }
-
+            const key = getKey();
+            if(!key) { speak("API Key set karo"); return; }
             try {
-                if(currentProvider === 'groq' && !imageBase64) {
-                    return await callGroq(text, key);
-                } else if (currentProvider === 'gemini') {
+                if(currentProvider === 'gemini') {
                     return await (imageBase64 ? callGeminiVision(text, imageBase64, key) : callGeminiText(text, key));
                 } else {
-                    return "આ ફીચર આ મોડેલમાં કામ કરતું નથી.";
+                    return await callGroq(text, key);
                 }
-            } catch(e) {
-                console.error(e);
-                const errMsg = "ભૂળ થઈ ગઈ: " + e.message;
-                speak(errMsg);
-                return errMsg;
-            }
+            } catch(e) { console.error(e); speak("Error thayu"); }
         }
 
         async function callGroq(text, key) {
@@ -394,14 +405,14 @@
                 body: JSON.stringify({
                     model: currentModel,
                     messages: [
-                        { role: "system", content: "તમે એક મદદરૂપ અસિસ્ટન્ટ છો. ગુજરાતીમાં ટૂંકા અને સ્પષ્ટ જવાબ આપો." },
+                        { role: "system", content: "System Instruction: " + myIdentity + ". Answer in Gujarati." },
                         { role: "user", content: text }
                     ],
-                    max_tokens: 300
+                    max_tokens: 500
                 })
             });
             const data = await res.json();
-            return data.choices?.[0]?.message?.content || "જવાબ મળ્યો નથી";
+            return data.choices?.[0]?.message?.content || "Response nathi malyo";
         }
 
         async function callGeminiText(text, key) {
@@ -410,11 +421,11 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: text }] }]
+                    contents: [{ parts: [{ text: `System Instruction: ${myIdentity}\n\nUser Question: ${text}` }] }]
                 })
             });
             const data = await res.json();
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || "જવાબ મળ્યો નથી";
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || "Response nathi malyo";
         }
 
         async function callGeminiVision(text, imageBase64, key) {
@@ -425,170 +436,160 @@
                 body: JSON.stringify({
                     contents: [{ 
                         parts: [
-                            { text: text },
-                            { 
-                                inline_data: {
-                                    mime_type: "image/jpeg",
-                                    data: imageBase64
-                                }
-                            }
+                            { text: `System Instruction: ${myIdentity}\n\nTask: ${text}` },
+                            { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }
                         ]
                     }]
                 })
             });
             const data = await res.json();
-            if(data.candidates?.[0]?.finishReason === 'SAFETY') return "આ છબી વિશ્લેષણ માટે અનુપયુક્ત છે.";
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || "વિશ્લેષણ થઈ શક્યું નથી";
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || "Analysis fail";
         }
 
         // ==========================================
-        // 🗣️ VOICE & ACTION LOGIC
+        // 🗣️ VOICE & COMMANDS (FIXED LOGIC)
         // ==========================================
         function startVoice() {
-            if(!('webkitSpeechRecognition' in window)) return alert("બ્રાઉઝર સ્પીચ સપોર્ટ કરતું નથી");
-            
-            const recognition = new webkitSpeechRecognition();
-            recognition.lang = 'gu-IN';
-            recognition.interimResults = false;
-            
-            recognition.onstart = () => {
-                updateStatus("સાંભળું છું...", "listening");
-                micBtn.classList.add('listening');
-            };
-            
-            recognition.onend = () => {
-                micBtn.classList.remove('listening');
-                updateStatus("જય શ્રી કૃષ્ણ", "idle");
-            };
-            
-            recognition.onresult = async (e) => {
+            if(!('webkitSpeechRecognition' in window)) return alert("Speech support nathi");
+            const rec = new webkitSpeechRecognition();
+            rec.lang = 'gu-IN';
+            rec.interimResults = false;
+            rec.onstart = () => { updateStatus("Listening", "listening"); micBtn.classList.add('listening'); };
+            rec.onend = () => { micBtn.classList.remove('listening'); updateStatus("Idle", "idle"); };
+            rec.onresult = async (e) => {
                 const transcript = e.results[0][0].transcript;
-                console.log("User said:", transcript);
-                
-                updateStatus("વિચારી રહ્યો છું...", "processing");
+                console.log("Voice Input:", transcript);
+                updateStatus("Thinking", "processing");
                 await processCommand(transcript);
             };
-            
-            recognition.start();
+            rec.start();
         }
 
-        function stopAll() {
-            window.speechSynthesis.cancel();
-            updateStatus("જય શ્રી કૃષ્ણ", "idle");
-        }
+        function stopAll() { window.speechSynthesis.cancel(); updateStatus("Idle", "idle"); }
 
         function speak(text) {
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(text);
             u.lang = 'gu-IN';
             u.rate = 1;
-            u.onstart = () => updateStatus("બોલી રહ્યો છું...", "speaking");
-            u.onend = () => updateStatus("જય શ્રી કૃષ્ણ", "idle");
+            u.onstart = () => updateStatus("Speaking", "speaking");
+            u.onend = () => updateStatus("Idle", "idle");
             window.speechSynthesis.speak(u);
         }
 
         // ==========================================
-        // 🧠 SMART COMMAND PROCESSOR
+        // 🧠 SMART PROCESSING (FIXED CALL/MESSAGE)
         // ==========================================
         async function processCommand(text) {
             const lower = text.toLowerCase();
 
-            // 1. Note Taking Logic (નોંધ લખો)
+            // 1. MESSAGING LOGIC
+            // Keywords: મેસેજ (message), message, મેસેજ કર
+            if (lower.includes('મેસેજ') || lower.includes('message')) {
+                // Remove noise words to extract Name
+                let potentialName = text
+                    .replace(/મેસેજ|message|કરો|karo|કર|kar|ને|ne|નૂં|nu|માટે|mate/g, '')
+                    .trim();
+                
+                console.log("Looking for contact:", potentialName);
+
+                if(potentialName.length < 2) {
+                    speak("નામ બોલો કે ફોનબુકમાં ચેક કરો.");
+                } else {
+                    const contact = findContact(potentialName);
+                    if (contact) {
+                        speak(`${contact.name} ને WhatsApp ખોલી રહ્યો છું`);
+                        setTimeout(() => openWa(contact.number), 2000);
+                    } else {
+                        speak(`મારી પાસે ${potentialName} નો નંબર નથી.`);
+                    }
+                }
+                return;
+            }
+
+            // 2. CALL LOGIC (Direct Number or Contact Name)
+            // Keywords: કૉલ, call
+            if (lower.includes('કૉલ') || lower.includes('call')) {
+                // First check for a 10 digit number
+                const number = extractNumber(text);
+                
+                if (number) {
+                    speak(number + " પર કૉલ કરી રહ્યો છું");
+                    setTimeout(() => openCall(number), 2000);
+                    return;
+                }
+
+                // If no number, try to find Name
+                let potentialName = text
+                    .replace(/કૉલ|call|કરો|karo|કર|kar|ને|ne|નૂં|nu|ને|નું|પર|par/g, '')
+                    .trim();
+                
+                if(potentialName.length > 0) {
+                    const contact = findContact(potentialName);
+                    if(contact) {
+                        speak(`${contact.name} ને કૉલ કરી રહ્યો છું`);
+                        setTimeout(() => openCall(contact.number), 2000);
+                    } else {
+                        speak(`મારી પાસે ${potentialName} નો નંબર નથી.`);
+                    }
+                } else {
+                    speak("કૉલ કરવા માટે નામ અથવા નંબર કહો.");
+                }
+                return;
+            }
+
+            // 3. NOTE
             if(lower.includes('નોંધ') || lower.includes('note')) {
                 const noteText = text.replace(/નોંધ.*?લખો|note.*?down/gi, '').trim();
-                if(noteText.length > 0) {
-                    saveNote(noteText);
-                    speak("નોંધ લઈ લીધી છે: " + noteText);
-                } else {
-                    speak("શું લખવું છે કહો?");
-                }
+                if(noteText.length > 0) { saveNote(noteText); speak("Note lidhi: " + noteText); }
+                else speak("Shu lakhvu?");
                 return;
             }
 
-            // 2. Call Logic (કૉલ કરો)
-            if(lower.includes('કૉલ') || lower.includes('call')) {
-                const number = extractNumber(text);
-                if(number) {
-                    speak(number + " પર કૉલ કરી રહ્યો છું");
-                    setTimeout(() => window.location.href = `tel:${number}`, 2000);
-                } else {
-                    speak("કૉલ કરવા માટે નંબર કહો");
-                }
-                return;
-            }
-
-            // 3. WhatsApp Logic (વોટ્સએપ / whatsapp)
-            if(lower.includes('વોટ્સએપ') || lower.includes('whatsapp')) {
-                const number = extractNumber(text);
-                if(number) {
-                    speak(number + " ને વોટ્સએપ ખોલી રહ્યો છું");
-                    setTimeout(() => window.open(`https://wa.me/${number}`, '_blank'), 2000);
-                } else {
-                    speak("વોટ્સએપ કરવા માટે નંબર કહો");
-                }
-                return;
-            }
-
-            // 4. General AI Query
+            // 4. General AI
             const response = await callAI(text);
             speak(response);
         }
 
-        // Helper: Extract Phone Number (Supports Gujarati digits)
         function extractNumber(text) {
-            // Map Gujarati digits to English
             const gujMap = {'૦':'0','૧':'1','૨':'2','૩':'3','૪':'4','૫':'5','૬':'6','૭':'7','૮':'8','૯':'9'};
             let normalized = text.split('').map(c => gujMap[c] || c).join('');
-            
-            // Regex for 10 digit number
+            // Regex for 10 digits
             const match = normalized.match(/\d{10}/);
             return match ? match[0] : null;
         }
 
-        // ==========================================
-        // 📒 NOTE SYSTEM
-        // ==========================================
-        function saveNote(text) {
-            const note = {
-                text: text,
-                date: new Date().toLocaleString('gu-IN')
-            };
-            notes.unshift(note);
-            localStorage.setItem('myNotes', JSON.stringify(notes));
-            showToast("Note Saved!");
+        function openCall(num) { 
+            console.log("Attempting Call:", num);
+            window.location.href = `tel:${num}`; 
+        }
+        function openWa(num) { 
+            console.log("Attempting WA:", num);
+            window.open(`https://wa.me/${num}`, '_blank'); 
         }
 
+        // ==========================================
+        // 📒 NOTES
+        // ==========================================
+        function openNotes() { toggleSettings(); renderNotes(); document.getElementById('notesModal').classList.add('active'); }
+        function toggleNotes() { document.getElementById('notesModal').classList.remove('active'); }
+        function saveNote(text) {
+            notes.unshift({ text: text, date: new Date().toLocaleString('gu-IN') });
+            localStorage.setItem('myNotes', JSON.stringify(notes));
+            showToast("Saved!");
+        }
         function addManualNote() {
             const input = document.getElementById('manualNote');
-            if(input.value.trim()) {
-                saveNote(input.value.trim());
-                input.value = '';
-                renderNotes();
-            }
+            if(input.value.trim()) { saveNote(input.value.trim()); input.value = ''; renderNotes(); }
         }
-
-        function openNotes() {
-            renderNotes();
-            document.getElementById('notesModal').classList.add('active');
-        }
-        
-        function toggleNotes() {
-            document.getElementById('notesModal').classList.remove('active');
-        }
-
         function renderNotes() {
             const container = document.getElementById('notesList');
             container.innerHTML = '';
-            
-            if(notes.length === 0) {
-                container.innerHTML = '<div class="empty-notes">કોઈ નોંધ નથી</div>';
-                return;
-            }
-            
-            notes.forEach(n => {
+            if(notes.length === 0) container.innerHTML = '<div style="text-align:center; color:#777;">No Notes</div>';
+            else notes.forEach(n => {
                 const div = document.createElement('div');
-                div.className = 'note-item';
-                div.innerHTML = `<span class="note-date">${n.date}</span> ${n.text}`;
+                div.className = 'list-item';
+                div.innerHTML = `<span style="color:#aaa; font-size:10px">${n.date}</span><br>${n.text}`;
                 container.appendChild(div);
             });
         }
@@ -596,7 +597,6 @@
         // Init
         updateModels();
         setVideo('silent');
-
     </script>
 </body>
 </html>
