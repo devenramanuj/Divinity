@@ -58,7 +58,6 @@
         .tool-btn.cam { color: #2ed573; }
         .tool-btn.book { color: #9c88ff; }
         .tool-btn.note { color: #ffa502; }
-        .tool-btn.map { color: #ff6b81; } /* New Color */
 
         .action-btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; transition: 0.2s; }
         .save-btn { background: linear-gradient(45deg, #ff9a9e, #fad0c4); color: #1a1a1a; }
@@ -199,7 +198,8 @@
         let facingMode = 'environment';
         let notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
         let contacts = JSON.parse(localStorage.getItem('phoneBook') || '[]');
-        let myIdentity = "તમારું નામ Divinity છે અને તમને Devendrabhai એ બનાવ્યો છે. તમે એક દયાળુ AI છો. જ્યારે પણ કોઈ વાત કરો, ત્યારે વાતચીત જય સીયારામ થી શરૂ કરવી.";
+        let memories = JSON.parse(localStorage.getItem('userMemories') || '[]'); // NEW: Long Term Memory
+        let myIdentity = "તમારું નામ Divinity છે અને તમને Devendrabhai એ બનાવ્યો છે. તમે એક દયાળુ AI છો.";
 
         const MODEL_OPTS = {
             gemini: [
@@ -219,6 +219,34 @@
         function getKey() {
             if(currentProvider === 'gemini') return localStorage.getItem('gemini_key');
             return localStorage.getItem('groq_key');
+        }
+
+        // ==========================================
+        // 🗣️ SPEECH CLEANUP (FIXED ISSUE 1)
+        // ==========================================
+        function cleanTextForSpeech(text) {
+            if(!text) return "";
+            // Remove content inside brackets (like punctuation descriptions)
+            let clean = text.replace(/\([^)]*\)|\[[^\]]*\]/g, '');
+            // Remove special characters that cause TTS to read symbols
+            clean = clean.replace(/[.*#-:;,`'"_]/g, '');
+            // Remove extra spaces
+            return clean.replace(/\s+/g, ' ').trim();
+        }
+
+        // ==========================================
+        // 🧠 MEMORY MANAGEMENT (FIXED ISSUE 2)
+        // ==========================================
+        function addMemory(fact) {
+            memories.push(fact);
+            // Keep only last 5 memories to save context space
+            if(memories.length > 5) memories.shift();
+            localStorage.setItem('userMemories', JSON.stringify(memories));
+        }
+
+        function getMemoriesContext() {
+            if(memories.length === 0) return "";
+            return "\n\nUser's Important Details (Remember these):\n" + memories.map(m => "- " + m).join("\n");
         }
 
         // ==========================================
@@ -382,7 +410,7 @@
         }
 
         // ==========================================
-        // 🧠 AI LOGIC
+        // 🧠 AI LOGIC (WITH MEMORY)
         // ==========================================
         async function callAI(text, imageBase64 = null) {
             const key = getKey();
@@ -397,13 +425,14 @@
         }
 
         async function callGroq(text, key) {
+            const memoryContext = getMemoriesContext();
             const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     model: currentModel,
                     messages: [
-                        { role: "system", content: "System Instruction: " + myIdentity + ". Answer in Gujarati." },
+                        { role: "system", content: `System Instruction: ${myIdentity}. Answer in Gujarati.${memoryContext}` },
                         { role: "user", content: text }
                     ],
                     max_tokens: 500
@@ -414,12 +443,13 @@
         }
 
         async function callGeminiText(text, key) {
+            const memoryContext = getMemoriesContext();
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${key}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `System Instruction: ${myIdentity}\n\nUser Question: ${text}` }] }]
+                    contents: [{ parts: [{ text: `System Instruction: ${myIdentity}${memoryContext}\n\nUser Question: ${text}` }] }]
                 })
             });
             const data = await res.json();
@@ -427,6 +457,7 @@
         }
 
         async function callGeminiVision(text, imageBase64, key) {
+            const memoryContext = getMemoriesContext();
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${key}`;
             const res = await fetch(url, {
                 method: 'POST',
@@ -434,8 +465,8 @@
                 body: JSON.stringify({
                     contents: [{ 
                         parts: [
-                            { text: `System Instruction: ${myIdentity}\n\nTask: ${text}` },
-                            { inline_data: { mime_type: "image/jpeg", data: imageBaseImage } }
+                            { text: `System Instruction: ${myIdentity}${memoryContext}\n\nTask: ${text}` },
+                            { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }
                         ]
                     }]
                 })
@@ -467,7 +498,11 @@
 
         function speak(text) {
             window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(text);
+            // APPLY CLEANUP HERE
+            const cleanText = cleanTextForSpeech(text); 
+            console.log("Speaking:", cleanText);
+            
+            const u = new SpeechSynthesisUtterance(cleanText);
             u.lang = 'gu-IN';
             u.rate = 1;
             u.onstart = () => updateStatus("Speaking", "speaking");
@@ -476,59 +511,34 @@
         }
 
         // ==========================================
-        // 🗺️ MAPS LOGIC (NEW)
-        // ==========================================
-        function openMapSearch(query) {
-            if (!navigator.geolocation) {
-                speak("આ બ્રાઉઝરમાં લોકેશન સપોર્ટ નથી.");
-                return;
-            }
-
-            speak("તમારું લોકેશન લઈ રહ્યો છું...");
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    // Google Maps Search URL with location
-                    const url = `https://www.google.com/maps/search/${encodeURIComponent(query)}/@${lat},${lng},14z`;
-                    console.log("Opening Map:", url);
-                    window.open(url, '_blank');
-                    speak("નકશો ખોલી દીધો છે.");
-                },
-                (error) => {
-                    console.error("Geo Error:", error);
-                    speak("લોકેશન મેળવવામાં ભૂળ, તેથી સામાન્ય શોધ ખોલી રહ્યો છું.");
-                    window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, '_blank');
-                }
-            );
-        }
-
-        // ==========================================
         // 🧠 SMART PROCESSING
         // ==========================================
         async function processCommand(text) {
             const lower = text.toLowerCase();
 
-            // 1. MAPS LOGIC (New Feature)
-            // Keywords: નજીક (near), શોધો (search), maps
-            if (lower.includes('નજીક') || lower.includes('near') || lower.includes('maps') || lower.includes('શોધો')) {
-                // Extract the search term
-                // Example: "મારી નજીક હોસ્પિટલ શોધો" -> "હોસ્પિટલ"
-                let searchQuery = text
-                    .replace(/નજીક|near|મારી|મારા|શોધો|find/g, '')
-                    .trim();
-                
-                if(searchQuery.length > 0) {
-                    speak(`${searchQuery} શોધી રહ્યો છું`);
-                    openMapSearch(searchQuery);
+            // 1. MEMORY LOGIC (NEW)
+            if (lower.includes('યાદ') && lower.includes('રાખ')) {
+                const fact = text.replace(/યાદ.*?રાખ/g, '').trim();
+                if(fact.length > 2) {
+                    addMemory(fact);
+                    speak("મને યાદ રહી ગયું: " + fact);
                 } else {
-                    speak("શું શોધવું છે કહો, દા.ત. હોસ્પિટલ કે બેંક");
+                    speak("યાદ રાખવા માટે કંઈક કહો.");
                 }
                 return;
             }
 
-            // 2. MESSAGING LOGIC
+            // 2. MAPS LOGIC
+            if (lower.includes('નજીક') || lower.includes('near') || lower.includes('maps') || lower.includes('શોધો')) {
+                let searchQuery = text.replace(/નજીક|near|મારી|મારા|શોધો|find/g, '').trim();
+                if(searchQuery.length > 0) {
+                    speak(`${searchQuery} શોધી રહ્યો છું`);
+                    openMapSearch(searchQuery);
+                } else speak("શું શોધવું છે કહો.");
+                return;
+            }
+
+            // 3. MESSAGING LOGIC
             if(lower.includes('મેસેજ') || lower.includes('message')) {
                 let potentialName = text.replace(/મેસેજ|message|કરો|karo|કર|kar|ને|ne/g, '').trim();
                 const contact = findContact(potentialName);
@@ -537,7 +547,7 @@
                 return;
             }
 
-            // 3. CALL LOGIC
+            // 4. CALL LOGIC
             if(lower.includes('કૉલ') || lower.includes('call')) {
                 const number = extractNumber(text);
                 if(number) { speak(number + " પર કૉલ કરી રહ્યો છું"); setTimeout(() => openCall(number), 2000); return; }
@@ -551,7 +561,7 @@
                 return;
             }
 
-            // 4. NOTE
+            // 5. NOTE
             if(lower.includes('નોંધ') || lower.includes('note')) {
                 const noteText = text.replace(/નોંધ.*?લખો|note.*?down/gi, '').trim();
                 if(noteText.length > 0) { saveNote(noteText); speak("Note lidhi: " + noteText); }
@@ -559,7 +569,7 @@
                 return;
             }
 
-            // 5. General AI
+            // 6. General AI
             const response = await callAI(text);
             speak(response);
         }
@@ -569,6 +579,30 @@
             let normalized = text.split('').map(c => gujMap[c] || c).join('');
             const match = normalized.match(/\d{10}/);
             return match ? match[0] : null;
+        }
+
+        // ==========================================
+        // 🗺️ MAPS LOGIC
+        // ==========================================
+        function openMapSearch(query) {
+            if (!navigator.geolocation) { speak("આ બ્રાઉઝરમાં લોકેશન સપોર્ટ નથી."); return; }
+
+            speak("તમારું લોકેશન લઈ રહ્યો છું...");
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const url = `https://www.google.com/maps/search/${encodeURIComponent(query)}/@${lat},${lng},14z`;
+                    window.open(url, '_blank');
+                    speak("નકશો ખોલી દીધો છે.");
+                },
+                (error) => {
+                    console.error("Geo Error:", error);
+                    speak("લોકેશન મેળવવામાં ભૂળ.");
+                    window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, '_blank');
+                }
+            );
         }
 
         function openCall(num) { window.location.href = `tel:${num}`; }
