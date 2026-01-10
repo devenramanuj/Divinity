@@ -379,7 +379,7 @@
         <div style="font-size: 18px; color: #ccc;">ગુજરાતી AI સહાયક</div>
     </div>
 
-    <!-- હોમ સ્ક્રીન બટનો -->
+    <!-- હોમ સ્ક્રીન બટનો - હવે જોઈ શકાશે -->
     <div class="home-buttons">
         <button class="home-btn" onclick="openVanshavali()" title="વંશાવલી">
             <i class="fas fa-tree"></i>
@@ -547,16 +547,53 @@
         // વંશાવલી લોડ કરો
         async function loadVanshavali() {
             try {
-                // પહેલા બાહ્ય ફાઇલમાંથી લોડ કરવાનો પ્રયાસ કરો
-                const response = await fetch('vanshavali_data.js');
-                if (response.ok) {
-                    const externalData = await response.json();
-                    return externalData;
+                // બાહ્ય JavaScript ફાઇલમાંથી ડેટા લોડ કરવાનો પ્રયાસ કરો
+                // ધારો કે vanshavali_data.js માં window.vanshavaliData છે
+                if (typeof window.vanshavaliData !== 'undefined') {
+                    console.log("બાહ્ય vanshavali_data.js માંથી ડેટા લોડ કર્યો");
+                    return window.vanshavaliData;
+                }
+                
+                // અથવા fetch દ્વારા JSON ફાઇલમાંથી લોડ કરો
+                try {
+                    const response = await fetch('vanshavali_data.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log("vanshavali_data.json માંથી ડેટા લોડ કર્યો");
+                        return data;
+                    }
+                } catch (jsonError) {
+                    console.log("JSON ફાઇલ નથી મળી:", jsonError);
+                }
+                
+                // અથવા JavaScript ફાઇલમાંથી લોડ કરો
+                try {
+                    // આ script ડાયનેમિકલી લોડ કરે છે
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'vanshavali_data.js';
+                        script.onload = resolve;
+                        script.onerror = () => {
+                            console.log("vanshavali_data.js લોડ કરવામાં નિષ્ફળ");
+                            resolve(); // reject ન કરતા resolve કરો
+                        };
+                        document.head.appendChild(script);
+                    });
+                    
+                    // જો બાહ્ય ડેટા મળે તો
+                    if (typeof window.vanshavaliData !== 'undefined') {
+                        console.log("બાહ્ય ડેટા મળ્યો");
+                        return window.vanshavaliData;
+                    }
+                } catch (jsError) {
+                    console.log("JS ફાઇલ લોડ કરવામાં ભૂલ:", jsError);
                 }
             } catch (error) {
-                console.log("vanshavali_data.js ફાઇલ નથી મળી, ડિફૉલ્ટ ડેટા વાપરી રહ્યા છીએ:", error);
+                console.log("વંશાવલી ડેટા લોડ કરવામાં ભૂલ:", error);
             }
+            
             // ડિફૉલ્ટ ડેટા વાપરો
+            console.log("ડિફૉલ્ટ વંશાવલી ડેટા વાપરી રહ્યા છીએ");
             return vanshavaliData;
         }
 
@@ -565,86 +602,95 @@
             const container = document.getElementById('vanshavaliContent');
             container.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> વંશાવલી લોડ કરી રહ્યા છીએ...</div>';
             
-            const data = await loadVanshavali();
-            
-            let html = `<div style="text-align:center; margin-bottom:20px;">
-                <h3 style="color:var(--saffron); margin-bottom:5px;">${data.familyName}</h3>
-                <p style="color:#cbd5e1; font-size:14px;">કુલ સભ્યો: ${data.members.length}</p>
-            </div>`;
-            
-            // મૂળ સભ્યો (પિતા/માતા)
-            const rootMembers = data.members.filter(member => 
-                member.relation.includes('વડીલ') || member.relation.includes('મૂળ')
-            );
-            
-            // હાલની પેઢીના સભ્યો
-            const currentGen = data.members.filter(member => 
-                !member.relation.includes('વડીલ') && 
-                !member.relation.includes('મૂળ') &&
-                parseInt(member.birthYear) > 1960
-            );
-            
-            // નવી પેઢી
-            const newGen = data.members.filter(member => 
-                parseInt(member.birthYear) >= 1990
-            );
-            
-            // વંશવૃક્ષ બનાવો
-            html += '<div class="tree-level">';
-            
-            // વડીલો
-            rootMembers.forEach(member => {
-                html += `
-                <div class="family-member">
-                    <div class="member-name">${member.name}</div>
-                    <div class="member-details">
-                        <div><strong>જન્મ વર્ષ:</strong> ${member.birthYear}</div>
-                        <div><strong>સંબંધ:</strong> ${member.relation}</div>
-                        <div><strong>પત્ની/પતિ:</strong> ${member.spouse || 'અનુપલબ્ધ'}</div>
-                        <div><strong>વિગત:</strong> ${member.details}</div>
+            try {
+                const data = await loadVanshavali();
+                
+                let html = `<div style="text-align:center; margin-bottom:20px;">
+                    <h3 style="color:var(--saffron); margin-bottom:5px;">${data.familyName}</h3>
+                    <p style="color:#cbd5e1; font-size:14px;">કુલ સભ્યો: ${data.members.length}</p>
+                </div>`;
+                
+                // પેઢી પ્રમાણે વર્ગીકરણ
+                const generations = {
+                    'વડીલ પેઢી': [],
+                    'મધ્યમ પેઢી': [],
+                    'નવી પેઢી': []
+                };
+                
+                data.members.forEach(member => {
+                    const birthYear = parseInt(member.birthYear.replace(/[^\d]/g, ''));
+                    if (birthYear <= 1960) {
+                        generations['વડીલ પેઢી'].push(member);
+                    } else if (birthYear > 1960 && birthYear <= 1990) {
+                        generations['મધ્યમ પેઢી'].push(member);
+                    } else {
+                        generations['નવી પેઢી'].push(member);
+                    }
+                });
+                
+                // દરેક પેઢી દર્શાવો
+                for (const [generationName, members] of Object.entries(generations)) {
+                    if (members.length > 0) {
+                        html += `<div style="margin:20px 0 10px; color:var(--saffron); font-weight:bold; font-size:18px;">
+                            <i class="fas fa-users"></i> ${generationName}
+                        </div>`;
+                        
+                        members.forEach(member => {
+                            html += `
+                            <div class="family-member">
+                                <div class="member-name">${member.name}</div>
+                                <div class="member-details">
+                                    <div><i class="fas fa-calendar-alt"></i> <strong>જન્મ વર્ષ:</strong> ${member.birthYear}</div>
+                                    <div><i class="fas fa-link"></i> <strong>સંબંધ:</strong> ${member.relation}</div>
+                                    ${member.spouse ? `<div><i class="fas fa-heart"></i> <strong>પત્ની/પતિ:</strong> ${member.spouse}</div>` : ''}
+                                    <div><i class="fas fa-info-circle"></i> <strong>વિગત:</strong> ${member.details}</div>
+                                </div>
+                            </div>`;
+                        });
+                    }
+                }
+                
+                // વંશવૃક્ષ આકૃતિ
+                html += `<div style="margin-top:30px; padding:15px; background:rgba(255,153,51,0.1); border-radius:10px; border:1px solid var(--saffron);">
+                    <h4 style="color:var(--saffron); margin-bottom:10px;">
+                        <i class="fas fa-project-diagram"></i> વંશવૃક્ષ આકૃતિ
+                    </h4>
+                    <div style="text-align:center; margin:15px 0;">
+                        <div style="display:inline-block; background:var(--saffron); color:black; padding:5px 15px; border-radius:20px; margin:5px;">
+                            ${data.members.find(m => m.relation.includes('વડીલ'))?.name || data.members[0].name}
+                        </div>
+                        <div style="margin:10px;">↓</div>
+                        <div>
+                            ${data.members.filter(m => m.children && m.children.length > 0).map(member => 
+                                `<div style="display:inline-block; background:#138808; color:white; padding:5px 15px; border-radius:20px; margin:5px;">${member.name}</div>`
+                            ).join('')}
+                        </div>
                     </div>
                 </div>`;
-            });
-            
-            // હાલની પેઢી
-            html += '<div style="margin:20px 0 10px; color:var(--saffron); font-weight:bold;">હાલની પેઢી</div>';
-            currentGen.forEach(member => {
-                html += `
-                <div class="family-member">
-                    <div class="member-name">${member.name}</div>
-                    <div class="member-details">
-                        <div><strong>જન્મ વર્ષ:</strong> ${member.birthYear}</div>
-                        <div><strong>સંબંધ:</strong> ${member.relation}</div>
-                        ${member.spouse ? `<div><strong>પત્ની/પતિ:</strong> ${member.spouse}</div>` : ''}
-                        <div><strong>વિગત:</strong> ${member.details}</div>
-                    </div>
+                
+                // અન્ય વિશેષતાઓ
+                html += `<div style="margin-top:20px; padding:15px; background:rgba(15, 23, 42, 0.8); border-radius:10px; border:1px solid #334155;">
+                    <h4 style="color:var(--saffron); margin-bottom:10px;"><i class="fas fa-info-circle"></i> વંશાવલી વિશે</h4>
+                    <p style="color:#cbd5e1; font-size:14px; line-height:1.6;">
+                        આ વંશાવલી શોધવા માટે:<br>
+                        1. ઉપર ડાબી બાજુના <i class="fas fa-tree"></i> બટન પર ક્લિક કરો<br>
+                        2. અથવા "વંશાવલી", "પરિવાર", "ફેમિલી ટ્રી" કહો<br>
+                        3. તમારી પોતાની વંશાવલી ઉમેરવા માટે vanshavali_data.js ફાઇલ બનાવો
+                    </p>
                 </div>`;
-            });
-            
-            // નવી પેઢી
-            html += '<div style="margin:20px 0 10px; color:var(--saffron); font-weight:bold;">નવી પેઢી</div>';
-            newGen.forEach(member => {
-                html += `
-                <div class="family-member">
-                    <div class="member-name">${member.name}</div>
-                    <div class="member-details">
-                        <div><strong>જન્મ વર્ષ:</strong> ${member.birthYear}</div>
-                        <div><strong>સંબંધ:</strong> ${member.relation}</div>
-                        ${member.spouse ? `<div><strong>પત્ની/પતિ:</strong> ${member.spouse}</div>` : ''}
-                        <div><strong>વિગત:</strong> ${member.details}</div>
-                    </div>
+                
+                container.innerHTML = html;
+            } catch (error) {
+                console.error("વંશાવલી પ્રદર્શિત કરવામાં ભૂલ:", error);
+                container.innerHTML = `<div style="text-align:center; padding:40px; color:#ef4444;">
+                    <i class="fas fa-exclamation-triangle fa-2x" style="margin-bottom:15px;"></i>
+                    <h3>વંશાવલી લોડ કરવામાં ભૂલ</h3>
+                    <p style="color:#cbd5e1;">${error.message}</p>
+                    <p style="color:#cbd5e1; font-size:14px; margin-top:20px;">
+                        vanshavali_data.js ફાઇલ બનાવો અને તમારી પરિવારની માહિતી ઉમેરો.
+                    </p>
                 </div>`;
-            });
-            
-            html += '</div>';
-            
-            // અન્ય વિશેષતાઓ
-            html += `<div style="margin-top:20px; padding:15px; background:rgba(255,153,51,0.1); border-radius:10px; border:1px solid var(--saffron);">
-                <h4 style="color:var(--saffron); margin-bottom:10px;"><i class="fas fa-info-circle"></i> વંશાવલી વિશે</h4>
-                <p style="color:#cbd5e1; font-size:14px;">આ વંશાવલી શોધવા માટે, "વંશાવલી" બટન દબાવો અથવા "મારા પરિવારની વંશાવલી બતાવો" કહો.</p>
-            </div>`;
-            
-            container.innerHTML = html;
+            }
         }
 
         // વંશાવલી ખોલો
@@ -885,7 +931,7 @@
                 }
                 
                 // વંશાવલી આદેશ
-                if (speechText.includes("વંશાવલી") || speechText.includes("પરિવાર") || speechText.includes("ફેમિલી ટ્રી")) {
+                if (speechText.includes("વંશાવલી") || speechText.includes("પરિવાર") || speechText.includes("ફેમિલી ટ્રી") || speechText.includes("વંશવૃક્ષ")) {
                     openVanshavali();
                     return;
                 }
@@ -946,8 +992,8 @@
             }
             
             // બધા મોડલ બંધ કરો
-            toggleM('settingsModal');
-            toggleM('vanshavaliModal');
+            document.getElementById('settingsModal').style.display = 'none';
+            document.getElementById('vanshavaliModal').style.display = 'none';
             
             showMessage("સર્વિસ બંધ કરી રહ્યા છીએ...", 2000);
         }
@@ -977,9 +1023,6 @@
                 document.getElementById('geminiKeys').value = localStorage.getItem('div_gemini_keys') || "";
                 document.getElementById('groqKey').value = localStorage.getItem('div_groq_key') || "";
                 document.getElementById('activeModel').value = localStorage.getItem('div_active_model') || "groq";
-                
-                // વંશાવલી પ્રીલોડ
-                loadVanshavali();
                 
                 // સ્વાગત સંદેશ
                 setTimeout(() => {
