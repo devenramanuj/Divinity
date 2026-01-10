@@ -58,6 +58,7 @@
         .tool-btn.cam { color: #2ed573; }
         .tool-btn.book { color: #9c88ff; }
         .tool-btn.note { color: #ffa502; }
+        .tool-btn.map { color: #ff6b81; } /* New Color */
 
         .action-btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; transition: 0.2s; }
         .save-btn { background: linear-gradient(45deg, #ff9a9e, #fad0c4); color: #1a1a1a; }
@@ -316,11 +317,8 @@
         
         function findContact(query) {
             const q = query.toLowerCase().trim();
-            // 1. Exact Match
             let match = contacts.find(c => c.name.toLowerCase() === q);
             if(match) return match;
-
-            // 2. Partial Match (User says "Raju", contact is "Rajubhai")
             match = contacts.find(c => c.name.toLowerCase().includes(q) || q.includes(c.name.toLowerCase()));
             return match;
         }
@@ -437,7 +435,7 @@
                     contents: [{ 
                         parts: [
                             { text: `System Instruction: ${myIdentity}\n\nTask: ${text}` },
-                            { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }
+                            { inline_data: { mime_type: "image/jpeg", data: imageBaseImage } }
                         ]
                     }]
                 })
@@ -447,7 +445,7 @@
         }
 
         // ==========================================
-        // 🗣️ VOICE & COMMANDS (FIXED LOGIC)
+        // 🗣️ VOICE & COMMANDS
         // ==========================================
         function startVoice() {
             if(!('webkitSpeechRecognition' in window)) return alert("Speech support nathi");
@@ -478,67 +476,82 @@
         }
 
         // ==========================================
-        // 🧠 SMART PROCESSING (FIXED CALL/MESSAGE)
+        // 🗺️ MAPS LOGIC (NEW)
+        // ==========================================
+        function openMapSearch(query) {
+            if (!navigator.geolocation) {
+                speak("આ બ્રાઉઝરમાં લોકેશન સપોર્ટ નથી.");
+                return;
+            }
+
+            speak("તમારું લોકેશન લઈ રહ્યો છું...");
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    // Google Maps Search URL with location
+                    const url = `https://www.google.com/maps/search/${encodeURIComponent(query)}/@${lat},${lng},14z`;
+                    console.log("Opening Map:", url);
+                    window.open(url, '_blank');
+                    speak("નકશો ખોલી દીધો છે.");
+                },
+                (error) => {
+                    console.error("Geo Error:", error);
+                    speak("લોકેશન મેળવવામાં ભૂળ, તેથી સામાન્ય શોધ ખોલી રહ્યો છું.");
+                    window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, '_blank');
+                }
+            );
+        }
+
+        // ==========================================
+        // 🧠 SMART PROCESSING
         // ==========================================
         async function processCommand(text) {
             const lower = text.toLowerCase();
 
-            // 1. MESSAGING LOGIC
-            // Keywords: મેસેજ (message), message, મેસેજ કર
-            if (lower.includes('મેસેજ') || lower.includes('message')) {
-                // Remove noise words to extract Name
-                let potentialName = text
-                    .replace(/મેસેજ|message|કરો|karo|કર|kar|ને|ne|નૂં|nu|માટે|mate/g, '')
+            // 1. MAPS LOGIC (New Feature)
+            // Keywords: નજીક (near), શોધો (search), maps
+            if (lower.includes('નજીક') || lower.includes('near') || lower.includes('maps') || lower.includes('શોધો')) {
+                // Extract the search term
+                // Example: "મારી નજીક હોસ્પિટલ શોધો" -> "હોસ્પિટલ"
+                let searchQuery = text
+                    .replace(/નજીક|near|મારી|મારા|શોધો|find/g, '')
                     .trim();
                 
-                console.log("Looking for contact:", potentialName);
-
-                if(potentialName.length < 2) {
-                    speak("નામ બોલો કે ફોનબુકમાં ચેક કરો.");
+                if(searchQuery.length > 0) {
+                    speak(`${searchQuery} શોધી રહ્યો છું`);
+                    openMapSearch(searchQuery);
                 } else {
-                    const contact = findContact(potentialName);
-                    if (contact) {
-                        speak(`${contact.name} ને WhatsApp ખોલી રહ્યો છું`);
-                        setTimeout(() => openWa(contact.number), 2000);
-                    } else {
-                        speak(`મારી પાસે ${potentialName} નો નંબર નથી.`);
-                    }
+                    speak("શું શોધવું છે કહો, દા.ત. હોસ્પિટલ કે બેંક");
                 }
                 return;
             }
 
-            // 2. CALL LOGIC (Direct Number or Contact Name)
-            // Keywords: કૉલ, call
-            if (lower.includes('કૉલ') || lower.includes('call')) {
-                // First check for a 10 digit number
-                const number = extractNumber(text);
-                
-                if (number) {
-                    speak(number + " પર કૉલ કરી રહ્યો છું");
-                    setTimeout(() => openCall(number), 2000);
-                    return;
-                }
+            // 2. MESSAGING LOGIC
+            if(lower.includes('મેસેજ') || lower.includes('message')) {
+                let potentialName = text.replace(/મેસેજ|message|કરો|karo|કર|kar|ને|ne/g, '').trim();
+                const contact = findContact(potentialName);
+                if(contact) { speak(`${contact.name} ને WhatsApp ખોલી રહ્યો છું`); setTimeout(() => openWa(contact.number), 2000); }
+                else speak(`મારી પાસે ${potentialName} નો નંબર નથી.`);
+                return;
+            }
 
-                // If no number, try to find Name
-                let potentialName = text
-                    .replace(/કૉલ|call|કરો|karo|કર|kar|ને|ne|નૂં|nu|ને|નું|પર|par/g, '')
-                    .trim();
+            // 3. CALL LOGIC
+            if(lower.includes('કૉલ') || lower.includes('call')) {
+                const number = extractNumber(text);
+                if(number) { speak(number + " પર કૉલ કરી રહ્યો છું"); setTimeout(() => openCall(number), 2000); return; }
                 
+                let potentialName = text.replace(/કૉલ|call|કરો|karo|કર|kar|ને|ne|નૂં|nu|પર|par/g, '').trim();
                 if(potentialName.length > 0) {
                     const contact = findContact(potentialName);
-                    if(contact) {
-                        speak(`${contact.name} ને કૉલ કરી રહ્યો છું`);
-                        setTimeout(() => openCall(contact.number), 2000);
-                    } else {
-                        speak(`મારી પાસે ${potentialName} નો નંબર નથી.`);
-                    }
-                } else {
-                    speak("કૉલ કરવા માટે નામ અથવા નંબર કહો.");
-                }
+                    if(contact) { speak(`${contact.name} ને કૉલ કરી રહ્યો છું`); setTimeout(() => openCall(contact.number), 2000); }
+                    else speak(`મારી પાસે ${potentialName} નો નંબર નથી.`);
+                } else speak("કૉલ કરવા માટે નામ અથવા નંબર કહો.");
                 return;
             }
 
-            // 3. NOTE
+            // 4. NOTE
             if(lower.includes('નોંધ') || lower.includes('note')) {
                 const noteText = text.replace(/નોંધ.*?લખો|note.*?down/gi, '').trim();
                 if(noteText.length > 0) { saveNote(noteText); speak("Note lidhi: " + noteText); }
@@ -546,7 +559,7 @@
                 return;
             }
 
-            // 4. General AI
+            // 5. General AI
             const response = await callAI(text);
             speak(response);
         }
@@ -554,19 +567,12 @@
         function extractNumber(text) {
             const gujMap = {'૦':'0','૧':'1','૨':'2','૩':'3','૪':'4','૫':'5','૬':'6','૭':'7','૮':'8','૯':'9'};
             let normalized = text.split('').map(c => gujMap[c] || c).join('');
-            // Regex for 10 digits
             const match = normalized.match(/\d{10}/);
             return match ? match[0] : null;
         }
 
-        function openCall(num) { 
-            console.log("Attempting Call:", num);
-            window.location.href = `tel:${num}`; 
-        }
-        function openWa(num) { 
-            console.log("Attempting WA:", num);
-            window.open(`https://wa.me/${num}`, '_blank'); 
-        }
+        function openCall(num) { window.location.href = `tel:${num}`; }
+        function openWa(num) { window.open(`https://wa.me/${num}`, '_blank'); }
 
         // ==========================================
         // 📒 NOTES
