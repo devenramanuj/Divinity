@@ -1,10 +1,9 @@
-:
 <!DOCTYPE html>
 <html lang="gu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidushi AI</title>
+    <title>Vidushi AI - Super App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; color: #fff; }
@@ -15,30 +14,19 @@
         .btn:hover { transform: scale(1.1); }
         .mic { background: #fff; color: #000; }
         .stop { background: #f44336; color: #fff; width: 50px; height: 50px; margin-top: 5px; }
-        .settings-icon { position: fixed; top: 40px; right: 30px; z-index: 100; font-size: 30px; cursor: pointer; transition: transform 0.3s; }
-        .settings-icon:hover { transform: rotate(90deg); }
+        .settings-icon { position: fixed; top: 40px; right: 30px; z-index: 100; font-size: 30px; cursor: pointer; }
         
-        #settingsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
-        .card { background: #111; width: 90%; max-width: 450px; padding: 30px; border-radius: 20px; border: 2px solid #ff6d00; box-shadow: 0 0 30px rgba(255,109,0,0.3); }
-        .card h3 { color: #ff6d00; margin-top: 0; }
-        select, textarea, input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: #4ade80; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
-        select:focus, textarea:focus { outline: none; border-color: #ff6d00; }
-        .save { background: #ff6d00; color: #fff; padding: 15px; width: 100%; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; transition: background 0.3s; }
-        .save:hover { background: #ff8c00; }
-        #mSel { margin-bottom: 10px; }
-        .model-info { color: #aaa; font-size: 12px; margin-top: -5px; margin-bottom: 10px; padding: 8px; background: rgba(255,109,0,0.1); border-radius: 5px; }
+        #settingsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; overflow-y: auto; }
+        .card { background: #111; width: 90%; max-width: 450px; padding: 30px; border-radius: 20px; border: 2px solid #ff6d00; }
+        select, textarea, input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: #4ade80; border-radius: 8px; box-sizing: border-box; }
+        .save { background: #ff6d00; color: #fff; padding: 15px; width: 100%; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        
         .status-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
         .status-listening { background: #4ade80; animation: pulse 1s infinite; }
         .status-thinking { background: #fbbf24; animation: pulse 1s infinite; }
         .status-speaking { background: #3b82f6; animation: pulse 1s infinite; }
         .status-idle { background: #6b7280; }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .label { font-size: 14px; color: #aaa; margin-top: 10px; margin-bottom: 5px; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
@@ -51,413 +39,153 @@
             <span class="status-indicator status-idle"></span>જય શ્રી કૃષ્ણ
         </div>
         <div class="controls">
-            <button class="btn mic" onclick="startVoice()" title="બોલો"><i class="fas fa-microphone"></i></button>
-            <button class="btn stop" onclick="stopSpeech()" title="બંધ કરો"><i class="fas fa-stop"></i></button>
+            <button class="btn mic" onclick="startVoice()"><i class="fas fa-microphone"></i></button>
+            <button class="btn stop" onclick="stopSpeech()"><i class="fas fa-stop"></i></button>
         </div>
     </div>
 
     <div id="settingsModal">
         <div class="card">
-            <h3 style="text-align:center;"><i class="fas fa-cog"></i> સેટિંગ્સ</h3>
-            
-            <div class="label">🤖 AI Provider પસંદ કરો:</div>
+            <h3><i class="fas fa-cog"></i> વિદુષી સેટિંગ્સ</h3>
             <select id="pSel" onchange="updateModels()">
                 <option value="gemini">Google Gemini</option>
                 <option value="groq">Groq Llama</option>
             </select>
-            
-            <div class="label">📊 Model પસંદ કરો:</div>
-            <select id="mSel">
-                <!-- Options will be populated dynamically -->
-            </select>
-            <div id="modelInfo" class="model-info"></div>
-            
-            <div class="label">🔑 API Key દાખલ કરો:</div>
-            <textarea id="apiK" rows="3" placeholder="તમારી API Key અહીં paste કરો"></textarea>
-            
+            <select id="mSel"></select>
+            <textarea id="apiK" rows="3" placeholder="તમારી API Key અહીં નાખો"></textarea>
             <button class="save" onclick="save()">💾 SAVE & CLOSE</button>
         </div>
     </div>
 
     <script>
         const v = document.getElementById('mainVideo');
-        
-        // ✅ CORRECTED MODEL OPTIONS
         const modelOptions = {
             gemini: [
-                { id: "gemini-1.5-flash-latest", name: "⭐ Gemini 1.5 Flash Latest (Recommended)" },
-                { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash" },
-                { id: "gemini-1.5-pro-latest", name: "Gemini 1.5 Pro Latest" },
-                { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
-                { id: "gemini-2.0-flash-exp", name: "🧪 Gemini 2.0 Flash (Experimental)" }
+                { id: "gemini-2.0-flash-exp", name: "Gemini 2.5 Flash (Experimental)" },
+                { id: "gemini-1.5-flash-latest", name: "Gemini 1.5 Flash Latest" }
             ],
             groq: [
-                { id: "llama-3.1-8b-instant", name: "⭐ Llama 3.1 8B Instant (Recommended)" },
-                { id: "llama3-8b-8192", name: "✅ Llama 3 8B" },
-                { id: "mixtral-8x7b-32768", name: "Mixtral 8x7B" },
-                { id: "llama-3.3-70b-versatile", name: "⚠️ Llama 3.3 70B (Limited)" },
-                { id: "llama-3.1-70b-versatile", name: "⚠️ Llama 3.1 70B (Limited)" }
+                { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B Instant" },
+                { id: "llama3-70b-8192", name: "Llama 3 70B" }
             ]
         };
-        
-        function setV(s) { 
-            v.src = s + ".mp4"; 
-            v.play().catch(e => console.log("Video play error:", e)); 
-        }
-        
-        function toggleM() { 
-            const m = document.getElementById('settingsModal'); 
-            m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; 
-        }
-        
+
+        function setV(s) { v.src = s + ".mp4"; v.play().catch(e => {}); }
+        function toggleM() { const m = document.getElementById('settingsModal'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
+
         function updateModels() {
             const provider = document.getElementById('pSel').value;
             const modelSelect = document.getElementById('mSel');
-            const modelInfo = document.getElementById('modelInfo');
-            
-            // Clear existing options
             modelSelect.innerHTML = '';
-            
-            // Add new options
             modelOptions[provider].forEach(model => {
-                const option = document.createElement('option');
-                option.value = model.id;
-                option.textContent = model.name;
-                modelSelect.appendChild(option);
+                const opt = document.createElement('option');
+                opt.value = model.id; opt.textContent = model.name;
+                modelSelect.appendChild(opt);
             });
-            
-            // Update model info
-            if (provider === 'gemini') {
-                modelInfo.innerHTML = "💡 <strong>Tip:</strong> Flash Latest સૌથી સારું અને ઝડપી છે<br>🔑 Key: <a href='https://aistudio.google.com/apikey' target='_blank' style='color:#4ade80'>Google AI Studio</a> પરથી મેળવો";
-            } else {
-                modelInfo.innerHTML = "💡 <strong>Tip:</strong> 8B models ઝડપી અને reliable છે<br>70B models free tier માં limited છે<br>🔑 Key: <a href='https://console.groq.com' target='_blank' style='color:#4ade80'>Groq Console</a> પરથી મેળવો";
-            }
         }
-        
+
         function updateStatus(text, statusClass) {
             const statusDiv = document.getElementById('status');
-            const indicator = statusDiv.querySelector('.status-indicator');
-            indicator.className = 'status-indicator ' + statusClass;
-            statusDiv.innerHTML = '<span class="status-indicator ' + statusClass + '"></span>' + text;
+            statusDiv.innerHTML = `<span class="status-indicator ${statusClass}"></span>${text}`;
         }
-        
+
         function speak(t) {
             window.speechSynthesis.cancel();
             const m = new SpeechSynthesisUtterance(t);
             m.lang = 'gu-IN';
-            m.rate = 0.9;
-            m.pitch = 1.1;
-            
-            m.onstart = () => { 
-                setV("talking"); 
-                updateStatus("બોલી રહી છું...", "status-speaking");
-            };
-            m.onend = () => { 
-                setV("silent"); 
-                updateStatus("જય શ્રી કૃષ્ણ", "status-idle");
-            };
+            m.onstart = () => { setV("talking"); updateStatus("બોલી રહી છું...", "status-speaking"); };
+            m.onend = () => { setV("silent"); updateStatus("જય શ્રી કૃષ્ણ", "status-idle"); };
             window.speechSynthesis.speak(m);
         }
-        
-        // ✅ CORRECTED API CALL FUNCTION
+
+        // --- સ્માર્ટ કમાન્ડ હેન્ડલર ---
+        async function handleCommands(q) {
+            const text = q.toLowerCase();
+
+            if (text.includes("કેમેરા") || text.includes("ફોટો") || text.includes("શિલાલેખ")) {
+                speak("ચોક્કસ કેમેરો ઓપન કરી રહી છું");
+                window.location.href = "intent://#Intent;action=android.media.action.IMAGE_CAPTURE;end";
+                return true;
+            }
+            if (text.includes("કોલ કર") || text.includes("ફોન કર")) {
+                let name = text.replace("ને કોલ કર", "").replace("ને ફોન કર", "").trim();
+                speak(name + " માટે ડાયલર ઓપન કરું છું");
+                window.location.href = "tel:" + name;
+                return true;
+            }
+            if (text.includes("વોટ્સએપ કર")) {
+                speak("વોટ્સએપ ઓપન કરી રહી છું");
+                window.location.href = "whatsapp://send?text=જય શ્રી કૃષ્ણ";
+                return true;
+            }
+            if (text.includes("નોંધ કર") || text.includes("ડાયરીમાં લખ")) {
+                let note = text.replace("નોંધ કર", "").replace("ડાયરીમાં લખ", "").trim();
+                let diary = JSON.parse(localStorage.getItem('v_diary') || "[]");
+                diary.push({ time: new Date().toLocaleString(), msg: note });
+                localStorage.setItem('v_diary', JSON.stringify(diary));
+                speak("મેં તમારી ડાયરીમાં આ વાતની નોંધ કરી લીધી છે");
+                return true;
+            }
+            return false;
+        }
+
         async function callAI(q) {
             const p = document.getElementById('pSel').value;
             const m = document.getElementById('mSel').value;
             const k = document.getElementById('apiK').value.trim();
-            
-            // Debug info
-            console.log("🔍 Debug Info:");
-            console.log("Provider:", p);
-            console.log("Model:", m);
-            console.log("API Key length:", k.length);
-            console.log("API Key prefix:", k.substring(0, 15) + "...");
-            
-            if (!k || k.length < 20) {
-                const msg = "⚠️ કૃપા કરીને યોગ્ય API Key દાખલ કરો!";
-                speak(msg);
-                updateStatus(msg, "status-idle");
-                return msg;
-            }
-            
+            if (!k) return "API કી નાખો";
+
             try {
                 if (p === 'groq') {
-                    console.log("📡 Calling Groq API...");
-                    
                     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                         method: 'POST',
-                        headers: { 
-                            'Authorization': `Bearer ${k}`, 
-                            'Content-Type': 'application/json' 
-                        },
-                        body: JSON.stringify({ 
-                            model: m, 
-                            messages: [
-                                {
-                                    role: "system",
-                                    content: "તમે એક મદદરૂપ AI assistant છો. હંમેશા ગુજરાતીમાં જવાબ આપો. સંક્ષિપ્ત અને સ્પષ્ટ જવાબ આપો."
-                                },
-                                { 
-                                    role: "user", 
-                                    content: q
-                                }
-                            ],
-                            temperature: 0.7,
-                            max_tokens: 500
-                        })
+                        headers: { 'Authorization': `Bearer ${k}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model: m, messages: [{ role: "user", content: q + " (ટૂંકો ગુજરાતી જવાબ)" }] })
                     });
-                    
-                    console.log("📥 Groq Response status:", r.status);
-                    
-                    if (!r.ok) {
-                        const errorText = await r.text();
-                        console.error("❌ Groq Error Response:", errorText);
-                        
-                        let errorMsg;
-                        try {
-                            const error = JSON.parse(errorText);
-                            errorMsg = error.error?.message || errorText;
-                        } catch {
-                            errorMsg = errorText;
-                        }
-                        
-                        // Specific error messages in Gujarati
-                        if (r.status === 401) {
-                            errorMsg = "🔑 API Key ખોટી છે! Settings માં નવી key નાખો";
-                        } else if (r.status === 429) {
-                            errorMsg = "⏱️ Rate limit પૂરી થઈ! થોડીવાર પછી try કરો";
-                        } else if (r.status === 400) {
-                            errorMsg = "⚠️ Model unavailable! બીજું model select કરો (8B recommend છે)";
-                        }
-                        
-                        speak(errorMsg);
-                        updateStatus("ભૂલ: " + errorMsg, "status-idle");
-                        return errorMsg;
-                    }
-                    
-                    const d = await r.json();
-                    console.log("✅ Groq Success Response:", d);
-                    
-                    const answer = d.choices[0]?.message?.content || "જવાબ મળ્યો નથી";
-                    return answer;
-                    
+                    const d = await r.json(); return d.choices[0].message.content;
                 } else {
-                    // ✅ GEMINI API - CORRECTED
-                    console.log("📡 Calling Gemini API...");
-                    
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${k}`;
-                    console.log("URL (key hidden):", url.replace(k, "***"));
-                    
-                    const requestBody = {
-                        contents: [{ 
-                            parts: [{ 
-                                text: q + "\n\n(કૃપા કરીને ગુજરાતીમાં જવાબ આપો, 150 શબ્દોમાં)"
-                            }] 
-                        }],
-                        generationConfig: {
-                            temperature: 0.7,
-                            maxOutputTokens: 500,
-                            topP: 0.8,
-                            topK: 40
-                        }
-                    };
-                    
-                    console.log("📤 Request body:", JSON.stringify(requestBody, null, 2));
-                    
                     const r = await fetch(url, {
                         method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestBody)
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: q + " (ટૂંકો ગુજરાતી જવાબ)" }] }] })
                     });
-                    
-                    console.log("📥 Gemini Response status:", r.status);
-                    
-                    if (!r.ok) {
-                        const errorText = await r.text();
-                        console.error("❌ Gemini Error Response:", errorText);
-                        
-                        let errorMsg = "Gemini API Error";
-                        try {
-                            const error = JSON.parse(errorText);
-                            errorMsg = error.error?.message || errorText;
-                            console.error("Parsed error:", error);
-                        } catch (e) {
-                            console.error("Could not parse error:", e);
-                        }
-                        
-                        // Specific error messages
-                        if (r.status === 400) {
-                            if (errorMsg.includes("API key")) {
-                                errorMsg = "🔑 API Key ખોટી છે! Google AI Studio માંથી સાચી key લાવો";
-                            } else if (errorMsg.includes("model")) {
-                                errorMsg = "⚠️ આ model available નથી! gemini-1.5-flash-latest વાપરો";
-                            } else {
-                                errorMsg = "⚠️ Request invalid છે: " + errorMsg.substring(0, 100);
-                            }
-                        } else if (r.status === 403) {
-                            errorMsg = "🚫 API Key ને permission નથી! નવી key બનાવો";
-                        } else if (r.status === 429) {
-                            errorMsg = "⏱️ Quota પૂરો થયો! થોડીવાર રાહ જુઓ અથવા billing enable કરો";
-                        } else if (r.status === 404) {
-                            errorMsg = "❌ Model નથી મળ્યું! gemini-1.5-flash-latest try કરો";
-                        }
-                        
-                        speak(errorMsg);
-                        updateStatus("ભૂલ: " + errorMsg, "status-idle");
-                        return errorMsg;
-                    }
-                    
-                    const d = await r.json();
-                    console.log("✅ Gemini Success Response:", d);
-                    
-                    // Check for blocked content
-                    if (d.candidates?.[0]?.finishReason === 'SAFETY') {
-                        const msg = "⚠️ સામગ્રી safety filters દ્વારા block થઈ";
-                        speak(msg);
-                        return msg;
-                    }
-                    
-                    const answer = d.candidates?.[0]?.content?.parts?.[0]?.text || "જવાબ મળ્યો નથી";
-                    return answer;
+                    const d = await r.json(); return d.candidates[0].content.parts[0].text;
                 }
-            } catch(e) { 
-                console.error("❌ Network/Fetch Error:", e);
-                const errorMsg = `🌐 નેટવર્ક ભૂલ: ${e.message}`;
-                speak(errorMsg);
-                updateStatus(errorMsg, "status-idle");
-                return errorMsg; 
-            }
+            } catch(e) { return "ભૂલ આવી છે"; }
         }
-        
+
         function startVoice() {
-            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-                alert("⚠️ તમારું બ્રાઉઝર સ્પીચ રેકોગ્નિશન સપોર્ટ કરતું નથી! Chrome અથવા Edge વાપરો.");
-                return;
-            }
-            
             const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
             const rec = new SpeechRecognition();
             rec.lang = 'gu-IN';
-            rec.continuous = false;
-            rec.interimResults = false;
-            rec.maxAlternatives = 1;
-            
-            rec.onstart = () => { 
-                console.log("🎤 Speech recognition started");
-                updateStatus("સાંભળું છું... બોલો!", "status-listening");
-            };
-            
-            rec.onerror = (event) => {
-                console.error("❌ Speech recognition error:", event.error);
-                let errorMsg = "ભૂલ થઈ: ";
-                
-                switch(event.error) {
-                    case 'no-speech':
-                        errorMsg += "કંઈ સંભળાયું નહીં";
-                        break;
-                    case 'audio-capture':
-                        errorMsg += "માઇક્રોફોન access નથી";
-                        break;
-                    case 'not-allowed':
-                        errorMsg += "માઇક્રોફોન permission આપો";
-                        break;
-                    default:
-                        errorMsg += event.error;
-                }
-                
-                updateStatus(errorMsg, "status-idle");
-                setV("silent");
-            };
-            
+            rec.onstart = () => updateStatus("સાંભળું છું...", "status-listening");
             rec.onresult = async (e) => {
                 const q = e.results[0][0].transcript;
-                const confidence = e.results[0][0].confidence;
-                
-                console.log("🗣️ Recognized:", q);
-                console.log("📊 Confidence:", confidence);
-                
-                updateStatus(`પ્રશ્ન: ${q}`, "status-thinking");
-                setV("thinking");
-                
-                updateStatus("વિચારી રહી છું...", "status-thinking");
-                
-                const res = await callAI(q);
-                
-                if (res && !res.includes("ભૂલ") && !res.includes("Error")) {
-                    speak(res);
-                } else {
-                    updateStatus(res, "status-idle");
-                    setV("silent");
+                updateStatus(`તમે કહ્યું: ${q}`, "status-thinking");
+                const isCommand = await handleCommands(q);
+                if (!isCommand) {
+                    setV("thinking");
+                    const res = await callAI(q); speak(res);
                 }
             };
-            
-            rec.onend = () => {
-                console.log("🎤 Speech recognition ended");
-            };
-            
-            try {
-                rec.start();
-            } catch(e) {
-                console.error("Failed to start recognition:", e);
-                alert("⚠️ માઇક્રોફોન start નથી થયો! Permission check કરો.");
-            }
+            rec.start();
         }
-        
-        function stopSpeech() { 
-            window.speechSynthesis.cancel(); 
-            setV("silent"); 
-            updateStatus("જય શ્રી કૃષ્ણ", "status-idle");
-        }
-        
+
+        function stopSpeech() { window.speechSynthesis.cancel(); setV("silent"); updateStatus("જય શ્રી કૃષ્ણ", "status-idle"); }
         function save() {
-            const provider = document.getElementById('pSel').value;
-            const model = document.getElementById('mSel').value;
-            const key = document.getElementById('apiK').value.trim();
-            
-            if (!key || key.length < 20) {
-                alert("⚠️ કૃપા કરીને યોગ્ય API Key દાખલ કરો!");
-                return;
-            }
-            
-            localStorage.setItem('v_p', provider); 
-            localStorage.setItem('v_m', model); 
-            localStorage.setItem('v_k', key);
-            
-            toggleM(); 
-            alert("✅ સેટિંગ્સ સફળતાપૂર્વક સેવ કરી દીધી છે!");
+            localStorage.setItem('v_p', document.getElementById('pSel').value);
+            localStorage.setItem('v_m', document.getElementById('mSel').value);
+            localStorage.setItem('v_k', document.getElementById('apiK').value);
+            toggleM(); alert("સેવ થઈ ગયું");
         }
-        
-        // Initialize on page load
+
         window.onload = () => {
-            console.log("🚀 Vidushi AI Initialized");
-            
-            // Load saved settings
-            const savedProvider = localStorage.getItem('v_p') || 'groq';
-            const savedModel = localStorage.getItem('v_m') || 'llama-3.1-8b-instant';
-            
-            document.getElementById('pSel').value = savedProvider;
-            updateModels(); // Populate model dropdown
-            
-            // Set the model after dropdown is populated
-            setTimeout(() => {
-                const modelSelect = document.getElementById('mSel');
-                const modelExists = Array.from(modelSelect.options).some(opt => opt.value === savedModel);
-                if (modelExists) {
-                    modelSelect.value = savedModel;
-                }
-            }, 10);
-            
+            document.getElementById('pSel').value = localStorage.getItem('v_p') || 'gemini';
+            updateModels();
+            setTimeout(() => { document.getElementById('mSel').value = localStorage.getItem('v_m') || 'gemini-2.0-flash-exp'; }, 50);
             document.getElementById('apiK').value = localStorage.getItem('v_k') || '';
             setV("silent");
-            
-            // Show settings if no API key
-            if (!localStorage.getItem('v_k')) {
-                setTimeout(() => {
-                    alert("👋 સ્વાગત છે! કૃપા કરીને પહેલા API Key સેટ કરો.");
-                    toggleM();
-                }, 500);
-            }
         };
     </script>
 </body>
