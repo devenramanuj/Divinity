@@ -3,82 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vidushi AI</title>
+    <title>Vidushi AI - Multi-Model</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; }
         #mainVideo { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
         
-        .ui-layer { 
-            position: absolute; 
-            bottom: 80px; /* થોડું નીચે લાવ્યા */
-            left: 0; 
-            right: 0; 
-            z-index: 999; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
+        .ui-layer { position: absolute; bottom: 80px; left: 0; right: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; }
+        .controls { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.15); padding: 10px 20px; border-radius: 50px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); }
         
-        .controls { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            background: rgba(255,255,255,0.15); /* ટ્રાન્સપરન્ટ લુક */
-            padding: 10px 20px; 
-            border-radius: 50px; 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255,255,255,0.3);
-        }
+        .btn-mic { width: 55px; height: 55px; background: #fff; border: none; border-radius: 50%; font-size: 25px; display: flex; align-items: center; justify-content: center; color: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-stop { width: 45px; height: 45px; background: #ef4444; border: none; border-radius: 50%; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         
-        .btn-mic { 
-            width: 55px; 
-            height: 55px; 
-            background: #fff; 
-            border: none; 
-            border-radius: 50%; 
-            font-size: 25px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: #000;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        
-        .btn-stop { 
-            width: 45px; 
-            height: 45px; 
-            background: #ef4444; 
-            border: none; 
-            border-radius: 50%; 
-            color: #fff; 
-            font-size: 18px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        
-        #status { color: #ffd600; font-weight: bold; margin-bottom: 10px; font-size: 15px; text-shadow: 2px 2px 4px #000; }
-        
-        .settings-icon {
-            position: fixed;
-            top: 30px;
-            right: 25px;
-            z-index: 1000;
-            font-size: 26px;
-            color: rgba(255,255,255,0.8);
-        }
+        #status { color: #ffd600; font-weight: bold; margin-bottom: 10px; font-size: 15px; text-shadow: 2px 2px 4px #000; text-align: center; }
+        .settings-icon { position: fixed; top: 30px; right: 25px; z-index: 1000; font-size: 26px; color: rgba(255,255,255,0.8); }
 
         #settingsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
         .modal-card { background: #1a1a1a; width: 85%; max-width: 350px; padding: 20px; border-radius: 25px; border: 1px solid #ff6d00; color: #fff; }
         input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; background: #000; border: 1px solid #333; color: #4ade80; border-radius: 10px; box-sizing: border-box; }
+        label { font-size: 12px; color: #ff6d00; margin-top: 10px; display: block; }
     </style>
 </head>
 <body>
 
     <video id="mainVideo" autoplay loop muted playsinline><source src="silent.mp4" type="video/mp4"></video>
-    
     <i class="fas fa-cog settings-icon" onclick="toggleM('settingsModal')"></i>
 
     <div class="ui-layer">
@@ -91,14 +39,22 @@
 
     <div id="settingsModal">
         <div class="modal-card">
-            <h3 style="text-align:center; margin:0;">સેટિંગ્સ</h3>
+            <h3 style="text-align:center; margin:0;">વિદુષી સેટિંગ્સ</h3>
+            
+            <label>મોડેલ પસંદ કરો</label>
             <select id="selMod">
                 <option value="gemini">Gemini 2.5 Flash</option>
-                <option value="groq">Groq 70B</option>
+                <option value="groq-70b">Groq Llama 3 (70B)</option>
+                <option value="groq-8b">Groq Llama 3 (8B - Super Fast)</option>
             </select>
-            <textarea id="gKeys" rows="2" placeholder="Gemini Keys"></textarea>
-            <input type="password" id="rKey" placeholder="Groq API Key">
-            <button onclick="saveAll()" style="width:100%; margin-top:15px; padding:12px; background:#ff6d00; color:#fff; border:none; border-radius:10px; font-weight:bold;">સેવ કરો</button>
+
+            <label>Gemini API Keys</label>
+            <textarea id="gKeys" rows="2" placeholder="Keys separated by comma"></textarea>
+
+            <label>Groq API Key</label>
+            <input type="password" id="rKey" placeholder="gsk_...">
+
+            <button onclick="saveAll()" style="width:100%; margin-top:20px; padding:12px; background:#ff6d00; color:#fff; border:none; border-radius:10px; font-weight:bold;">સેવ કરો</button>
             <p onclick="toggleM('settingsModal')" style="text-align:center; color:#999; margin-top:12px; cursor:pointer; font-size:14px;">બંધ કરો</p>
         </div>
     </div>
@@ -112,7 +68,7 @@
             window.speechSynthesis.cancel();
             const m = new SpeechSynthesisUtterance("જય શ્રી કૃષ્ણ " + t);
             m.lang = 'gu-IN';
-            m.onstart = () => { setV("talking"); document.getElementById('status').innerText = "વિદુષી બોલી રહી છે..."; };
+            m.onstart = () => { setV("talking"); document.getElementById('status').innerText = "બોલી રહી છું..."; };
             m.onend = () => { setV("silent"); document.getElementById('status').innerText = "જય શ્રી કૃષ્ણ"; };
             window.speechSynthesis.speak(m);
         }
@@ -121,29 +77,29 @@
             const mod = document.getElementById('selMod').value;
             const gk = (localStorage.getItem('v_gk') || "").split(',')[0].trim();
             const rk = (localStorage.getItem('v_rk') || "").trim();
-            
-            if(!gk && !rk) return "API કી મળી નથી. સેટિંગ્સમાં જઈને સેવ કરો.";
 
             try {
-                if(mod === "groq") {
+                if(mod.startsWith("groq")) {
+                    const modelName = (mod === "groq-70b") ? "llama3-70b-8192" : "llama3-8b-8192";
                     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${rk}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ model: "llama3-70b-8192", messages: [{ role: "user", content: "ટૂંકો ગુજરાતી જવાબ આપો: " + p }] })
+                        body: JSON.stringify({ model: modelName, messages: [{ role: "user", content: "ટૂંકો ગુજરાતી જવાબ આપો: " + p }] })
                     });
-                    const d = await r.json(); return d.choices[0].message.content;
+                    const d = await r.json();
+                    if(d.error) return "Groq ભૂલ: " + d.error.message;
+                    return d.choices[0].message.content;
                 } else {
                     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gk}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: [{ parts: [{ text: "ટૂંકો ગુજરાતી જવાબ આપો: " + p }] }] })
                     });
-                    const d = await r.json(); return d.candidates[0].content.parts[0].text;
+                    const d = await r.json();
+                    if(d.error) return "Gemini ભૂલ: " + d.error.message;
+                    return d.candidates[0].content.parts[0].text;
                 }
-            } catch(e) { 
-                console.error(e);
-                return "કનેક્શનમાં ભૂલ છે અથવા કી ખોટી છે."; 
-            }
+            } catch(e) { return "કી અથવા કનેક્શન તપાસો."; }
         }
 
         function startVoice() {
@@ -155,7 +111,7 @@
                 setV("thinking"); document.getElementById('status').innerText = "વિચારી રહી છું...";
                 const res = await callAI(q); speak(res);
             };
-            rec.onerror = () => { document.getElementById('status').innerText = "માઈકમાં ભૂલ છે"; };
+            rec.onerror = () => { document.getElementById('status').innerText = "ફરી પ્રયત્ન કરો"; };
             rec.start();
         }
 
