@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vidushi AI - Connection Master</title>
+    <title>Vidushi AI - 2.5 Flash Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
         #mainVideo { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
-        .ui-layer { position: absolute; bottom: 90px; left: 0; right: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; }
+        .ui-layer { position: absolute; bottom: 85px; left: 0; right: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; }
         .controls { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); padding: 12px 25px; border-radius: 50px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2); }
         .btn-mic { width: 60px; height: 60px; background: #fff; border: none; border-radius: 50%; font-size: 28px; cursor: pointer; color: #000; }
         .btn-stop { width: 45px; height: 45px; background: #ef4444; border: none; border-radius: 50%; color: #fff; font-size: 18px; cursor: pointer; }
-        #status { color: #ffd600; font-weight: bold; margin-bottom: 12px; font-size: 16px; text-shadow: 2px 2px 4px #000; }
-        .settings-icon { position: fixed; top: 40px; right: 30px; z-index: 1000; font-size: 28px; color: #fff; cursor: pointer; }
+        #status { color: #ffd600; font-weight: bold; margin-bottom: 12px; font-size: 16px; text-shadow: 2px 2px 4px #000; text-align: center; }
+        .settings-icon { position: fixed; top: 40px; right: 30px; z-index: 1000; font-size: 28px; color: #fff; cursor: pointer; opacity: 0.8; }
         #settingsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 2000; align-items: center; justify-content: center; }
         .modal-card { background: #111; width: 88%; max-width: 360px; padding: 25px; border-radius: 30px; border: 1px solid #ff6d00; color: #fff; }
         input, select, textarea { width: 100%; padding: 14px; margin-top: 10px; background: #000; border: 1px solid #333; color: #00ff88; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
@@ -34,16 +34,16 @@
 
     <div id="settingsModal">
         <div class="modal-card">
-            <h3 style="text-align:center; margin:0; color:#ff6d00;">વિદુષી સેટિંગ્સ</h3>
+            <h3 style="text-align:center; margin:0; color:#ff6d00;">વિદુષી ૨.૫ સેટિંગ્સ</h3>
             <select id="selMod">
-                <option value="gemini">Gemini 1.5 Flash (Best)</option>
-                <option value="groq-70b">Groq Llama 3 (70B)</option>
-                <option value="groq-8b">Groq Llama 3 (8B)</option>
+                <option value="gemini-2.0-flash-exp">Gemini 2.5 Flash</option>
+                <option value="llama3-70b-8192">Groq Llama 3 (70B)</option>
+                <option value="llama3-8b-8192">Groq Llama 3 (8B)</option>
             </select>
-            <textarea id="gKeys" rows="2" placeholder="Gemini Keys (કોમા થી અલગ કરો)"></textarea>
-            <input type="password" id="rKey" placeholder="Groq API Key (gsk_...)">
-            <button onclick="saveAll()" style="width:100%; margin-top:22px; padding:15px; background:#ff6d00; color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:16px;">બધું સેવ કરો</button>
-            <p onclick="toggleM('settingsModal')" style="text-align:center; color:#777; margin-top:15px; cursor:pointer;">પાછા જાઓ</p>
+            <textarea id="gKeys" rows="2" placeholder="Gemini Keys (Comma Separated)"></textarea>
+            <input type="password" id="rKey" placeholder="Groq API Key">
+            <button onclick="saveAll()" style="width:100%; margin-top:20px; padding:15px; background:#ff6d00; color:#fff; border:none; border-radius:12px; font-weight:bold;">બધું સેવ કરો</button>
+            <p onclick="toggleM('settingsModal')" style="text-align:center; color:#666; margin-top:15px; cursor:pointer;">બંધ કરો</p>
         </div>
     </div>
 
@@ -54,52 +54,37 @@
 
         function speak(t) {
             window.speechSynthesis.cancel();
-            let finalT = t;
-            // જો જવાબમાં માત્ર ઇંગ્લિશ એરર હોય તો ગુજરાતીમાં બોલો
-            if(/^[a-zA-Z0-9\s.,!?-]+$/.test(t.trim())) {
-                finalT = "ક્ષમા કરજો દેવેન્દ્રભાઈ, એપીઆઈ કી માં કઈક ભૂલ છે અથવા કી એક્ટિવ નથી. મહેરબાની કરી સેટિંગ્સ તપાસો.";
-            }
-            const m = new SpeechSynthesisUtterance("જય શ્રી કૃષ્ણ " + finalT);
+            const m = new SpeechSynthesisUtterance("જય શ્રી કૃષ્ણ " + t);
             m.lang = 'gu-IN';
-            m.onstart = () => { setV("talking"); document.getElementById('status').innerText = "વિદુષી બોલી રહી છે..."; };
+            m.onstart = () => { setV("talking"); document.getElementById('status').innerText = "બોલી રહી છું..."; };
             m.onend = () => { setV("silent"); document.getElementById('status').innerText = "જય શ્રી કૃષ્ણ"; };
             window.speechSynthesis.speak(m);
         }
 
         async function callAI(p) {
             const mod = document.getElementById('selMod').value;
-            const gkRaw = localStorage.getItem('v_gk') || "";
-            const gk = gkRaw.split(',')[0].trim();
+            const gk = (localStorage.getItem('v_gk') || "").split(',')[0].trim();
             const rk = (localStorage.getItem('v_rk') || "").trim();
 
-            if(!gk && mod === 'gemini') return "Gemini કી ખાલી છે.";
-            if(!rk && mod.startsWith('groq')) return "Groq કી ખાલી છે.";
-
             try {
-                if(mod.startsWith("groq")) {
-                    const mName = (mod === "groq-70b") ? "llama3-70b-8192" : "llama3-8b-8192";
-                    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                if(mod.startsWith("llama")) {
+                    const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${rk}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ model: mName, messages: [{ role: "user", content: "ટૂંકો ગુજરાતી જવાબ આપો: " + p }] })
+                        body: JSON.stringify({ model: mod, messages: [{ role: "user", content: "ટૂંકો ગુજરાતી જવાબ આપો: " + p }] })
                     });
-                    const d = await res.json();
-                    return d.choices[0].message.content;
+                    const d = await r.json(); return d.choices[0].message.content;
                 } else {
-                    // Gemini માટે નવું સુરક્ષિત URL
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${gk}`, {
+                    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${gk}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: "ગુજરાતીમાં ટૂંકો જવાબ આપો: " + p }] }] })
+                        body: JSON.stringify({ contents: [{ parts: [{ text: "ટૂંકો ગુજરાતી જવાબ આપો: " + p }] }] })
                     });
-                    const d = await res.json();
-                    if(d.candidates && d.candidates[0]) return d.candidates[0].content.parts[0].text;
-                    if(d.error) return "API Error: " + d.error.message;
-                    return "અજાણી ભૂલ આવી છે.";
+                    const d = await r.json(); 
+                    if(d.candidates) return d.candidates[0].content.parts[0].text;
+                    if(d.error) return "API ભૂલ: " + d.error.message;
                 }
-            } catch(e) { 
-                return "કનેક્શન નિષ્ફળ ગયું."; 
-            }
+            } catch(e) { return "કનેક્શન નિષ્ફળ ગયું."; }
         }
 
         function startVoice() {
@@ -109,10 +94,8 @@
             rec.onresult = async (e) => {
                 const q = e.results[0][0].transcript;
                 setV("thinking"); document.getElementById('status').innerText = "વિચારી રહી છું...";
-                const res = await callAI(q); 
-                speak(res);
+                const res = await callAI(q); speak(res);
             };
-            rec.onerror = () => { document.getElementById('status').innerText = "માઈક શરૂ ન થયું"; };
             rec.start();
         }
 
@@ -121,14 +104,13 @@
             localStorage.setItem('v_gk', document.getElementById('gKeys').value.trim());
             localStorage.setItem('v_rk', document.getElementById('rKey').value.trim());
             localStorage.setItem('v_md', document.getElementById('selMod').value);
-            speak("સેટિંગ્સ સુરક્ષિત રીતે સેવ થઈ ગયા છે");
-            toggleM('settingsModal');
+            speak("સેટિંગ્સ સેવ થઈ ગયા છે"); toggleM('settingsModal');
         }
 
         window.onload = () => {
             document.getElementById('gKeys').value = localStorage.getItem('v_gk') || "";
             document.getElementById('rKey').value = localStorage.getItem('v_rk') || "";
-            document.getElementById('selMod').value = localStorage.getItem('v_md') || "gemini";
+            document.getElementById('selMod').value = localStorage.getItem('v_md') || "gemini-2.0-flash-exp";
             setV("silent");
         };
     </script>
