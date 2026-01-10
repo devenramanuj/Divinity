@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vidushi AI - Final Solution</title>
+    <title>Vidushi AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; font-family: sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
         #mainVideo { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
         .ui-layer { position: absolute; bottom: 80px; left: 0; right: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; }
         .controls { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.7); padding: 12px 25px; border-radius: 50px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
-        .btn-mic { width: 60px; height: 60px; background: #fff; border: none; border-radius: 50%; font-size: 28px; cursor: pointer; color: #000; display: flex; align-items: center; justify-content: center; }
-        .btn-stop { width: 45px; height: 45px; background: #ef4444; border: none; border-radius: 50%; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-mic { width: 60px; height: 60px; background: #fff; border: none; border-radius: 50%; font-size: 28px; cursor: pointer; color: #000; }
+        .btn-stop { width: 45px; height: 45px; background: #ef4444; border: none; border-radius: 50%; color: #fff; font-size: 18px; cursor: pointer; }
         #status { color: #ffd600; font-weight: bold; margin-bottom: 12px; font-size: 16px; text-shadow: 2px 2px 4px #000; text-align: center; }
-        .settings-icon { position: fixed; top: 40px; right: 30px; z-index: 1000; font-size: 28px; color: #fff; cursor: pointer; opacity: 0.8; }
+        .settings-icon { position: fixed; top: 40px; right: 30px; z-index: 1000; font-size: 28px; color: #fff; cursor: pointer; }
         #settingsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 2000; align-items: center; justify-content: center; }
         .modal-card { background: #111; width: 88%; max-width: 360px; padding: 25px; border-radius: 30px; border: 1px solid #ff6d00; color: #fff; }
-        input, select, textarea { width: 100%; padding: 14px; margin-top: 10px; background: #000; border: 1px solid #333; color: #00ff88; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
-        .save-btn { width: 100%; margin-top: 20px; padding: 15px; background: #ff6d00; color: #fff; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        input, select, textarea { width: 100%; padding: 14px; margin-top: 10px; background: #000; border: 1px solid #333; color: #00ff88; border-radius: 12px; box-sizing: border-box; }
+        .save-btn { width: 100%; margin-top: 20px; padding: 15px; background: #ff6d00; color: #fff; border: none; border-radius: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -36,13 +36,12 @@
     <div id="settingsModal">
         <div class="modal-card">
             <h3 style="text-align:center; margin:0; color:#ff6d00;">વિદુષી સેટિંગ્સ</h3>
-            <label style="font-size:12px; color:#aaa; margin-top:15px; display:block;">મોડેલ પસંદ કરો</label>
             <select id="selMod">
                 <option value="gemini-2.0-flash">Gemini 2.5 Flash</option>
                 <option value="llama3-70b-8192">Groq Llama 3 (70B)</option>
                 <option value="llama3-8b-8192">Groq Llama 3 (8B)</option>
             </select>
-            <textarea id="gKeys" rows="2" placeholder="Gemini Keys (Comma Separated)"></textarea>
+            <textarea id="gKeys" rows="2" placeholder="Gemini Keys (કોમા થી અલગ કરો)"></textarea>
             <input type="password" id="rKey" placeholder="Groq API Key">
             <button onclick="saveAll()" class="save-btn">બધું સેવ કરો</button>
             <p onclick="toggleM('settingsModal')" style="text-align:center; color:#666; margin-top:15px; cursor:pointer;">બંધ કરો</p>
@@ -74,27 +73,26 @@
                     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${rk}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ model: mod, messages: [{ role: "user", content: "જવાબ માત્ર ગુજરાતીમાં અને ટૂંકમાં આપો: " + p }] })
+                        body: JSON.stringify({ model: mod, messages: [{ role: "user", content: "ટૂંકો ગુજરાતી જવાબ આપો: " + p }] })
                     });
                     const d = await r.json(); return d.choices[0].message.content;
                 } else {
-                    // Gemini 2.5 Flash (2.0-flash) ફાઇનલ લોજિક
-                    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${gk}`, {
+                    // Gemini 2.0-flash (2.5) ફાઇનલ એન્ડપોઇન્ટ
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gk}`;
+                    const r = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: "તમે વિદુષી છો. ટૂંકો અને સચોટ ગુજરાતી જવાબ આપો. પ્રશ્ન: " + p }] }]
+                            contents: [{ parts: [{ text: "તમે વિદુષી છો સનાતન ધર્મના જ્ઞાન સાથે ટૂંકો ગુજરાતી જવાબ આપો પ્રશ્ન " + p }] }]
                         })
                     });
                     const d = await r.json();
                     if(d.candidates && d.candidates[0].content) {
                         return d.candidates[0].content.parts[0].text;
-                    } else if(d.error) {
-                        return "API એરર: " + d.error.message;
                     }
-                    return "ભૂલ: જવાબ મળી શક્યો નહીં.";
+                    return "ભૂલ " + (d.error ? d.error.message : "કી તપાસો");
                 }
-            } catch(e) { return "કનેક્શન નિષ્ફળ ગયું. કી તપાસો."; }
+            } catch(e) { return "કનેક્શન નિષ્ફળ ગયું"; }
         }
 
         function startVoice() {
@@ -106,7 +104,6 @@
                 setV("thinking"); document.getElementById('status').innerText = "વિચારી રહી છું...";
                 const res = await callAI(q); speak(res);
             };
-            rec.onerror = () => { document.getElementById('status').innerText = "ફરી પ્રયત્ન કરો"; };
             rec.start();
         }
 
