@@ -689,8 +689,17 @@
                     </button>
                 </div>
                 
-                <button class="modal-button" onclick="exportVanshavali()" style="background: linear-gradient(135deg, #10b981, #3b82f6); margin-top: 10px;">
-                    <i class="fas fa-download"></i> વંશાવળી એક્સપોર્ટ કરો
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="modal-button" onclick="exportVanshavali()" style="flex: 1; background: linear-gradient(135deg, #10b981, #3b82f6);">
+                        <i class="fas fa-download"></i> એક્સપોર્ટ
+                    </button>
+                    <button class="modal-button" onclick="importVanshavali()" style="flex: 1; background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-upload"></i> ઇમ્પોર્ટ
+                    </button>
+                </div>
+                
+                <button class="modal-button" onclick="resetVanshavali()" style="margin-top: 10px; background: linear-gradient(135deg, #ef4444, #dc2626);">
+                    <i class="fas fa-redo"></i> ડિફૉલ્ટ પર રીસેટ
                 </button>
             </div>
             
@@ -723,6 +732,9 @@
         </div>
     </div>
 
+    <!-- Vanshavali Data External Script -->
+    <script src="vanshavali_data.js"></script>
+
     <script>
         // વિડિઓ સ્ટેટ્સ
         const videoStates = {
@@ -735,30 +747,8 @@
         // ડાયરી એન્ટ્રીઝ
         let diaryEntries = [];
         
-        // વંશાવળી ડેટા - ડિફૉલ્ટ ડેટા
-        let vanshavaliData = {
-            name: "મારો પરિવાર",
-            info: "મુખ્ય કુટુંબ",
-            children: [
-                {
-                    name: "દાદાજી",
-                    info: "જન્મ: 1940",
-                    children: [
-                        {
-                            name: "પિતાજી",
-                            info: "જન્મ: 1965",
-                            children: [
-                                { 
-                                    name: "તમે", 
-                                    info: "અહીં!",
-                                    children: []
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        };
+        // વંશાવળી ડેટા
+        let vanshavaliData = null;
 
         // વિડિઓ બદલવાનું ફંક્શન
         function setVideo(state) {
@@ -1019,7 +1009,24 @@
         // વંશાવળી ડેટા લોડ કરવો
         function loadSavedVanshavaliData() {
             const saved = localStorage.getItem('div_vanshavali_data');
-            if (saved) vanshavaliData = JSON.parse(saved);
+            if (saved) {
+                vanshavaliData = JSON.parse(saved);
+                console.log("✅ Local storage વંશાવળી ડેટા લોડ કર્યો");
+            } else {
+                // જો localStorage માં ન હોય તો external file માંથી લોડ કરો
+                if (typeof window.vanshavaliData !== 'undefined') {
+                    vanshavaliData = window.vanshavaliData;
+                    console.log("✅ External file વંશાવળી ડેટા લોડ કર્યો:", vanshavaliData.name);
+                } else {
+                    console.error("❌ બંને જગ્યાએ વંશાવળી ડેટા મળ્યો નથી");
+                    // ડિફૉલ્ટ ડેટા બનાવો
+                    vanshavaliData = {
+                        name: "મારો પરિવાર",
+                        info: "મુખ્ય કુટુંબ",
+                        children: []
+                    };
+                }
+            }
         }
 
         // વંશાવળી ટ્રી ડિસ્પ્લે
@@ -1027,7 +1034,7 @@
             const treeContainer = document.getElementById('familyTreeDisplay');
             treeContainer.innerHTML = '';
             
-            if (!vanshavaliData || !vanshavaliData.children) {
+            if (!vanshavaliData) {
                 treeContainer.innerHTML = '<p style="text-align:center; color:#94a3b8;">વંશાવળી ડેટા મળ્યો નથી</p>';
                 return;
             }
@@ -1068,8 +1075,10 @@
             const select = document.getElementById('parentMember');
             select.innerHTML = '<option value="root">મુખ્ય (રુટ)</option>';
             
+            if (!vanshavaliData) return;
+            
             function addMembers(node, depth = 0) {
-                if (node.name !== "મારો પરિવાર") {
+                if (node.name !== vanshavaliData.name) {
                     const prefix = '─ '.repeat(depth);
                     select.innerHTML += `<option value="${node.name}">${prefix}${node.name}</option>`;
                 }
@@ -1102,6 +1111,7 @@
             };
             
             if (parentName === "root") {
+                if (!vanshavaliData.children) vanshavaliData.children = [];
                 vanshavaliData.children.push(newMember);
             } else {
                 function findParent(node, targetName) {
@@ -1150,6 +1160,61 @@
             speak("વંશાવળી એક્સપોર્ટ કરી ગઈ છું");
         }
 
+        // વંશાવળી ઇમ્પોર્ટ
+        function importVanshavali() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        vanshavaliData = importedData;
+                        saveVanshavaliData();
+                        loadVanshavaliTree();
+                        updateParentSelect();
+                        
+                        const memberCount = countTreeMembers(vanshavaliData);
+                        speak(`${memberCount} સભ્યો સાથેની વંશાવળી સફળતાપૂર્વક ઇમ્પોર્ટ કરી ગઈ છું`);
+                    } catch (error) {
+                        alert("ફાઈલ ફોર્મેટ ખોટું છે: " + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        // વંશાવળી રીસેટ
+        function resetVanshavali() {
+            if (confirm("શું તમે ખરેખર ડિફૉલ્ટ વંશાવળી પર રીસેટ કરવા માંગો છો? તમારો વર્તમાન ડેટા ગુમાવશો.")) {
+                // External file માંથી ડેટા લોડ કરો
+                if (typeof window.vanshavaliData !== 'undefined') {
+                    vanshavaliData = window.vanshavaliData;
+                    console.log("✅ External file વંશાવળી ડેટા પર રીસેટ કર્યો");
+                } else {
+                    // ડિફૉલ્ટ ડેટા
+                    vanshavaliData = {
+                        name: "મારો પરિવાર",
+                        info: "મુખ્ય કુટુંબ",
+                        children: []
+                    };
+                }
+                
+                saveVanshavaliData();
+                loadVanshavaliTree();
+                updateParentSelect();
+                
+                speak("વંશાવળી ડિફૉલ્ટ પર રીસેટ કરી ગઈ છું");
+            }
+        }
+
         // ઇન્ટરેક્શન શરૂ કરો
         function startInteraction() {
             const micBtn = document.getElementById('micBtn');
@@ -1193,8 +1258,12 @@
                 
                 // વંશાવળી કમાન્ડ
                 if (speechText.includes("વંશાવળી") || speechText.includes("પરિવાર") || speechText.includes("વંશ")) {
-                    const count = countTreeMembers(vanshavaliData);
-                    speak(`તમારી વંશાવળીમાં ${count} સભ્યો છે. સેટિંગ્સમાં જઈને જોઈ શકો છો.`);
+                    if (vanshavaliData) {
+                        const count = countTreeMembers(vanshavaliData);
+                        speak(`તમારી વંશાવળીમાં ${count} સભ્યો છે. સેટિંગ્સમાં જઈને જોઈ શકો છો.`);
+                    } else {
+                        speak("વંશાવળી ડેટા મળ્યો નથી. કૃપા કરીને સેટિંગ્સમાંથી સભ્ય ઉમેરો.");
+                    }
                     return;
                 }
                 
@@ -1202,7 +1271,6 @@
                 if (speechText.includes("કેલ્ક્યુલેટર")) {
                     speak("કેલ્ક્યુલેટર ખોલું છું.");
                     setTimeout(() => {
-                        // Try to open calculator app
                         if (navigator.userAgent.includes('Android')) {
                             window.location.href = "intent://com.android.calculator2/#Intent;scheme=android-app;end";
                         }
@@ -1359,6 +1427,7 @@
         console.log("ટેસ્ટ કરવા માટે:");
         console.log("1. localStorage.setItem('div_gemini_keys', 'AIzaSy...')");
         console.log("2. speak('હેલો ટેસ્ટ')");
+        console.log("3. વંશાવળી ડેટા:", vanshavaliData);
     </script>
 </body>
 </html>
