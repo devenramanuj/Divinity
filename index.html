@@ -19,6 +19,8 @@
         .card { background: #111; width: 90%; max-width: 400px; padding: 25px; border-radius: 20px; border: 1px solid #ff6d00; }
         select, textarea, input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: #4ade80; border-radius: 8px; box-sizing: border-box; }
         .save { background: #ff6d00; color: #fff; padding: 15px; width: 100%; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        #mSel { margin-bottom: 10px; }
+        .model-info { color: #aaa; font-size: 12px; margin-top: -5px; margin-bottom: 10px; text-align: center; }
     </style>
 </head>
 <body>
@@ -37,15 +39,17 @@
     <div id="settingsModal">
         <div class="card">
             <h3 style="text-align:center;">સેટિંગ્સ</h3>
-            <select id="pSel">
+            
+            <select id="pSel" onchange="updateModels()">
                 <option value="gemini">Google Gemini</option>
                 <option value="groq">Groq Llama</option>
             </select>
+            
             <select id="mSel">
-                <option value="gemini-2.0-flash">Gemini 2.5 Flash</option>
-                <option value="llama3-70b-8192">Llama 70B</option>
-                <option value="llama3-8b-8192">Llama 8B</option>
+                <!-- Options will be populated dynamically -->
             </select>
+            <div id="modelInfo" class="model-info"></div>
+            
             <textarea id="apiK" rows="3" placeholder="API Key અહીં નાખો"></textarea>
             <button class="save" onclick="save()">SAVE & CLOSE</button>
         </div>
@@ -53,61 +57,207 @@
 
     <script>
         const v = document.getElementById('mainVideo');
-        function setV(s) { v.src = s + ".mp4"; v.play().catch(e=>{}); }
-        function toggleM() { const m = document.getElementById('settingsModal'); m.style.display = m.style.display==='flex'?'none':'flex'; }
-
+        const modelOptions = {
+            gemini: [
+                { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash" },
+                { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
+                { id: "gemini-2.0-flash-exp", name: "Gemini 2.0 Flash (Experimental)" }
+            ],
+            groq: [
+                { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B (Latest)" },
+                { id: "llama-3.1-70b-versatile", name: "Llama 3.1 70B" },
+                { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B" },
+                { id: "llama3-70b-8192", name: "Llama 3 70B" },
+                { id: "llama3-8b-8192", name: "Llama 3 8B" },
+                { id: "mixtral-8x7b-32768", name: "Mixtral 8x7B" }
+            ]
+        };
+        
+        function setV(s) { 
+            v.src = s + ".mp4"; 
+            v.play().catch(e => console.log("Video play error:", e)); 
+        }
+        
+        function toggleM() { 
+            const m = document.getElementById('settingsModal'); 
+            m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; 
+        }
+        
+        function updateModels() {
+            const provider = document.getElementById('pSel').value;
+            const modelSelect = document.getElementById('mSel');
+            const modelInfo = document.getElementById('modelInfo');
+            
+            // Clear existing options
+            modelSelect.innerHTML = '';
+            
+            // Add new options
+            modelOptions[provider].forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = model.name;
+                modelSelect.appendChild(option);
+            });
+            
+            // Update model info
+            if (provider === 'gemini') {
+                modelInfo.textContent = "Gemini 2.0 Flash હજુ સાર્વજનિક રીતે ઉપલબ્ધ નથી";
+            } else {
+                modelInfo.textContent = "Llama 3.3 70B નવું છે, Llama 3.1 સ્થિર છે";
+            }
+        }
+        
         function speak(t) {
             window.speechSynthesis.cancel();
             const m = new SpeechSynthesisUtterance("જય શ્રી કૃષ્ણ " + t);
             m.lang = 'gu-IN';
-            m.onstart = () => { setV("talking"); document.getElementById('status').innerText = "બોલી રહી છું..."; };
-            m.onend = () => { setV("silent"); document.getElementById('status').innerText = "જય શ્રી કૃષ્ણ"; };
+            m.onstart = () => { 
+                setV("talking"); 
+                document.getElementById('status').innerText = "બોલી રહી છું..."; 
+            };
+            m.onend = () => { 
+                setV("silent"); 
+                document.getElementById('status').innerText = "જય શ્રી કૃષ્ણ"; 
+            };
             window.speechSynthesis.speak(m);
         }
-
+        
         async function callAI(q) {
             const p = document.getElementById('pSel').value;
             const m = document.getElementById('mSel').value;
             const k = document.getElementById('apiK').value.trim();
-
+            
+            if (!k) {
+                return "કૃપા કરીને API Key દાખલ કરો";
+            }
+            
             try {
-                if(p === 'groq') {
+                if (p === 'groq') {
                     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                         method: 'POST',
-                        headers: { 'Authorization': `Bearer ${k}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ model: m, messages: [{ role: "user", content: q + " (જવાબ ગુજરાતીમાં આપો)" }] })
+                        headers: { 
+                            'Authorization': `Bearer ${k}`, 
+                            'Content-Type': 'application/json' 
+                        },
+                        body: JSON.stringify({ 
+                            model: m, 
+                            messages: [{ 
+                                role: "user", 
+                                content: q + " (જવાબ ગુજરાતીમાં આપો, 150 શબ્દોમાં)" 
+                            }],
+                            temperature: 0.7,
+                            max_tokens: 500
+                        })
                     });
-                    const d = await r.json(); return d.choices[0].message.content;
+                    
+                    if (!r.ok) {
+                        const error = await r.json();
+                        return `Groq ભૂલ: ${error.error?.message || r.status}`;
+                    }
+                    
+                    const d = await r.json(); 
+                    return d.choices[0]?.message?.content || "કોઈ જવાબ નથી મળ્યો";
                 } else {
+                    // Gemini API
                     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${k}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: q + " (જવાબ ગુજરાતીમાં આપો)" }] }] })
+                        body: JSON.stringify({ 
+                            contents: [{ 
+                                parts: [{ 
+                                    text: q + " (જવાબ ગુજરાતીમાં આપો, 150 શબ્દોમાં)" 
+                                }] 
+                            }],
+                            generationConfig: {
+                                temperature: 0.7,
+                                maxOutputTokens: 500
+                            }
+                        })
                     });
+                    
+                    if (!r.ok) {
+                        const error = await r.json();
+                        return `Gemini ભૂલ: ${error.error?.message || r.status}`;
+                    }
+                    
                     const d = await r.json();
-                    return d.candidates[0].content.parts[0].text;
+                    return d.candidates?.[0]?.content?.parts?.[0]?.text || "કોઈ જવાબ નથી મળ્યો";
                 }
-            } catch(e) { return "ભૂલ: કી અથવા મોડેલ તપાસો"; }
+            } catch(e) { 
+                console.error("API Error:", e);
+                return `નેટવર્ક ભૂલ: ${e.message}`; 
+            }
         }
-
+        
         function startVoice() {
-            const rec = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
+            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+                alert("તમારું બ્રાઉઝર સ્પીચ રેકોગ્નિશન સપોર્ટ કરતું નથી");
+                return;
+            }
+            
+            const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+            const rec = new SpeechRecognition();
             rec.lang = 'gu-IN';
-            rec.onstart = () => { document.getElementById('status').innerText = "સાંભળું છું..."; };
+            rec.continuous = false;
+            rec.interimResults = false;
+            
+            rec.onstart = () => { 
+                document.getElementById('status').innerText = "સાંભળું છું..."; 
+            };
+            
+            rec.onerror = (event) => {
+                console.error("Speech recognition error", event.error);
+                document.getElementById('status').innerText = "ભૂલ: ફરી પ્રયાસ કરો";
+                setV("silent");
+            };
+            
             rec.onresult = async (e) => {
                 const q = e.results[0][0].transcript;
-                setV("thinking"); document.getElementById('status').innerText = "વિચારી રહી છું...";
-                const res = await callAI(q); speak(res);
+                document.getElementById('status').innerText = `પ્રશ્ન: ${q}`;
+                setV("thinking"); 
+                document.getElementById('status').innerText = "વિચારી રહી છું...";
+                const res = await callAI(q); 
+                speak(res);
             };
+            
+            rec.onend = () => {
+                // Auto cleanup
+            };
+            
             rec.start();
         }
-
-        function stopSpeech() { window.speechSynthesis.cancel(); setV("silent"); }
-        function save() { localStorage.setItem('v_p', document.getElementById('pSel').value); localStorage.setItem('v_m', document.getElementById('mSel').value); localStorage.setItem('v_k', document.getElementById('apiK').value); toggleM(); }
-
+        
+        function stopSpeech() { 
+            window.speechSynthesis.cancel(); 
+            setV("silent"); 
+            document.getElementById('status').innerText = "જય શ્રી કૃષ્ણ";
+        }
+        
+        function save() { 
+            localStorage.setItem('v_p', document.getElementById('pSel').value); 
+            localStorage.setItem('v_m', document.getElementById('mSel').value); 
+            localStorage.setItem('v_k', document.getElementById('apiK').value); 
+            toggleM(); 
+            alert("સેટિંગ્સ સેવ કરી દીધી છે!");
+        }
+        
         window.onload = () => {
-            document.getElementById('pSel').value = localStorage.getItem('v_p') || 'gemini';
-            document.getElementById('mSel').value = localStorage.getItem('v_m') || 'gemini-2.0-flash';
+            // Load saved settings
+            const savedProvider = localStorage.getItem('v_p') || 'gemini';
+            const savedModel = localStorage.getItem('v_m') || 'gemini-1.5-flash';
+            
+            document.getElementById('pSel').value = savedProvider;
+            updateModels(); // This populates the model dropdown
+            
+            // Set the model after dropdown is populated
+            setTimeout(() => {
+                const modelSelect = document.getElementById('mSel');
+                const modelExists = Array.from(modelSelect.options).some(opt => opt.value === savedModel);
+                if (modelExists) {
+                    modelSelect.value = savedModel;
+                }
+            }, 10);
+            
             document.getElementById('apiK').value = localStorage.getItem('v_k') || '';
             setV("silent");
         };
