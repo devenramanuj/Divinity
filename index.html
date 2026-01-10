@@ -338,6 +338,15 @@
             font-size: 14px;
             line-height: 1.5;
         }
+        .tree-level {
+            margin-left: 20px;
+            border-left: 2px solid #334155;
+            padding-left: 15px;
+            margin-top: 10px;
+        }
+        .tree-level .family-member {
+            background: rgba(15, 23, 42, 0.8);
+        }
         /* સંદેશ બોક્સ */
         .message-box {
             position: fixed;
@@ -437,7 +446,7 @@
     <div id="vanshavaliModal">
         <div class="vanshavali-container">
             <div class="vanshavali-header">
-                <i class="fas fa-tree"></i> પરિવાર વંશાવલી
+                <i class="fas fa-tree"></i> ધાર્મિક વંશાવલી
             </div>
             <div class="vanshavali-content" id="vanshavaliContent">
                 <!-- વંશાવલી ડેટા અહીં લોડ થશે -->
@@ -452,13 +461,13 @@
     <div class="message-box" id="messageBox"></div>
 
     <script>
-        // વંશાવલી ડેટા લોડ કરવા માટે સરળ ફંક્શન
+        // વંશાવલી ડેટા લોડ કરવા માટે સરળ ફંક્શન - તમારા ફોર્મેટને અનુકૂળ
         async function loadVanshavali() {
             console.log("vanshavali_data.js લોડ કરી રહ્યા છીએ...");
             
             // પહેલા તપાસો કે ડેટા પહેલેથી લોડ થયેલ છે કે નહીં
-            if (window.vanshavaliData) {
-                console.log("vanshavaliData પહેલેથી લોડ થયેલ છે");
+            if (typeof window.vanshavaliData !== 'undefined') {
+                console.log("vanshavaliData પહેલેથી લોડ થયેલ છે:", window.vanshavaliData);
                 return window.vanshavaliData;
             }
             
@@ -483,7 +492,7 @@
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
                 // ચેક કરો કે ડેટા મળ્યો કે નહીં
-                if (window.vanshavaliData) {
+                if (typeof window.vanshavaliData !== 'undefined') {
                     console.log("vanshavaliData સફળતાપૂર્વક લોડ થયો");
                     return window.vanshavaliData;
                 } else {
@@ -496,27 +505,52 @@
                 // ડિફૉલ્ટ ડેટા
                 console.log("ડિફૉલ્ટ ડેટા વાપરી રહ્યા છીએ");
                 return {
-                    familyName: "પટેલ કુટુંબ",
-                    members: [
-                        {
-                            id: 1,
-                            name: "રમેશભાઈ પટેલ",
-                            birthYear: "૧૯૪૫",
-                            relation: "કુટુંબના વડીલ",
-                            spouse: "સીતાબેન પટેલ",
-                            details: "ગામના પૂર્વ સરપંચ, ખેતી વ્યવસાય"
-                        },
-                        {
-                            id: 2,
-                            name: "મહેશભાઈ પટેલ",
-                            birthYear: "૧૯૭૦",
-                            relation: "સૌથી મોટા પુત્ર",
-                            spouse: "પૂજાબેન પટેલ",
-                            details: "ઇજનેર, અમદાવાદમાં રહે છે"
-                        }
-                    ]
+                    name: "જગદગુરુ રામાનંદાચાર્યજી",
+                    info: "વિ. સં. ૧૩૫૬",
+                    children: [{
+                        name: "અનંતાનંદજી"
+                    }]
                 };
             }
+        }
+
+        // વંશવૃક્ષ પ્રદર્શિત કરવા માટે ફંક્શન
+        function displayFamilyTree(member, level = 0) {
+            let html = '';
+            
+            // વંશ સ્તર પ્રમાણે ઇન્ડેન્ટેશન
+            const indent = '&nbsp;'.repeat(level * 4);
+            
+            // સભ્યની માહિતી
+            html += `<div class="family-member" style="margin-left: ${level * 20}px;">
+                <div class="member-name">${indent}${member.name}</div>
+                <div class="member-details">`;
+            
+            if (member.info) {
+                html += `<div><strong>વિગત:</strong> ${member.info}</div>`;
+            }
+            
+            html += `</div></div>`;
+            
+            // બાળકો હોય તો
+            if (member.children && member.children.length > 0) {
+                member.children.forEach(child => {
+                    html += displayFamilyTree(child, level + 1);
+                });
+            }
+            
+            return html;
+        }
+
+        // કુલ સભ્યોની ગણતરી
+        function countMembers(member) {
+            let count = 1; // વર્તમાન સભ્ય
+            if (member.children && member.children.length > 0) {
+                member.children.forEach(child => {
+                    count += countMembers(child);
+                });
+            }
+            return count;
         }
 
         // વંશાવલી પ્રદર્શિત કરો
@@ -526,31 +560,27 @@
             
             try {
                 const data = await loadVanshavali();
+                console.log("વંશાવલી ડેટા:", data);
+                
+                // કુલ સભ્યોની ગણતરી
+                const totalMembers = countMembers(data);
                 
                 let html = `<div style="text-align:center; margin-bottom:20px;">
-                    <h3 style="color:var(--saffron); margin-bottom:5px;">${data.familyName}</h3>
-                    <p style="color:#cbd5e1; font-size:14px;">કુલ સભ્યો: ${data.members.length}</p>
+                    <h3 style="color:var(--saffron); margin-bottom:5px;">${data.name || "ધાર્મિક વંશાવલી"}</h3>
+                    <p style="color:#cbd5e1; font-size:14px;">${data.info || ""}</p>
+                    <p style="color:#34d399; font-size:14px; margin-top:5px;">
+                        કુલ સભ્યો: ${totalMembers}
+                    </p>
                 </div>`;
                 
-                // સભ્યો દર્શાવો
-                data.members.forEach(member => {
-                    html += `
-                    <div class="family-member">
-                        <div class="member-name">${member.name}</div>
-                        <div class="member-details">
-                            <div><strong>જન્મ વર્ષ:</strong> ${member.birthYear}</div>
-                            <div><strong>સંબંધ:</strong> ${member.relation}</div>
-                            ${member.spouse ? `<div><strong>પત્ની/પતિ:</strong> ${member.spouse}</div>` : ''}
-                            <div><strong>વિગત:</strong> ${member.details}</div>
-                        </div>
-                    </div>`;
-                });
+                // વંશવૃક્ષ પ્રદર્શિત કરો
+                html += displayFamilyTree(data);
                 
                 // જાણકારી
                 html += `<div style="margin-top:20px; padding:15px; background:rgba(255,153,51,0.1); border-radius:10px; border:1px solid var(--saffron);">
                     <h4 style="color:var(--saffron); margin-bottom:10px;"><i class="fas fa-info-circle"></i> વંશાવલી વિશે</h4>
                     <p style="color:#cbd5e1; font-size:14px;">
-                        તમારી પોતાની વંશાવલી ઉમેરવા માટે vanshavali_data.js ફાઇલમાં ડેટા ઉમેરો.
+                        આ ધાર્મિક વંશાવલી દર્શાવે છે. તમારી પોતાની વંશાવલી ઉમેરવા માટે vanshavali_data.js ફાઇલમાં ડેટા ઉમેરો.
                     </p>
                 </div>`;
                 
@@ -573,7 +603,7 @@
         async function openVanshavali() {
             await displayVanshavali();
             toggleM('vanshavaliModal');
-            speak("પરિવારની વંશાવલી ખોલી રહ્યા છીએ.");
+            speak("ધાર્મિક વંશાવલી ખોલી રહ્યા છીએ.");
         }
 
         // બાકીના કોડ (અપરિવર્તિત)
@@ -798,7 +828,7 @@
                     return;
                 }
                 
-                if (speechText.includes("વંશાવલી") || speechText.includes("પરિવાર") || speechText.includes("ફેમિલી ટ્રી")) {
+                if (speechText.includes("વંશાવલી") || speechText.includes("પરિવાર") || speechText.includes("ફેમિલી ટ્રી") || speechText.includes("વંશવૃક્ષ")) {
                     openVanshavali();
                     return;
                 }
