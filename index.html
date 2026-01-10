@@ -31,191 +31,115 @@
             height: 100%; 
             object-fit: cover; 
             z-index: 1; 
-            filter: brightness(0.7);
+            filter: brightness(0.6);
         }
-        .ui-layer { 
-            position: relative; 
-            z-index: 10; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between;
-            align-items: center; 
-            padding: 30px 20px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.9) 100%);
-        }
-        .top-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-        .app-title {
-            color: var(--saffron);
-            font-size: 22px;
-            font-weight: bold;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            background: rgba(0,0,0,0.6);
-            padding: 8px 20px;
-            border-radius: 30px;
-            border: 1px solid rgba(255,153,51,0.3);
-        }
-        .center-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 30px;
-            margin-top: -50px;
-        }
-        #status { 
-            color: white; 
-            font-size: 20px; 
-            background: linear-gradient(135deg, rgba(255,153,51,0.9), rgba(19,136,8,0.9));
-            padding: 15px 35px;
-            border-radius: 50px;
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255,255,255,0.2);
-            text-align: center;
-            min-width: 300px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            font-weight: bold;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        .controls { 
-            display: flex; 
-            align-items: center; 
-            gap: 30px; 
-            background: rgba(0,0,0,0.8); 
-            padding: 20px 40px; 
-            border-radius: 60px; 
-            backdrop-filter: blur(20px); 
-            border: 2px solid rgba(255,255,255,0.15);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-        }
-        .btn-mic { 
-            width: 100px; 
-            height: 100px; 
-            background: linear-gradient(135deg, var(--saffron), var(--green), var(--blue)); 
-            border: none; 
-            border-radius: 50%; 
-            font-size: 36px; 
-            cursor: pointer; 
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 30px rgba(255, 153, 51, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .home-screen {
             position: relative;
             z-index: 10;
-        }
-        .btn-mic:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 40px rgba(255, 153, 51, 0.6);
-        }
-        .btn-mic.listening {
-            animation: pulse 1.5s infinite;
-            background: linear-gradient(135deg, #ef4444, #f43f5e, #8b5cf6);
-        }
-        .mic-ring {
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            animation: rotate 20s linear infinite;
-        }
-        .btn-stop { 
-            width: 70px; 
-            height: 70px; 
-            background: linear-gradient(135deg, #ef4444, #dc2626); 
-            border: none; 
-            border-radius: 50%; 
-            color: #fff; 
-            cursor: pointer; 
-            font-size: 24px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
+            height: 100vh;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
-        .btn-stop:hover {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
-        }
-        .home-buttons {
+        .status-bar {
             position: fixed;
-            top: 30px;
-            left: 30px;
-            z-index: 100;
+            top: 20px;
+            left: 0;
+            right: 0;
             display: flex;
-            gap: 15px;
-        }
-        .home-btn {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));
-            color: var(--saffron);
-            border: 2px solid rgba(255,255,255,0.2);
-            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            padding: 0 25px;
+            z-index: 20;
+        }
+        .status-text {
+            color: white;
+            font-size: 16px;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
             backdrop-filter: blur(10px);
-        }
-        .home-btn:hover {
-            background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
-            transform: scale(1.15) rotate(10deg);
-            border-color: var(--saffron);
-            box-shadow: 0 8px 25px rgba(255, 153, 51, 0.3);
-        }
-        .home-btn.stop {
-            color: #ef4444;
-        }
-        .home-btn.stop:hover {
-            border-color: #ef4444;
+            max-width: 200px;
+            text-align: center;
         }
         .setting-icon {
-            position: fixed; 
-            top: 30px; 
-            right: 30px; 
-            z-index: 100; 
-            font-size: 28px; 
-            color: var(--saffron); 
-            cursor: pointer; 
-            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));
-            width: 55px;
-            height: 55px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
+            background: rgba(0,0,0,0.7);
+            color: var(--saffron);
+            border: 1px solid rgba(255,255,255,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
             transition: all 0.3s ease;
-            border: 2px solid rgba(255,255,255,0.2);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             backdrop-filter: blur(10px);
         }
         .setting-icon:hover {
-            background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
-            transform: rotate(90deg) scale(1.1);
+            background: rgba(0,0,0,0.9);
+            transform: rotate(45deg);
             border-color: var(--saffron);
-            box-shadow: 0 8px 25px rgba(255, 153, 51, 0.3);
+        }
+        .mic-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            margin-top: 50px;
+        }
+        .mic-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--saffron), var(--green));
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(255, 153, 51, 0.4);
+            position: relative;
+        }
+        .mic-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 30px rgba(255, 153, 51, 0.6);
+        }
+        .mic-button.listening {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #ef4444, #f43f5e);
+        }
+        .stop-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #ef4444;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .stop-button:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.1);
+            border-color: #ef4444;
         }
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
         }
         .pranam-overlay {
             position: fixed;
@@ -223,7 +147,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at center, rgba(0,0,0,0.95) 0%, rgba(0,0,0,1) 100%);
+            background: rgba(0,0,0,0.95);
             z-index: 9999;
             display: flex;
             align-items: center;
@@ -233,205 +157,107 @@
         }
         .pranam-text {
             color: var(--saffron);
-            font-size: 48px;
+            font-size: 40px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             animation: fadeIn 2s ease;
-            text-shadow: 0 5px 20px rgba(255, 153, 51, 0.5);
-        }
-        .subtitle {
-            font-size: 22px;
-            color: #ccc;
-            animation: fadeIn 2.5s ease;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-        /* વંશાવલી મોડલ */
-        #vanshavaliModal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at center, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.99) 100%);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .vanshavali-container {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            width: 95%;
-            max-width: 1000px;
-            height: 85vh;
-            padding: 25px;
-            border-radius: 30px;
-            border: 3px solid var(--saffron);
-            color: #fff;
-            box-sizing: border-box;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.8);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-        .vanshavali-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--saffron), var(--green), var(--blue));
-        }
-        .vanshavali-header {
-            text-align: center;
-            color: var(--saffron);
-            font-size: 26px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            padding-bottom: 15px;
-            border-bottom: 2px solid rgba(255,153,51,0.3);
-        }
-        .vanshavali-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .tree-node {
-            position: relative;
-            padding: 15px 0;
-        }
-        .tree-line {
-            position: absolute;
-            left: 15px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, transparent, var(--saffron), transparent);
-        }
-        .tree-node-content {
-            margin-left: 40px;
-            padding: 15px;
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
-            border-radius: 15px;
-            border: 1px solid rgba(255,153,51,0.2);
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        .tree-node-content:hover {
-            transform: translateX(10px);
-            border-color: var(--saffron);
-            box-shadow: 0 10px 25px rgba(255, 153, 51, 0.2);
-        }
-        .tree-node-content::before {
-            content: '';
-            position: absolute;
-            left: -30px;
-            top: 50%;
-            width: 20px;
-            height: 2px;
-            background: var(--saffron);
-        }
-        .member-name {
-            color: var(--saffron);
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .member-name i {
-            color: var(--green);
-        }
-        .member-info {
-            color: #cbd5e1;
-            font-size: 15px;
-            line-height: 1.6;
-            padding-left: 30px;
-        }
-        .generation-label {
-            color: var(--blue);
-            font-size: 14px;
-            font-weight: bold;
-            margin: 20px 0 10px 40px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
         /* સેટિંગ્સ મોડલ */
         #settingsModal { 
             display: none; 
             position: fixed; 
             inset: 0; 
-            background: radial-gradient(circle at center, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.99) 100%);
+            background: rgba(0,0,0,0.97); 
             z-index: 1000; 
             align-items: center; 
             justify-content: center; 
         }
         .modal-card { 
-            background: linear-gradient(135deg, #1e293b, #0f172a); 
-            width: 90%; 
+            background: #1e293b; 
+            width: 95%; 
             max-width: 500px; 
-            padding: 35px; 
-            border-radius: 30px; 
-            border: 3px solid var(--saffron); 
+            padding: 25px; 
+            border-radius: 25px; 
+            border: 2px solid var(--saffron); 
             color: #fff; 
             box-sizing: border-box;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.8);
-            position: relative;
-        }
-        .modal-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--saffron), var(--green), var(--blue));
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .modal-title {
             text-align: center;
             color: var(--saffron);
-            font-size: 28px;
-            margin-bottom: 30px;
+            font-size: 24px;
+            margin-bottom: 20px;
             font-weight: bold;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+        }
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: rgba(255,153,51,0.2);
+            color: var(--saffron);
+            font-weight: bold;
+        }
+        .tab-button:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
         }
         input, select, textarea { 
             width: 100%; 
-            padding: 16px; 
+            padding: 12px; 
             margin-top: 8px; 
-            margin-bottom: 20px;
-            background: rgba(15, 23, 42, 0.8); 
-            border: 2px solid rgba(255,255,255,0.1); 
+            margin-bottom: 15px;
+            background: #0f172a; 
+            border: 1px solid #334155; 
             color: #34d399; 
-            border-radius: 15px; 
+            border-radius: 10px; 
             box-sizing: border-box; 
-            font-size: 16px;
-            transition: all 0.3s ease;
+            font-size: 14px;
         }
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--saffron);
-            box-shadow: 0 0 0 3px rgba(255, 153, 51, 0.2);
-            transform: translateY(-2px);
         }
         label {
             color: #cbd5e1;
-            font-size: 16px;
+            font-size: 14px;
             margin-left: 5px;
-            font-weight: 500;
         }
         #camBox { 
             width: 100%; 
-            height: 250px; 
+            height: 200px; 
             background: #000; 
-            border-radius: 20px; 
-            margin-top: 20px; 
-            margin-bottom: 20px;
+            border-radius: 15px; 
+            margin-top: 15px; 
+            margin-bottom: 15px;
             display: none; 
             border: 2px solid var(--saffron); 
             overflow: hidden; 
@@ -444,40 +270,61 @@
         }
         .modal-button {
             width: 100%; 
-            padding: 18px; 
-            margin-top: 15px; 
+            padding: 14px; 
+            margin-top: 10px; 
             background: linear-gradient(135deg, #4f46e5, var(--saffron)); 
             color: #fff; 
-            border-radius: 15px; 
+            border-radius: 10px; 
             font-weight: bold;
             border: none;
-            font-size: 17px;
+            font-size: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            box-shadow: 0 5px 20px rgba(79, 70, 229, 0.3);
         }
         .modal-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+            transform: translateY(-2px);
         }
         .close-btn {
             text-align: center; 
             color: #ef4444; 
             cursor: pointer; 
-            margin-top: 25px;
+            margin-top: 20px;
             font-weight: bold;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            padding: 10px;
-            border-radius: 10px;
         }
-        .close-btn:hover {
-            color: #dc2626;
-            background: rgba(239, 68, 68, 0.1);
+        .vanshavali-container {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 15px;
+            padding: 15px;
+        }
+        .tree-node {
+            margin-bottom: 10px;
+            padding-left: 15px;
+            border-left: 2px solid #334155;
+        }
+        .member-name {
+            color: var(--saffron);
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .member-info {
+            color: #cbd5e1;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        .generation-label {
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: bold;
+            margin: 15px 0 5px 0;
+            text-transform: uppercase;
         }
         /* સંદેશ બોક્સ */
         .message-box {
@@ -485,59 +332,15 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            padding: 25px;
-            border-radius: 20px;
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 15px;
             border: 2px solid var(--saffron);
             color: white;
             z-index: 2000;
             display: none;
-            max-width: 450px;
+            max-width: 300px;
             text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-        }
-        .floating-icons {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            z-index: 50;
-        }
-        .floating-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));
-            color: var(--blue);
-            border: 2px solid rgba(255,255,255,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .floating-icon:hover {
-            transform: scale(1.15);
-            border-color: var(--blue);
-            color: var(--blue);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-        }
-        .mic-pulse {
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,153,51,0.2) 0%, rgba(255,153,51,0) 70%);
-            animation: pulse-ring 2s infinite;
-        }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.8); opacity: 0.7; }
-            100% { transform: scale(1.2); opacity: 0; }
         }
     </style>
 </head>
@@ -548,59 +351,24 @@
     
     <div class="pranam-overlay" id="pranamOverlay">
         <div class="pranam-text">જય સીયારામ</div>
-        <div class="subtitle">ગુજરાતી AI સહાયક</div>
-        <div style="margin-top: 30px; font-size: 16px; color: #888;">
-            <i class="fas fa-microphone"></i> બોલવા માટે માઇક બટન દબાવો
-        </div>
+        <div style="font-size: 18px; color: #ccc;">ગુજરાતી AI સહાયક</div>
     </div>
 
-    <!-- હોમ સ્ક્રીન બટનો -->
-    <div class="home-buttons">
-        <button class="home-btn" onclick="openVanshavali()" title="વંશાવલી">
-            <i class="fas fa-tree"></i>
-        </button>
-        <button class="home-btn stop" onclick="stopEverything()" title="બંધ કરો">
-            <i class="fas fa-stop"></i>
-        </button>
-    </div>
-
-    <div class="setting-icon" onclick="toggleM('settingsModal')">
-        <i class="fas fa-cog"></i>
-    </div>
-
-    <div class="ui-layer">
-        <div class="top-bar">
-            <div class="app-title">
-                <i class="fas fa-robot"></i> જય સીયારામ AI
-            </div>
-        </div>
-        
-        <div class="center-content">
-            <div id="status">
-                <i class="fas fa-check-circle"></i> તૈયાર છું - જય સીયારામ
-            </div>
-            
-            <div class="controls">
-                <button class="btn-stop" onclick="stopEverything()" title="બંધ કરો">
-                    <i class="fas fa-stop"></i>
-                </button>
-                <div style="position: relative;">
-                    <div class="mic-pulse"></div>
-                    <button id="micBtn" class="btn-mic" onclick="startInteraction()" title="બોલવા માટે દબાવો">
-                        <i class="fas fa-microphone"></i>
-                        <div class="mic-ring"></div>
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="floating-icons">
-            <div class="floating-icon" onclick="openVanshavali()" title="વંશાવલી">
-                <i class="fas fa-tree"></i>
-            </div>
-            <div class="floating-icon" onclick="toggleM('settingsModal')" title="સેટિંગ્સ">
+    <div class="home-screen">
+        <div class="status-bar">
+            <div class="status-text" id="status">તૈયાર છું</div>
+            <div class="setting-icon" onclick="toggleM('settingsModal')">
                 <i class="fas fa-cog"></i>
             </div>
+        </div>
+        
+        <div class="mic-container">
+            <button class="mic-button" id="micBtn" onclick="startInteraction()" title="બોલવા માટે દબાવો">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="stop-button" onclick="stopEverything()" title="બંધ કરો">
+                <i class="fas fa-stop"></i>
+            </button>
         </div>
     </div>
 
@@ -611,35 +379,69 @@
                 <i class="fas fa-sliders-h"></i> સેટિંગ્સ
             </div>
             
-            <label for="activeModel"><i class="fas fa-brain"></i> AI મોડલ પસંદ કરો</label>
-            <select id="activeModel">
-                <option value="groq">Groq Llama 3 (70B)</option>
-                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                <option value="gemini-2.5-flash-latest">Gemini 2.5 Flash Latest</option>
-            </select>
-            
-            <label for="geminiKeys"><i class="fas fa-key"></i> Gemini API કી</label>
-            <textarea id="geminiKeys" rows="2" placeholder="AIzaSy... (કોમા વડે અલગ)"></textarea>
-            
-            <label for="groqKey"><i class="fas fa-key"></i> Groq API કી</label>
-            <input type="password" id="groqKey" placeholder="gsk_...">
-            
-            <button class="modal-button" onclick="toggleCamera()">
-                <i class="fas fa-camera"></i> કૅમેરા ચાલુ/બંધ
-            </button>
-            
-            <div id="camBox">
-                <video id="videoFeed" autoplay playsinline></video>
-                <button class="modal-button" onclick="runVision()" style="position:absolute; bottom:15px; left:5%; width:90%; background: linear-gradient(135deg, var(--green), var(--blue));">
-                    <i class="fas fa-eye"></i> ફોટો જુઓ અને વિશ્લેષણ કરો
+            <div class="tab-container">
+                <button class="tab-button active" onclick="switchTab('aiTab')">
+                    <i class="fas fa-brain"></i> AI
+                </button>
+                <button class="tab-button" onclick="switchTab('vanshavaliTab')">
+                    <i class="fas fa-tree"></i> વંશાવલી
+                </button>
+                <button class="tab-button" onclick="switchTab('cameraTab')">
+                    <i class="fas fa-camera"></i> કૅમેરા
                 </button>
             </div>
             
-            <button class="modal-button" onclick="saveConfig()" style="background: linear-gradient(135deg, var(--green), var(--saffron));">
-                <i class="fas fa-save"></i> બધું સંગ્રહો
-            </button>
+            <!-- AI Tab -->
+            <div id="aiTab" class="tab-content active">
+                <label for="activeModel">AI મોડલ પસંદ કરો</label>
+                <select id="activeModel">
+                    <option value="groq">Groq Llama 3 (70B)</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                    <option value="gemini-2.5-flash-latest">Gemini 2.5 Flash Latest</option>
+                </select>
+                
+                <label for="geminiKeys">Gemini API કી (કોમા વડે અલગ)</label>
+                <textarea id="geminiKeys" rows="2" placeholder="AIzaSy..."></textarea>
+                
+                <label for="groqKey">Groq API કી</label>
+                <input type="password" id="groqKey" placeholder="gsk_...">
+                
+                <button class="modal-button" onclick="saveConfig()">
+                    <i class="fas fa-save"></i> સેટિંગ્સ સંગ્રહો
+                </button>
+            </div>
+            
+            <!-- વંશાવલી Tab -->
+            <div id="vanshavaliTab" class="tab-content">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h4 style="color: var(--saffron); margin-bottom: 10px;">
+                        <i class="fas fa-tree"></i> ધાર્મિક વંશાવલી
+                    </h4>
+                    <p style="color: #cbd5e1; font-size: 14px;">
+                        vanshavali_data.js ફાઇલમાંથી ડેટા લોડ થઈ રહ્યો છે...
+                    </p>
+                </div>
+                
+                <div class="vanshavali-content" id="vanshavaliContent">
+                    <!-- વંશાવલી ડેટા અહીં લોડ થશે -->
+                </div>
+            </div>
+            
+            <!-- કૅમેરા Tab -->
+            <div id="cameraTab" class="tab-content">
+                <button class="modal-button" onclick="toggleCamera()">
+                    <i class="fas fa-camera"></i> કૅમેરા ચાલુ/બંધ
+                </button>
+                
+                <div id="camBox">
+                    <video id="videoFeed" autoplay playsinline></video>
+                    <button class="modal-button" onclick="runVision()" style="position:absolute; bottom:10px; left:5%; width:90%; background: linear-gradient(135deg, var(--green), var(--blue));">
+                        <i class="fas fa-eye"></i> ફોટો જુઓ અને વિશ્લેષણ કરો
+                    </button>
+                </div>
+            </div>
             
             <div class="close-btn" onclick="toggleM('settingsModal')">
                 <i class="fas fa-times"></i> બંધ કરો
@@ -647,25 +449,34 @@
         </div>
     </div>
 
-    <!-- વંશાવલી મોડલ -->
-    <div id="vanshavaliModal">
-        <div class="vanshavali-container">
-            <div class="vanshavali-header">
-                <i class="fas fa-tree"></i> ધાર્મિક વંશાવલી
-            </div>
-            <div class="vanshavali-content" id="vanshavaliContent">
-                <!-- વંશાવલી ડેટા અહીં લોડ થશે -->
-            </div>
-            <button class="modal-button" onclick="toggleM('vanshavaliModal')">
-                <i class="fas fa-times"></i> બંધ કરો
-            </button>
-        </div>
-    </div>
-
     <!-- સંદેશ બોક્સ -->
     <div class="message-box" id="messageBox"></div>
 
     <script>
+        // Tab switching function
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.currentTarget.classList.add('active');
+            
+            // Load vanshavali when tab is opened
+            if (tabId === 'vanshavaliTab') {
+                displayVanshavali();
+            }
+        }
+
         // વંશાવલી ડેટા લોડ કરવા માટે ફંક્શન
         async function loadVanshavali() {
             console.log("vanshavali_data.js લોડ કરી રહ્યા છીએ...");
@@ -715,33 +526,16 @@
             if (level === 0) {
                 html += `<div class="tree-node">`;
             } else {
-                html += `<div class="tree-node" style="margin-left: ${level * 30}px;">`;
+                html += `<div class="tree-node" style="margin-left: ${level * 15}px;">`;
             }
             
-            if (level > 0) {
-                html += `<div class="tree-line"></div>`;
-            }
-            
-            html += `<div class="tree-node-content">
-                <div class="member-name">
-                    <i class="fas fa-user-circle"></i> ${member.name}
-                </div>`;
+            html += `<div class="member-name">${member.name}</div>`;
             
             if (member.info) {
-                html += `<div class="member-info">
-                    <i class="fas fa-info-circle"></i> ${member.info}
-                </div>`;
+                html += `<div class="member-info">${member.info}</div>`;
             }
             
-            html += `</div>`;
-            
             if (member.children && member.children.length > 0) {
-                if (level === 0) {
-                    html += `<div class="generation-label">
-                        <i class="fas fa-layer-group"></i> ${generation}મી પેઢી
-                    </div>`;
-                }
-                
                 member.children.forEach(child => {
                     html += displayFamilyTree(child, level + 1, generation + 1);
                 });
@@ -751,80 +545,37 @@
             return html;
         }
 
-        // કુલ સભ્યોની ગણતરી
-        function countMembers(member) {
-            let count = 1;
-            if (member.children && member.children.length > 0) {
-                member.children.forEach(child => {
-                    count += countMembers(child);
-                });
-            }
-            return count;
-        }
-
         // વંશાવલી પ્રદર્શિત કરો
         async function displayVanshavali() {
             const container = document.getElementById('vanshavaliContent');
-            container.innerHTML = '<div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--saffron);"></i><div style="margin-top:20px; color:#cbd5e1;">વંશાવલી લોડ કરી રહ્યા છીએ...</div></div>';
+            container.innerHTML = '<div style="text-align:center; padding:20px; color:#cbd5e1;"><i class="fas fa-spinner fa-spin"></i> વંશાવલી લોડ કરી રહ્યા છીએ...</div>';
             
             try {
                 const data = await loadVanshavali();
-                const totalMembers = countMembers(data);
                 
-                let html = `<div style="text-align:center; margin-bottom:30px; padding:20px; background:rgba(255,153,51,0.1); border-radius:15px;">
-                    <h3 style="color:var(--saffron); margin-bottom:10px; font-size:24px;">
-                        <i class="fas fa-crown"></i> ${data.name}
-                    </h3>
-                    <p style="color:#cbd5e1; font-size:16px; margin-bottom:10px;">${data.info || ""}</p>
-                    <div style="display:flex; justify-content:center; gap:20px; margin-top:15px;">
-                        <div style="background:rgba(19,136,8,0.2); padding:8px 20px; border-radius:20px; border:1px solid var(--green);">
-                            <i class="fas fa-users"></i> ${totalMembers} સભ્યો
-                        </div>
-                        <div style="background:rgba(59,130,246,0.2); padding:8px 20px; border-radius:20px; border:1px solid var(--blue);">
-                            <i class="fas fa-sitemap"></i> વંશવૃક્ષ
-                        </div>
-                    </div>
+                let html = `<div style="text-align:center; margin-bottom:15px;">
+                    <h4 style="color:var(--saffron); margin-bottom:5px;">${data.name}</h4>
+                    <p style="color:#cbd5e1; font-size:13px;">${data.info || ""}</p>
                 </div>`;
                 
                 html += displayFamilyTree(data);
                 
-                html += `<div style="margin-top:30px; padding:20px; background:rgba(15,23,42,0.8); border-radius:15px; border:1px solid rgba(255,153,51,0.3);">
-                    <h4 style="color:var(--saffron); margin-bottom:10px;">
-                        <i class="fas fa-info-circle"></i> વંશાવલી વિશે
-                    </h4>
-                    <p style="color:#cbd5e1; font-size:14px; line-height:1.6;">
-                        આ ધાર્મિક વંશાવલી દર્શાવે છે. તમારી પોતાની વંશાવલી ઉમેરવા માટે vanshavali_data.js ફાઇલમાં ડેટા ઉમેરો.
-                    </p>
+                html += `<div style="margin-top:15px; padding:10px; background:rgba(15,23,42,0.8); border-radius:10px; font-size:12px; color:#cbd5e1;">
+                    <i class="fas fa-info-circle"></i> vanshavali_data.js ફાઇલમાં ડેટા ઉમેરો
                 </div>`;
                 
                 container.innerHTML = html;
                 
             } catch (error) {
                 console.error("વંશાવલી પ્રદર્શિત કરવામાં ભૂલ:", error);
-                container.innerHTML = `<div style="text-align:center; padding:60px; color:#ef4444;">
-                    <i class="fas fa-exclamation-triangle fa-3x" style="margin-bottom:20px;"></i>
-                    <h3 style="margin-bottom:15px;">વંશાવલી લોડ કરવામાં ભૂલ</h3>
-                    <p style="color:#cbd5e1; margin-bottom:25px;">${error.message}</p>
-                    <div style="background:rgba(239,68,68,0.1); padding:20px; border-radius:15px; border:1px solid #ef4444;">
-                        <p style="color:#cbd5e1; font-size:14px;">
-                            <strong>સમસ્યા નિવારણ:</strong><br>
-                            1. vanshavali_data.js ફાઇલ તપાસો<br>
-                            2. ફાઇલમાં <code>window.vanshavaliData = {...}</code> હોવું જોઈએ<br>
-                            3. બ્રાઉઝર કન્સોલમાં ભૂલ જુઓ
-                        </p>
-                    </div>
+                container.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p style="color:#cbd5e1; font-size:13px; margin-top:10px;">${error.message}</p>
                 </div>`;
             }
         }
 
-        // વંશાવલી ખોલો
-        async function openVanshavali() {
-            await displayVanshavali();
-            toggleM('vanshavaliModal');
-            speak("ધાર્મિક વંશાવલી ખોલી રહ્યા છીએ.");
-        }
-
-        // બાકીના કોડ
+        // બાકીના ફંક્શન
         const videoStates = {
             'silent': 'silent.mp4',
             'talking': 'talking.mp4', 
@@ -834,7 +585,7 @@
 
         function showMessage(message, duration = 3000) {
             const box = document.getElementById('messageBox');
-            box.innerHTML = `<div style="font-size:18px; margin-bottom:10px;"><i class="fas fa-check-circle" style="color:var(--green);"></i></div><div>${message}</div>`;
+            box.innerHTML = message;
             box.style.display = 'block';
             setTimeout(() => {
                 box.style.display = 'none';
@@ -851,20 +602,16 @@
                 
                 switch(state) {
                     case 'talking':
-                        status.innerHTML = '<i class="fas fa-microphone"></i> બોલું છું...';
-                        status.style.background = 'linear-gradient(135deg, rgba(52,211,153,0.9), rgba(34,197,94,0.9))';
+                        status.textContent = "બોલું છું...";
                         break;
                     case 'thinking':
-                        status.innerHTML = '<i class="fas fa-brain"></i> વિચાર કરું છું...';
-                        status.style.background = 'linear-gradient(135deg, rgba(59,130,246,0.9), rgba(99,102,241,0.9))';
+                        status.textContent = "વિચાર કરું છું...";
                         break;
                     case 'silent':
-                        status.innerHTML = '<i class="fas fa-check-circle"></i> તૈયાર છું - જય સીયારામ';
-                        status.style.background = 'linear-gradient(135deg, rgba(255,153,51,0.9), rgba(19,136,8,0.9))';
+                        status.textContent = "તૈયાર છું";
                         break;
                     case 'pranam':
-                        status.innerHTML = '<i class="fas fa-hands-praying"></i> જય સીયારામ';
-                        status.style.background = 'linear-gradient(135deg, rgba(255,153,51,0.9), rgba(19,136,8,0.9))';
+                        status.textContent = "જય સીયારામ";
                         break;
                 }
             }
@@ -1046,8 +793,9 @@
                     return;
                 }
                 
-                if (speechText.includes("વંશાવલી") || speechText.includes("પરિવાર") || speechText.includes("ફેમિલી ટ્રી") || speechText.includes("વંશવૃક્ષ")) {
-                    openVanshavali();
+                if (speechText.includes("વંશાવલી") || speechText.includes("પરિવાર") || speechText.includes("ફેમિલી ટ્રી")) {
+                    toggleM('settingsModal');
+                    setTimeout(() => switchTab('vanshavaliTab'), 100);
                     return;
                 }
                 
@@ -1080,8 +828,6 @@
             
             const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
             
-            toggleM('settingsModal');
-            
             const analysis = await fetchAI("આ ફોટામાં શું છે? વિગતવાર વર્ણન કરો.", imageBase64);
             speak(analysis);
         }
@@ -1098,7 +844,6 @@
             }
             
             document.getElementById('settingsModal').style.display = 'none';
-            document.getElementById('vanshavaliModal').style.display = 'none';
             
             showMessage("સર્વિસ બંધ કરી રહ્યા છીએ...", 2000);
         }
