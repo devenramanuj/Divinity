@@ -50,6 +50,16 @@
         input:focus, textarea:focus { outline: none; border-color: #ff9a9e; }
         input[type="password"] { letter-spacing: 2px; }
 
+        /* Switch Toggle */
+        .switch-container { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; padding: 10px; background: #2f3542; border-radius: 10px; }
+        .switch-label { font-size: 14px; color: #fff; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #ff9a9e; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
         /* Settings Tools Grid */
         .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
         .tool-btn { background: #2f3542; padding: 15px; border-radius: 12px; border: none; color: #fff; cursor: pointer; font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
@@ -60,9 +70,11 @@
         .tool-btn.note { color: #ffa502; }
         .tool-btn.rag { color: #1e90ff; background: linear-gradient(135deg, #1e90ff 0%, #00bfff 100%); font-weight: bold; }
         .tool-btn.info { color: #ffda79; }
+        .tool-btn.sys { color: #ff7f50; }
 
         .action-btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; transition: 0.2s; }
         .save-btn { background: linear-gradient(45deg, #ff9a9e, #fad0c4); color: #1a1a1a; }
+        .test-btn { background: #3742fa; color: #fff; }
         .close-btn { background: #ff4757; color: #fff; margin-top: 20px; }
 
         /* Camera, Contacts, Notes, Knowledge Styling */
@@ -83,6 +95,11 @@
         .profile-field { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
         .profile-label { color: #aaa; }
         .profile-val { color: #fff; font-weight: bold; }
+
+        /* System Info Styling */
+        .sys-row { display: flex; justify-content: space-between; align-items: center; background: #2f3542; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #444; }
+        .sys-label { color: #aaa; font-size: 14px; }
+        .sys-val { color: #fff; font-size: 18px; font-weight: bold; font-family: 'Courier New', monospace; }
         
         .list-item { background: #2f3542; padding: 12px; margin-bottom: 8px; border-radius: 10px; font-size: 14px; border-left: 3px solid #ff9a9e; }
         .contact-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
@@ -135,6 +152,20 @@
 
             <div style="border-top: 1px solid #444; margin: 15px 0;"></div>
             
+            <!-- SENSOR SETTINGS -->
+            <div class="switch-container">
+                <span class="switch-label"><i class="fas fa-hand-rock"></i> Shake to Stop AI</span>
+                <label class="switch">
+                    <input type="checkbox" id="shakeToggle" onchange="toggleShake()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <!-- TEST SENSOR BUTTON -->
+            <button class="action-btn test-btn" onclick="testSensor()">🧪 Test Sensor (ચકાસો)</button>
+            <div style="font-size:10px; color:#aaa; margin-bottom:10px; margin-left:10px;">PC પર કામ નહીં કરે. Phone વાપરો.</div>
+
+            <div style="border-top: 1px solid #444; margin: 15px 0;"></div>
+
             <label class="label">🔑 Groq Key</label>
             <input type="password" id="groqKeyInput" placeholder="gsk_... Key">
             
@@ -149,6 +180,7 @@
             <div style="margin: 20px 0; border-top: 1px solid #333; padding-top: 10px;">
                 <div style="text-align: center; font-size: 12px; color: #777; margin-bottom: 10px;">TOOLS & INTELLIGENCE</div>
                 <div class="tools-grid">
+                    <button class="tool-btn sys" onclick="openSystem()"><i class="fas fa-server"></i> System Info</button>
                     <button class="tool-btn info" onclick="openProfile()"><i class="fas fa-user-circle"></i> સ્માર્ટ પ્રોફાઇલ</button>
                     <button class="tool-btn rag" onclick="openKnowledge()"><i class="fas fa-brain"></i> જ્ઞાન કોશ</button>
                     <button class="tool-btn cam" onclick="openCamera()"><i class="fas fa-camera"></i> કૅમેરા</button>
@@ -159,6 +191,29 @@
 
             <button class="action-btn save-btn" onclick="saveSettings()">Save Keys</button>
             <button class="action-btn close-btn" onclick="toggleSettings()">બંધ કરો</button>
+        </div>
+    </div>
+
+    <!-- SYSTEM INFO MODAL -->
+    <div id="systemModal" class="modal">
+        <div class="card">
+            <h3>💻 સિસ્ટમ ઇન્ફો</h3>
+            <p style="text-size:12px; color:#aaa; text-align:center; margin-bottom:20px;">Live Device Status</p>
+            
+            <div class="sys-row">
+                <span class="sys-label"><i class="far fa-clock"></i> સમય</span>
+                <span class="sys-val" id="sysTime">--:--</span>
+            </div>
+            <div class="sys-row">
+                <span class="sys-label"><i class="far fa-calendar-alt"></i> તારીખ</span>
+                <span class="sys-val" id="sysDate">--/--/----</span>
+            </div>
+            <div class="sys-row">
+                <span class="sys-label"><i class="fas fa-battery-three-quarters"></i> બેટરી</span>
+                <span class="sys-val" id="sysBatt">Checking...</span>
+            </div>
+            
+            <button class="action-btn close-btn" onclick="toggleSystem()">Close</button>
         </div>
     </div>
 
@@ -250,6 +305,11 @@
         let userProfile = JSON.parse(localStorage.getItem('userProfile')) || { name: '', city: '', info: '' };
         let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || []; 
 
+        // SHAKE SENSOR CONFIG
+        let shakeEnabled = localStorage.getItem('shakeEnabled') === 'true';
+        let lastShake = 0;
+        let isSensorInitialized = false;
+
         let myIdentity = "તમારું નામ Divinity છે.";
 
         const MODEL_OPTS = {
@@ -271,6 +331,97 @@
             if(currentProvider === 'gemini') return localStorage.getItem('gemini_key');
             if(currentProvider === 'groq') return localStorage.getItem('groq_key');
             return null;
+        }
+
+        // ==========================================
+        // 📲 SENSOR: SHAKE TO STOP (ROBUST VERSION)
+        // ==========================================
+        function toggleShake() {
+            const toggle = document.getElementById('shakeToggle');
+            shakeEnabled = toggle.checked;
+            localStorage.setItem('shakeEnabled', shakeEnabled);
+            showToast(shakeEnabled ? "Shake Mode On" : "Shake Mode Off");
+            
+            // Re-init if turning on
+            if(shakeEnabled && !isSensorInitialized) {
+                initSensor(); 
+            }
+        }
+
+        // Improved init function with explicit permission request
+        async function initSensor() {
+            if (typeof DeviceMotionEvent !== 'undefined') {
+                
+                // iOS 13+ Permission Request
+                if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                    try {
+                        const permissionState = await DeviceMotionEvent.requestPermission();
+                        if (permissionState === 'granted') {
+                            addMotionListener();
+                            isSensorInitialized = true;
+                        } else {
+                            showToast("Motion Permission Denied");
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        showToast("Sensor Error: " + error.message);
+                    }
+                } else {
+                    // Non-iOS devices (Android / Desktop)
+                    addMotionListener();
+                    isSensorInitialized = true;
+                }
+            } else {
+                showToast("DeviceMotion not supported on this device");
+            }
+        }
+
+        function addMotionListener() {
+            window.addEventListener('devicemotion', handleMotion);
+        }
+
+        // Special function to test sensor
+        async function testSensor() {
+            if (typeof DeviceMotionEvent === 'undefined') {
+                alert("આ ફીચર માટે તમારે Mobile Phone વાપરવો પડશે.");
+                return;
+            }
+
+            showToast("Listening... Please Shake Phone Now!");
+
+            // Initialize if not done
+            if (!isSensorInitialized) {
+                await initSensor();
+            }
+        }
+
+        function handleMotion(event) {
+            // If explicitly testing or enabled, check movement
+            if(!shakeEnabled && !window.isTestingSensor) return;
+
+            const current = event.accelerationIncludingGravity;
+            if(!current) return;
+
+            // Threshold: How much force to trigger (Higher = less sensitive)
+            const threshold = 25; 
+            const totalAcceleration = Math.abs(current.x) + Math.abs(current.y) + Math.abs(current.z);
+
+            if (totalAcceleration > threshold) {
+                const now = new Date().getTime();
+                // Debounce: Prevent multiple triggers within 1.5 seconds
+                if ((now - lastShake) > 1500) {
+                    
+                    if(shakeEnabled) {
+                        stopAll();
+                        showToast("📲 Shake Detected! Stopped.");
+                    } else if (window.isTestingSensor) {
+                        // Just for testing feedback
+                        showToast("✅ Sensor Working! Shake Detected.");
+                    }
+                    
+                    lastShake = now;
+                }
+            }
         }
 
         // ==========================================
@@ -425,6 +576,7 @@
                 document.getElementById('geminiKeyInput').value = localStorage.getItem('gemini_key') || '';
                 document.getElementById('groqKeyInput').value = localStorage.getItem('groq_key') || '';
                 document.getElementById('hfKeyInput').value = localStorage.getItem('hf_key') || ''; 
+                document.getElementById('shakeToggle').checked = shakeEnabled;
             }
         }
 
@@ -457,6 +609,33 @@
             localStorage.setItem('m', currentModel);
             localStorage.setItem('p', currentProvider);
             showToast("Saved!");
+        }
+
+        // ==========================================
+        // 🧠 SYSTEM INFO (NEW FEATURE)
+        // ==========================================
+        function openSystem() { toggleSettings(); updateSystemInfo(); document.getElementById('systemModal').classList.add('active'); }
+        function toggleSystem() { document.getElementById('systemModal').classList.remove('active'); }
+
+        function updateSystemInfo() {
+            const now = new Date();
+            // Gujarati Time & Date
+            document.getElementById('sysTime').textContent = now.toLocaleTimeString('gu-IN');
+            document.getElementById('sysDate').textContent = now.toLocaleDateString('gu-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Battery
+            const battEl = document.getElementById('sysBatt');
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(function(battery) {
+                    let level = Math.round(battery.level * 100) + '%';
+                    let charging = battery.charging ? '⚡ Charging' : '';
+                    battEl.textContent = level + ' ' + charging;
+                }).catch(e => {
+                    battEl.textContent = 'N/A';
+                });
+            } else {
+                battEl.textContent = 'N/A';
+            }
         }
 
         // ==========================================
@@ -773,7 +952,7 @@
         }
 
         // ==========================================
-        // 🧠 PROCESS COMMAND (ULTIMATE FIX)
+        // 🧠 PROCESS COMMAND (ULTIMATE FIX + SYSTEM INFO)
         // ==========================================
         async function processCommand(text) {
             const lower = text.toLowerCase();
@@ -781,7 +960,31 @@
             const profileUpdated = detectAndSaveProfile(text);
             if(profileUpdated) { }
 
-            // 2. MAPS LOGIC
+            // 0. SYSTEM INFO COMMANDS (New Feature)
+            if (lower.includes('સમય') || lower.includes('time')) {
+                const now = new Date();
+                speak("વર્તમાન સમય " + now.toLocaleTimeString('gu-IN') + " થયો છે.");
+                return;
+            }
+            if (lower.includes('તારીખ') || lower.includes('date')) {
+                const now = new Date();
+                speak("આજની તારીખ " + now.toLocaleDateString('gu-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + " છે.");
+                return;
+            }
+            if (lower.includes('બેટરી') || lower.includes('battery')) {
+                if ('getBattery' in navigator) {
+                    navigator.getBattery().then(function(battery) {
+                        let level = Math.round(battery.level * 100) + '%';
+                        let msg = battery.charging ? "અને ચાર્જ થઈ રહી છે." : "અને ચાર્જ થઈ રહી નથી.";
+                        speak("તમારી બેટરી " + level + " છે " + msg);
+                    }).catch(() => speak("બેટરી માહિતી મેળવી શકાતી નથી."));
+                } else {
+                    speak("આ ફિચર આ બ્રાઉઝરમાં કામ કરતું નથી.");
+                }
+                return;
+            }
+
+            // 1. MAPS LOGIC
             if (lower.includes('નજીક') || lower.includes('near') || lower.includes('maps') || lower.includes('શોધો')) {
                 let searchQuery = text.replace(/નજીક|near|મારી|મારા|શોધો|find/g, '').trim();
                 if(searchQuery.length > 0) { 
@@ -792,7 +995,7 @@
                 return;
             }
 
-            // 3. MESSAGING LOGIC (FIXED: Added 'nu', 'na', 'ne' removal)
+            // 2. MESSAGING LOGIC (FIXED: Added 'nu', 'na', 'ne' removal)
             if(lower.includes('મેસેજ') || lower.includes('message')) {
                 let potentialName = text.replace(/મેસેજ|message|કરો|karo|કર|kar|ને|ne|નું|nu|ના|na/g, '').trim();
                 
@@ -814,7 +1017,7 @@
                 }
             }
 
-            // 4. CALL LOGIC (FIXED: Added 'nu', 'na', 'ne' removal)
+            // 3. CALL LOGIC (FIXED: Added 'nu', 'na', 'ne' removal)
             if(lower.includes('કૉલ') || lower.includes('call')) {
                 const number = extractNumber(text);
                 if(number) { 
@@ -839,7 +1042,7 @@
                 return;
             }
 
-            // 5. NOTE
+            // 4. NOTE
             if(lower.includes('નોંધ') || lower.includes('note')) {
                 const noteText = text.replace(/નોંધ.*?લખો|note.*?down/gi, '').trim();
                 if(noteText.length > 0) { saveNote(noteText); speak("Note lidhi: " + noteText); }
@@ -847,7 +1050,7 @@
                 return;
             }
 
-            // 6. General AI
+            // 5. General AI
             const response = await callAI(text);
             speak(response);
         }
@@ -913,6 +1116,7 @@
         // Init
         updateModels();
         setVideo('silent');
+        initSensor(); // Try to init silently
     </script>
 </body>
 </html>
