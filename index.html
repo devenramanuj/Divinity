@@ -9,7 +9,7 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; }
         
         /* Background Video */
-        #mainVideo { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.7; }
+        #mainVideo { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index:1; opacity: 0.7; }
         
         /* UI Overlay */
         .ui-layer { position: absolute; bottom: 60px; left: 0; right: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
@@ -137,6 +137,7 @@
             
             <label class="label">🤗 Hugging Face Token (Free)</label>
             <input type="password" id="hfTokenInput" placeholder="hf_... Token">
+            <div style="font-size: 10px; color: #ff6b6b; margin-top: 5px;">નોંધ: HF ફક્ત HTTPS પર ચાલે છે.</div>
 
             <div style="margin: 20px 0; border-top: 1px solid #333; padding-top: 10px;">
                 <div style="text-align: center; font-size: 12px; color: #777; margin-bottom: 10px;">TOOLS</div>
@@ -196,8 +197,8 @@
         // ==========================================
         // 🌍 CONFIG & MODELS
         // ==========================================
-        let currentProvider = localStorage.getItem('p') || 'gemini';
-        let currentModel = localStorage.getItem('m') || 'gemini-1.5-flash-latest';
+        let currentProvider = localStorage.getItem('p') || 'groq'; // Default to Groq (More stable than HF)
+        let currentModel = localStorage.getItem('m') || 'llama-3.1-8b-instant';
         let mediaStream = null;
         let facingMode = 'environment';
         let notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
@@ -216,7 +217,7 @@
                 { id: "llama-3.3-70b-versatile", name: "Groq Llama 70B" }
             ],
             huggingface: [
-                { id: "mistralai/Mistral-7B-Instruct-v0.3", name: "Mistral 7B (Best)" },
+                { id: "mistralai/Mistral-7B-Instruct-v0.3", name: "Mistral 7B" },
                 { id: "meta-llama/Meta-Llama-3-8B-Instruct", name: "Llama 3 8B" },
                 { id: "Qwen/Qwen2.5-7B-Instruct", name: "Qwen 2.5 7B" }
             ]
@@ -420,7 +421,7 @@
         }
 
         // ==========================================
-        // 🧠 AI LOGIC (FIXED HF)
+        // 🧠 AI LOGIC (ROBUST HF)
         // ==========================================
         async function callAI(text, imageBase64 = null) {
             const key = getKey();
@@ -433,7 +434,15 @@
                 } else if (currentProvider === 'huggingface') {
                     return await callHuggingFace(text, key);
                 }
-            } catch(e) { console.error(e); speak("Error thayu"); }
+            } catch(e) { 
+                console.error(e); 
+                // More specific error for network/cors
+                if(e.name === 'TypeError' && e.message.includes('Failed to fetch')) {
+                    speak("નેટવર્ક ભૂળ. કૃપા કરીને HTTPS લિંક પર ચલાવો.");
+                } else {
+                    speak("Error thayu"); 
+                }
+            }
         }
 
         async function callGroq(text, key) {
@@ -488,13 +497,17 @@
         }
 
         // ==========================================
-        // 🤗 FIXED HUGGING FACE LOGIC
+        // 🤗 HUGGING FACE LOGIC (FIXED)
         // ==========================================
         async function callHuggingFace(text, key) {
             const memoryContext = getMemoriesContext();
-            // HF works best with simple prompt
             const prompt = `System: ${myIdentity}. Answer in Gujarati.${memoryContext}\nUser: ${text}\nAnswer:`;
             
+            // Check for valid token format
+            if(!key.startsWith('hf_')) {
+                return "Token 'hf_' થી શરૂ થવો જોઈએ. Settings ચેક કરો.";
+            }
+
             const url = `https://api-inference.huggingface.co/models/${currentModel}`;
             
             try {
@@ -508,52 +521,48 @@
                         inputs: prompt,
                         parameters: {
                             max_new_tokens: 512,
-                            return_full_text: false, // Get only the answer part
-                            temperature: 0.7,
-                            top_p: 0.95
+                            return_full_text: false, 
+                            temperature: 0.7
                         }
                     })
                 });
 
-                // HANDLE LOADING ERROR (Status 503)
                 if (!res.ok) {
                     const errorData = await res.json();
-                    if (res.status === 503 && errorData.error && (errorData.error.includes("loading") || errorData.error.includes("estimates"))) {
-                        // Model is waking up
-                        return "મોડેલ લોડ થઈ રહ્યું છે (Waking up). કૃપા કરીને 20 સેકન્ડ પછી ફરી પ્રયાસ કરો.";
-                    } else {
-                        console.error("HF Error:", errorData);
-                        return "API ભૂળ: " + (errorData.error || "Unknown");
+                    if (res.status === 403) return "Token Valid નથી અથવા Read Access નથી.";
+                    if (res.status === 503 && errorData.error && (errorData.error.includes("loading"))) {
+                        return "મોડેલ સ્લીપ માં છે. 20 સેકન્ડ પછી પ્રયાસ કરો.";
                     }
+                    return "HF Error: " + (res.statusText || "Unknown");
                 }
                 
                 const data = await res.json();
+                let output = "";
                 
-                // Parse Response
-                let answer = "";
-                
-                // Standard HF response: [{ generated_text: "..." }]
                 if (Array.isArray(data) && data.length > 0 && data[0].generated_text) {
-                    answer = data[0].generated_text;
-                } else if (data.generated_text) {
-                    answer = data.generated_text;
+                    output = data[0].generated_text;
+                    if(output.includes("Answer:")) {
+                        const parts = output.split("Answer:");
+                        output = parts[parts.length -1].trim();
+                    } else if(output.includes("User:")) {
+                        const parts = output.split("User:");
+                        output = parts[parts.length -1].trim();
+                    }
+                } else if (typeof data === 'string') {
+                    // Sometimes HF returns raw string
+                    output = data;
                 } else {
-                    return "જવાબ મળ્યો નથી.";
+                    return "જવાબનું ફોર્મેટ ખોટું છે.";
                 }
 
-                // Cleanup if model repeated the prompt
-                if(answer.includes("Answer:")) {
-                    const parts = answer.split("Answer:");
-                    answer = parts[parts.length-1].trim();
-                } else if(answer.includes("User:")) {
-                    const parts = answer.split("User:");
-                    answer = parts[parts.length-1].trim();
-                }
-
-                return answer || "જવાબ ખાલી છે.";
+                return output || "કંઈક ખોટું થયું.";
 
             } catch (e) {
-                console.error("HF Fetch Error:", e);
+                console.error("HF Error Details:", e);
+                // Most likely CORS or JSON Parse Error
+                if (e.message.includes('JSON.parse') || e instanceof SyntaxError) {
+                    return "એપને HTTPS પર ચલાવો. (CORS Error)";
+                }
                 return "નેટવર્ક ભૂળ.";
             }
         }
@@ -616,7 +625,7 @@
                 return;
             }
 
-            // 3. MESSAGING LOGIC
+            //3. MESSAGING LOGIC
             if(lower.includes('મેસેજ') || lower.includes('message')) {
                 let potentialName = text.replace(/મેસેજ|message|કરો|karo|કર|kar|ને|ne/g, '').trim();
                 const contact = findContact(potentialName);
