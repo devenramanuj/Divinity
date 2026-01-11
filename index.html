@@ -512,13 +512,36 @@
             showToast("Contact Saved");
         }
         function deleteContact(index) { contacts.splice(index, 1); localStorage.setItem('phoneBook', JSON.stringify(contacts)); renderContacts(); }
+        
+        // ULTIMATE FIX: SMART CONTACT MATCHING
         function findContact(query) {
-            const q = query.toLowerCase().trim();
-            let match = contacts.find(c => c.name.toLowerCase() === q);
-            if(match) return match;
-            match = contacts.find(c => c.name.toLowerCase().includes(q) || q.includes(c.name.toLowerCase()));
-            return match;
+            // Step 1: Remove all special characters and extra words from query to keep only the name
+            let cleanQ = query.toLowerCase()
+                .replace(/nu|na|ne|નું|ના|ને|no/g, '') 
+                .replace(/[^a-z0-9\u0A80-\u0AFF]/g, '') // Keep only letters and numbers
+                .trim();
+
+            if(cleanQ.length < 2) return null;
+
+            // Step 2: Search in saved contacts
+            for (let i = 0; i < contacts.length; i++) {
+                const c = contacts[i];
+                // Clean stored contact name (e.g., "Nita " -> "nita")
+                let cleanDB = c.name.toLowerCase().replace(/[^a-z0-9\u0A80-\u0AFF]/g, '');
+
+                // Check if Query is inside DB
+                if (cleanDB.includes(cleanQ)) {
+                    return c;
+                }
+                
+                // Check if DB name is inside Query
+                if (cleanQ.includes(cleanDB)) {
+                    return c;
+                }
+            }
+            return null;
         }
+
         function renderContacts() {
             const list = document.getElementById('contactsList');
             list.innerHTML = '';
@@ -750,7 +773,7 @@
         }
 
         // ==========================================
-        // 🧠 PROCESS COMMAND (FIXED)
+        // 🧠 PROCESS COMMAND (ULTIMATE FIX)
         // ==========================================
         async function processCommand(text) {
             const lower = text.toLowerCase();
@@ -761,41 +784,57 @@
             // 2. MAPS LOGIC
             if (lower.includes('નજીક') || lower.includes('near') || lower.includes('maps') || lower.includes('શોધો')) {
                 let searchQuery = text.replace(/નજીક|near|મારી|મારા|શોધો|find/g, '').trim();
-                if(searchQuery.length > 0) { speak(`${searchQuery} શોધી રહ્યો છું`); openMapSearch(searchQuery); }
+                if(searchQuery.length > 0) { 
+                    speak(`${searchQuery} શોધી રહ્યો છું`); 
+                    setTimeout(() => openMapSearch(searchQuery), 1000); 
+                }
                 else speak("શું શોધવું છે કહો.");
                 return;
             }
 
-            // 3. MESSAGING LOGIC (FIXED: No setTimeout)
+            // 3. MESSAGING LOGIC (FIXED: Added 'nu', 'na', 'ne' removal)
             if(lower.includes('મેસેજ') || lower.includes('message')) {
-                let potentialName = text.replace(/મેસેજ|message|કરો|karo|કર|kar|ને|ne/g, '').trim();
-                const contact = findContact(potentialName);
-                if(contact) { 
-                    speak(`${contact.name} ને WhatsApp ખોલી રહ્યો છું`); 
-                    openWa(contact.number); 
-                    return; 
+                let potentialName = text.replace(/મેસેજ|message|કરો|karo|કર|kar|ને|ne|નું|nu|ના|na/g, '').trim();
+                
+                console.log("Searching for contact:", potentialName); // Debugging
+
+                if(potentialName.length > 0) {
+                    const contact = findContact(potentialName);
+                    if(contact) { 
+                        speak(`${contact.name} ને WhatsApp ખોલી રહ્યો છું`); 
+                        window.location.href = `https://wa.me/${contact.number}`; 
+                        return; 
+                    } else {
+                        speak(`મારી પાસે ${potentialName} નો નંબર નથી.`);
+                        return;
+                    }
+                } else {
+                    speak("કોને મેસેજ કરવું છે કહો?");
+                    return;
                 }
-                else speak(`મારી પાસે ${potentialName} નો નંબર નથી.`);
-                return;
             }
 
-            // 4. CALL LOGIC (FIXED: No setTimeout)
+            // 4. CALL LOGIC (FIXED: Added 'nu', 'na', 'ne' removal)
             if(lower.includes('કૉલ') || lower.includes('call')) {
                 const number = extractNumber(text);
                 if(number) { 
                     speak(number + " પર કૉલ કરી રહ્યો છું"); 
-                    openCall(number); 
+                    window.location.href = `tel:${number}`; 
                     return; 
                 }
-                let potentialName = text.replace(/કૉલ|call|કરો|karo|કર|kar|ને|ne|નૂં|nu|પર|par/g, '').trim();
+                
+                let potentialName = text.replace(/કૉલ|call|કરો|karo|કર|kar|ને|ne|નું|nu|ના|na/g, '').trim();
+                
                 if(potentialName.length > 0) {
                     const contact = findContact(potentialName);
                     if(contact) { 
                         speak(`${contact.name} ને કૉલ કરી રહ્યો છું`); 
-                        openCall(contact.number); 
+                        window.location.href = `tel:${contact.number}`; 
                         return; 
+                    } else {
+                        speak(`મારી પાસે ${potentialName} નો નંબર નથી.`);
+                        return;
                     }
-                    else speak(`મારી પાસે ${potentialName} નો નંબર નથી.`);
                 } else speak("કૉલ કરવા માટે નામ અથવા નંબર કહો.");
                 return;
             }
